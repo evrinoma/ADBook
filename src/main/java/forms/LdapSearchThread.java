@@ -8,13 +8,13 @@ import javax.swing.SwingWorker;
 
 import libs.Core;
 
-public class SwingThread extends SwingWorker<Object, String> {
+public class  LdapSearchThread extends SwingWorker<Object, String> {
 
 	private Core core;
 	private MainForm form;
 	
 	
-	public SwingThread(Core core, MainForm form)
+	public LdapSearchThread(Core core, MainForm form)
 	{
 		this.core = core;
 		this.form = form;
@@ -43,7 +43,7 @@ public class SwingThread extends SwingWorker<Object, String> {
 			status = (boolean) get();
 			if (status) {
 				form.setCompanySelector();
-				form.setTreeNode();
+				form.setTreeNode(core.getCompanys().all());
 				form.setStatusBar(core.getHintEmpty());
 			}
 			//System.out.println("Completed with status: " + status);

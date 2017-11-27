@@ -4,18 +4,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyDto {
+	
+	private static final String isAll = "*";
+	
 	private String name;
 	private String description;
 	private String dn;
 	private List<UserDto> users;
 
-	public CompanyDto(String name, String description, String dn) {
+	private void createCompanyDto(String name, String description, String dn)
+	{
 		users = new ArrayList<UserDto>();
 		this.name = name;
 		this.description = description;
 		this.dn = dn;
 	}
+	
+	public CompanyDto(String name, String description, String dn) {
+		createCompanyDto(name, description, dn);
+	}	
+	
+	public CompanyDto() {		
+		createCompanyDto("Все", isAll, isAll);
+	}
 
+	public boolean isAllSelected() {		
+		return (isAll ==  this.description && isAll == this.dn);
+	}
+	
 	public String getDn() {
 		return dn;
 	}
@@ -35,6 +51,10 @@ public class CompanyDto {
 
 	public List<UserDto> getUsers() {
 		return users;
+	}
+	
+	public void setUsers(List<UserDto> users) {
+		this.users = users;
 	}
 
 	public void addNewUser(UserDto user) {

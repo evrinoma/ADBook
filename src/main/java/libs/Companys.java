@@ -11,6 +11,10 @@ public class Companys {
 	public void addNewCompany(String name, String description, String dn) {
 		companys.add(new CompanyDto(name, description, dn));
 	}
+	
+	public void addNewCompany(CompanyDto company) {
+		companys.add(company);
+	}
 
 	public Companys() {		
 		companys = new ArrayList<CompanyDto>();

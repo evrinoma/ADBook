@@ -21,20 +21,30 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import entity.CompanyDto;
 import entity.UserDto;
+import forms.LdapSearchThread;
+import forms.LocalSearchThread;
+import forms.MainForm;
 
 public class Core {
-
 	private static final String HINT_LDAP_OPEN = "Connecting to LDAP Server";
 	private static final String HINT_LDAP_CLOSE = "Close connections";
 	private static final String HINT_LDAP_USERS = "Try to get all Users from LDAP Server";
 	private static final String HINT_LDAP_COMPANYS = "Try to get all Companys from LDAP Server";
 	private static final String HINT_EMPTY = "";
 
-	private Ldap ldap = null;	
+	private Ldap ldap = null;
 	private Companys companys = null;
-	
+	private LocalSearchThread localSearch = null;
+	private LdapSearchThread ldapSearch = null;
+
+	private MainForm form = null;
+
 	public String[] toStringArray(List<String> list) {
 		return list.toArray(new String[list.size()]);
+	}
+
+	public void setMainForm(MainForm form) {
+		this.form = form;
 	}
 
 	private Core getLdapUsers(String $sort) {
@@ -58,14 +68,14 @@ public class Core {
 				}
 			}
 		}
-		
+
 		return this;
 	}
 
 	private Core getLdapUsers() {
-		return getLdapUsers(new String("cn"));		
+		return getLdapUsers(new String("cn"));
 	}
-	
+
 	private Core getLdapCompanys() {
 		if (ldap.isConnect()) {
 			NamingEnumeration<?> companys = ldap.getLdapCompanys();
@@ -90,68 +100,68 @@ public class Core {
 				}
 			}
 		}
-		
-		return this;
-	}
-	
-	private Core openLdapConnection() {
-		ldap = new Ldap();
-		
-		return this;
-	}
-	
-	private Core closeLdapConnection() {
-		if (null != ldap){ 
-			ldap.closeConnect();
-		}	
-		
+
 		return this;
 	}
 
-	public Core() {	
+	private Core openLdapConnection() {
+		ldap = new Ldap();
+
+		return this;
+	}
+
+	private Core closeLdapConnection() {
+		if (null != ldap) {
+			ldap.closeConnect();
+		}
+
+		return this;
+	}
+
+	public Core() {
 		companys = new Companys();
-	}	
-	
+	}
+
 	public Companys getCompanys() {
 		return companys;
 	}
-	
+
 	public String getHintLoadCompanys() {
 		return HINT_LDAP_COMPANYS;
 	}
-	
+
 	public String getHintLoadUsers() {
 		return HINT_LDAP_USERS;
 	}
-	
+
 	public String getHintOpenConnection() {
 		return HINT_LDAP_OPEN;
 	}
-	
+
 	public String getHintCloseConnection() {
 		return HINT_LDAP_CLOSE;
 	}
-	
+
 	public String getHintEmpty() {
 		return HINT_EMPTY;
 	}
-	
+
 	public void loadCompanys() {
-		getLdapCompanys();	
-	}
-	
-	public void loadUsers() {
-		getLdapUsers();	
-	}
-		
-	public void openConnection() {		
-		openLdapConnection();		
+		getLdapCompanys();
 	}
 
-	public void closeConnection() {		
-		closeLdapConnection();		
+	public void loadUsers() {
+		getLdapUsers();
 	}
-	
+
+	public void openConnection() {
+		openLdapConnection();
+	}
+
+	public void closeConnection() {
+		closeLdapConnection();
+	}
+
 	public ImageIcon createQrCode(String vcard, int width, int height) {
 		Hashtable hintMap = new Hashtable();
 		hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -168,7 +178,7 @@ public class Core {
 
 		try {
 			bitMatrix = qrCodeWriter.encode(vcard, BarcodeFormat.QR_CODE, matrixWidth, matrixHeight, hintMap);
-	
+
 			graphics.setColor(Color.white);
 			graphics.fillRect(0, 0, matrixWidth, matrixWidth);
 
@@ -182,11 +192,40 @@ public class Core {
 					}
 				}
 			}
-			
+
 		} catch (WriterException e) {
 			e.printStackTrace();
 		}
-		
+
 		return new ImageIcon(image);
+	}
+
+	public void ldapSearch() {
+		if (null == ldapSearch) {
+			ldapSearch = new LdapSearchThread(this, form);
+		}
+		if (ldapSearch instanceof LdapSearchThread) {
+			ldapSearch.execute();
+		}
+	}
+
+	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, String phone,
+			String description) {
+		if (localSearch == null || localSearch.isDone()) {
+			
+			localSearch = new LocalSearchThread(form);
+			
+			localSearch.setFilter(lastName, firstName, middleName, company, phone, description);
+			localSearch.setCompanys(companys);
+
+			localSearch.setLock();
+			localSearch.execute();
+
+		} else {
+			localSearch.setFilter(lastName, firstName, middleName, company, phone, description);
+			localSearch.setCompanys(companys);
+			localSearch.restartSearch();
+		}		
+
 	}
 }

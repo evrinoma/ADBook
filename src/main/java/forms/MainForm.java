@@ -21,6 +21,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 import entity.CompanyDto;
 import entity.UserDto;
@@ -35,6 +36,8 @@ import java.awt.Color;
 import javax.swing.JTabbedPane;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.List;
+
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 import java.awt.event.ItemListener;
@@ -71,7 +74,7 @@ public class MainForm {
 	private JLabel labelContactWriMail;
 
 	private JFrame frmHandbook;
-	private JTextField textFieldSurName;
+	private JTextField textFieldLastName;
 	private JTextField textFieldFirstName;
 	private JTextField textFieldMiddleName;
 	private JComboBox<CompanyDto> comboBoxCompany;
@@ -110,11 +113,9 @@ public class MainForm {
 	 */
 	public MainForm() {
 		core = new Core();
-
 		componentsInitialize();
-
-		SwingThread thread = new SwingThread(core, this);
-		thread.execute();
+		core.setMainForm(this);
+		core.ldapSearch();
 	}
 
 	public void setStatusBar(String status) {
@@ -127,9 +128,17 @@ public class MainForm {
 		}
 	}
 
-	public void setTreeNode() {
-		for (CompanyDto company : core.getCompanys().all()) {
-			addToTopCompanyTreeNode(createCompanyTreeNode(company));
+	public void setTreeNode(List<CompanyDto> companys) {
+		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+		root.removeAllChildren();
+		model.reload();
+
+		for (CompanyDto company : companys) {
+			DefaultMutableTreeNode nodes = createCompanyTreeNode(company);
+			if (null != nodes) {
+				addToTopCompanyTreeNode(createCompanyTreeNode(company));
+			}
 		}
 
 		expandTree().repaint();
@@ -151,9 +160,11 @@ public class MainForm {
 	}
 
 	private DefaultMutableTreeNode createCompanyTreeNode(CompanyDto company) {
-		DefaultMutableTreeNode companyTreeNode = new DefaultMutableTreeNode(company);
-		addToCompanyUserTreeNode(companyTreeNode, company);
-
+		DefaultMutableTreeNode companyTreeNode = null;
+		if (!company.getUsers().isEmpty()) {
+			companyTreeNode = new DefaultMutableTreeNode(company);
+			addToCompanyUserTreeNode(companyTreeNode, company);
+		}
 		return companyTreeNode;
 	}
 
@@ -300,8 +311,7 @@ public class MainForm {
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriСountry, 0, SpringLayout.SOUTH,
 				labelContactСountry);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriСountry, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriСountry, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriСountry);
 
 		labelContactWriRegion = new JLabel();
@@ -309,16 +319,14 @@ public class MainForm {
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriRegion, 0, SpringLayout.SOUTH,
 				labelContactRegion);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriRegion, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriRegion, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriRegion);
 
 		labelContactWriTown = new JLabel();
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriTown, 5, SpringLayout.EAST,
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriTown, 0, SpringLayout.SOUTH, labelContactTown);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriTown, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriTown, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriTown);
 
 		labelContactWritPostIndex = new JLabel();
@@ -326,8 +334,7 @@ public class MainForm {
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWritPostIndex, 0, SpringLayout.SOUTH,
 				labelContactPostIndex);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWritPostIndex, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWritPostIndex, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWritPostIndex);
 
 		labelContactWriStreet = new JLabel();
@@ -335,8 +342,7 @@ public class MainForm {
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriStreet, 0, SpringLayout.SOUTH,
 				labelContactStreet);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriStreet, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriStreet, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriStreet);
 
 		labelContactWriBirth = new JLabel();
@@ -344,16 +350,14 @@ public class MainForm {
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriBirth, 0, SpringLayout.SOUTH,
 				labelContactBirth);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriBirth, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriBirth, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriBirth);
 
 		labelContactWriRoom = new JLabel();
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriRoom, 5, SpringLayout.EAST,
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriRoom, 0, SpringLayout.SOUTH, labelContactRoom);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriRoom, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriRoom, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriRoom);
 
 		labelContactWriPhoneInside = new JLabel();
@@ -370,8 +374,7 @@ public class MainForm {
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriPhone, 0, SpringLayout.SOUTH,
 				labelContactPhone);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriPhone, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriPhone, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriPhone);
 
 		labelContactWriMobilePhone = new JLabel();
@@ -387,8 +390,7 @@ public class MainForm {
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriMail, 5, SpringLayout.EAST,
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriMail, 0, SpringLayout.SOUTH, labelContactMail);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriMail, 0, SpringLayout.EAST,
-				panelContact);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriMail, 0, SpringLayout.EAST, panelContact);
 		panel.add(labelContactWriMail);
 
 	}
@@ -471,7 +473,8 @@ public class MainForm {
 		panel.add(labelPersonHead);
 
 		labelPersonWriDescription = new JLabel();
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriDescription, 5, SpringLayout.EAST, labelPersonMail);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriDescription, 5, SpringLayout.EAST,
+				labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriDescription, 0, SpringLayout.SOUTH,
 				labelPersonPosition);
 		sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriDescription, 0, SpringLayout.EAST, panelPerson);
@@ -539,10 +542,10 @@ public class MainForm {
 		panelFSM.setBorder(borderFSM);
 		panelSearch.add(panelFSM);
 
-		textFieldSurName = new JTextField("");		
-		textFieldSurName.setToolTipText("Фамилия");
-		textFieldSurName.setHorizontalAlignment(SwingConstants.LEFT);
-		JLabel labelSurName = new JLabel(textFieldSurName.getToolTipText() + ':');
+		textFieldLastName = new JTextField("");
+		textFieldLastName.setToolTipText("Фамилия");
+		textFieldLastName.setHorizontalAlignment(SwingConstants.LEFT);
+		JLabel labelSurName = new JLabel(textFieldLastName.getToolTipText() + ':');
 		layoutFSM.putConstraint(SpringLayout.WEST, labelSurName, 5, SpringLayout.WEST, panelFSM);
 		labelSurName.setMinimumSize(new Dimension(50, 0));
 
@@ -559,8 +562,7 @@ public class MainForm {
 		labelMiddleName.setMinimumSize(new Dimension(50, 0));
 
 		comboBoxCompany = new JComboBox();
-		
-		comboBoxCompany.addItem(new CompanyDto("Все", "all", "all"));
+		comboBoxCompany.addItem(new CompanyDto());
 		comboBoxCompany.setToolTipText("Комания");
 		JLabel labelCompany = new JLabel(comboBoxCompany.getToolTipText() + ':');
 		labelCompany.setMinimumSize(new Dimension(50, 0));
@@ -578,7 +580,7 @@ public class MainForm {
 		labelDescription.setMinimumSize(new Dimension(50, 0));
 
 		panelFSM.add(labelSurName);
-		panelFSM.add(textFieldSurName);
+		panelFSM.add(textFieldLastName);
 		panelFSM.add(labelFirstName);
 		panelFSM.add(textFieldFirstName);
 		panelFSM.add(labelMiddleName);
@@ -597,7 +599,7 @@ public class MainForm {
 	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {
 		return new ImageIcon(image.getImage().getScaledInstance(label.getWidth(), label.getHeight(),
 				image.getImage().SCALE_DEFAULT));
-	}	
+	}
 
 	private void updatePanelView(UserDto user) {
 		String mail = new String(user.getOtherTelephone() + ((0 == user.getOtherTelephone().length()) ? "" : "p*")
@@ -616,7 +618,6 @@ public class MainForm {
 		labelContactWriRegion.setText(user.getSt());
 		labelContactWriTown.setText(user.getL());
 		labelContactWritPostIndex.setText(user.getPostalCode());
-
 		labelContactWriStreet.setText(user.getStreetAddress());
 		labelContactWriBirth.setText(user.getInfo());
 		labelContactWriRoom.setText(user.getPhysicalDeliveryOfficeName());
@@ -627,8 +628,9 @@ public class MainForm {
 
 		labelPersonPic.setIcon(resizeIcon(
 				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : new ImageIcon(EMPTY_IMAGE),
-				labelPersonPic));		
-		labelPersonQrCode.setIcon(core.createQrCode(user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));		
+				labelPersonPic));
+		labelPersonQrCode.setIcon(
+				core.createQrCode(user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
 	}
 
 	private void addListners() {
@@ -645,11 +647,11 @@ public class MainForm {
 					updatePanelView((UserDto) node.getUserObject());
 				}
 			}
-		});		
-		textFieldSurName.addKeyListener(new KeyAdapter() {
+		});
+		textFieldLastName.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)){
+				if (filterOnlyAlphabetic(e)) {
 					e.consume();
 				}
 			}
@@ -657,7 +659,7 @@ public class MainForm {
 		textFieldMiddleName.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)){
+				if (filterOnlyAlphabetic(e)) {
 					e.consume();
 				}
 			}
@@ -665,66 +667,87 @@ public class MainForm {
 		textFieldFirstName.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)){
+				if (filterOnlyAlphabetic(e)) {
 					e.consume();
 				}
 			}
 		});
 		textFieldPhone.addKeyListener(new KeyAdapter() {
 			@Override
-			public void keyTyped(KeyEvent e) {				
-					if (filterOnlyDigit(e)){
-						e.consume();
-					}
+			public void keyTyped(KeyEvent e) {
+				if (filterOnlyDigit(e)) {
+					e.consume();
+				}
 			}
 		});
 		textFieldDescription.addKeyListener(new KeyAdapter() {
 			@Override
-			public void keyTyped(KeyEvent e) {				
-					if (filterOnlyAlphabetic(e)){
-						e.consume();
-					}
-			}
-		});	
-		
-		textFieldSurName.addCaretListener(new CaretListener() {
-			public void caretUpdate(CaretEvent e) {
-				
-	                System.out.println("User is editing something in TextField"+textFieldSurName.getText());
+			public void keyTyped(KeyEvent e) {
+				if (filterOnlyAlphabetic(e)) {
+					e.consume();
+				}
 			}
 		});
-		
+
+		textFieldLastName.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+
+		textFieldMiddleName.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+
+		textFieldFirstName.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+
+		textFieldPhone.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+
+		textFieldDescription.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+
 		comboBoxCompany.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
+				search();
 			}
-		});			
-	}	
-	
-	private boolean filterOnlyAlphabetic(KeyEvent e)
-	{
-		if ( Character.isAlphabetic(e.getKeyChar()) ) {
-	         return false; 
-	     }
+		});
+	}
+
+	private boolean filterOnlyAlphabetic(KeyEvent e) {
+		if (Character.isAlphabetic(e.getKeyChar())) {
+			return false;
+		}
 		return true;
 	}
-	
-	private boolean filterOnlyDigit(KeyEvent e)
-	{
+
+	private boolean filterOnlyDigit(KeyEvent e) {
 		if (Character.isDigit(e.getKeyChar())) {
-			 return false; 
-	     }
+			return false;
+		}
 		return true;
 	}
-	
-	
-	private void search()
-	{
-		String lastName = textFieldSurName.getText();
-		String Name = textFieldFirstName.getText();
+
+	private void search() {
+		String lastName = textFieldLastName.getText();
+		String firstName = textFieldFirstName.getText();
 		String middleName = textFieldMiddleName.getText();
 		CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
 		String phone = textFieldPhone.getText();
-		String position = textFieldDescription.getText();		
+		String description = textFieldDescription.getText();
+		core.localSearch(lastName, firstName, middleName, company, phone, description);
 	}
-	
+
 }
