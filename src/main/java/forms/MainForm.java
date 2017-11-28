@@ -22,7 +22,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -34,8 +33,8 @@ import java.awt.CardLayout;
 import java.awt.Toolkit;
 
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
+import java.awt.Component;
+
 import javax.swing.JTabbedPane;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -46,6 +45,8 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 
 public class MainForm {
 
@@ -53,6 +54,8 @@ public class MainForm {
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
 	private static final String EMPTY_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
 	private static final String LOGO_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/logo.gif";
+	private static final String PRELOAD_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/ajax-loader.gif";
+	private static final String PLANS_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/plans/";
 
 	private JLabel labelPersonWriDescription;
 	private JLabel labelPersonWriFio;
@@ -77,11 +80,14 @@ public class MainForm {
 	private JLabel labelContactWriMobilePhone;
 	private JLabel labelContactWriMail;
 
+	private JLabel labelRoomPic;
+
 	private JFrame frmHandbook;
 	private JTextField textFieldLastName;
 	private JTextField textFieldFirstName;
 	private JTextField textFieldMiddleName;
 	private JComboBox<CompanyDto> comboBoxCompany;
+	private JComboBox<CompanyDto> comboBoxFilial;
 	private JTextField textFieldPhone;
 	private JTextField textFieldDescription;
 	private JLabel labelStatusBar;
@@ -90,11 +96,14 @@ public class MainForm {
 
 	DefaultMutableTreeNode top;
 	private JPanel panelView;
+	private JPanel panelTree;
 	private JPanel panelContact;
+	private JPanel panelRoom;
 	private SpringLayout sl_panelPerson;
 	private JLabel labelPersonHead;
 	private JPanel panelQrCode;
 	private JPanel panelPerson;
+	private JLabel labelPreload;
 
 	/**
 	 * Launch the application.
@@ -132,7 +141,13 @@ public class MainForm {
 		}
 	}
 
-	public void setTreeNode(List<CompanyDto> companys,boolean isInit) {
+	public void setFilialSelector(CompanyDto company) {
+		for (CompanyDto filial : company.getFilials()) {
+			comboBoxFilial.addItem(filial);
+		}
+	}
+
+	public void setTreeNode(List<CompanyDto> companys, boolean isInit) {
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 		root.removeAllChildren();
@@ -201,7 +216,7 @@ public class MainForm {
 		frmHandbook = new JFrame();
 		frmHandbook.setIconImage(Toolkit.getDefaultToolkit().getImage(LOGO_IMAGE));
 		frmHandbook.setTitle("HandBook");
-		frmHandbook.setBounds(100, 100, 952, 768);
+		frmHandbook.setBounds(100, 100, 952, 940);
 		frmHandbook.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmHandbook.getContentPane().setLayout(new BorderLayout(0, 0));
 
@@ -214,11 +229,12 @@ public class MainForm {
 		splitPaneVert.setPreferredSize(DEMENSION_TREE);
 		splitPaneHorz.setRightComponent(splitPaneVert);
 
-		JPanel panelTree = new JPanel();
+		panelTree = new JPanel();
 		panelTree.setPreferredSize(DEMENSION_TREE);
 		panelTree.setMinimumSize(DEMENSION_TREE);
 		panelTree.setLayout(new CardLayout(0, 0));
 		splitPaneVert.setLeftComponent(panelTree);
+		addTreePreloader(panelTree);
 
 		JPanel panelSearch = new JPanel();
 		panelSearch.setLayout(new BorderLayout(0, 0));
@@ -230,7 +246,7 @@ public class MainForm {
 		panelView.setLayout(new BorderLayout(0, 0));
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		panelView.add(tabbedPane);
+		panelView.add(tabbedPane);		
 
 		panelPerson = new JPanel();
 		panelPerson.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -244,19 +260,55 @@ public class MainForm {
 		tabbedPane.addTab("Контакты", panelContact);
 		createTabContact(panelContact);
 
-		// tabbedPane.addTab("Сотрудники", panelPhoto);
-
-		// SpringUtilities.makeCompactGrid(panelView, 1, 2, 6, 6, 20, 6);
-
+		panelRoom = new JPanel();
+		panelRoom.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		tabbedPane.addTab("Схема", panelRoom);
+		createTabRoom(panelRoom);
+		
 		top = new DefaultMutableTreeNode("Сотрудники");
-
 		tree = new JTree(top);
 		JScrollPane treeView = new JScrollPane(tree);
-		panelTree.add(treeView);
-
+		panelTree.add(treeView, "treeView");
 		createPanelStatus();
 
 		addListners();
+	}
+
+	private void addTreePreloader(JPanel panel) {
+
+		labelPreload = new JLabel();
+		labelPreload.setHorizontalAlignment(SwingConstants.CENTER);
+		labelPreload.setIcon(new ImageIcon(PRELOAD_IMAGE));
+		labelPreload.setName("labelPreload");
+		panel.add(labelPreload, "labelPreload");
+	}
+
+	public void removeTreePreload() {
+		removePreload(panelTree);
+	}
+
+	private void removePreload(JPanel panel) {
+		for (Component component : panel.getComponents()) {
+			if (null != component.getName()) {
+				if (labelPreload.getName().contains(component.getName())) {
+					panel.remove(labelPreload);
+				}
+			}
+		}
+	}
+
+	private void createTabRoom(JPanel panel) {
+		labelRoomPic = new JLabel();
+		GroupLayout gl_panelRoom = new GroupLayout(panel);
+		gl_panelRoom.setHorizontalGroup(
+			gl_panelRoom.createParallelGroup(Alignment.LEADING)
+				.addComponent(labelRoomPic, GroupLayout.PREFERRED_SIZE, 546, GroupLayout.PREFERRED_SIZE)
+		);
+		gl_panelRoom.setVerticalGroup(
+			gl_panelRoom.createParallelGroup(Alignment.LEADING)
+				.addComponent(labelRoomPic, GroupLayout.PREFERRED_SIZE, 631, GroupLayout.PREFERRED_SIZE)
+		);
+		panel.setLayout(gl_panelRoom);
 	}
 
 	private void createTabContact(JPanel panel) {
@@ -588,6 +640,13 @@ public class MainForm {
 		JLabel labelCompany = new JLabel(comboBoxCompany.getToolTipText() + ':');
 		labelCompany.setMinimumSize(new Dimension(50, 0));
 
+		comboBoxFilial = new JComboBox();
+		comboBoxFilial.addItem(new CompanyDto());
+		comboBoxFilial.setToolTipText("Представительство");
+		JLabel labelFilials = new JLabel(comboBoxFilial.getToolTipText() + ':');
+		labelFilials.setMinimumSize(new Dimension(50, 0));
+		comboBoxFilial.disable();
+
 		textFieldPhone = new JTextField();
 		textFieldPhone.setToolTipText("Номер телефона");
 		textFieldPhone.setHorizontalAlignment(SwingConstants.LEFT);
@@ -608,13 +667,15 @@ public class MainForm {
 		panelFSM.add(textFieldMiddleName);
 		panelFSM.add(labelCompany);
 		panelFSM.add(comboBoxCompany);
+		panelFSM.add(labelFilials);
+		panelFSM.add(comboBoxFilial);
 		panelFSM.add(labelPhone);
 		panelFSM.add(textFieldPhone);
 		panelFSM.add(labelDescription);
 		panelFSM.add(textFieldDescription);
 
 		// rows, cols, initX, initY
-		SpringUtilities.makeCompactGrid(panelFSM, 6, 2, 6, 6, 20, 6);
+		SpringUtilities.makeCompactGrid(panelFSM, 7, 2, 6, 6, 20, 6);
 	}
 
 	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {
@@ -630,6 +691,11 @@ public class MainForm {
 		labelPersonWriFio.setText(user.getCn());
 		labelPersonWriCompany.setText(user.getCompany());
 		labelPersonWriDepartment.setText(user.getDepartment());
+		if (0 != user.getManager().length()) {
+			labelPersonHead.setVisible(true);
+		} else {
+			labelPersonHead.setVisible(false);
+		}
 		labelPersonWriHead.setText(user.getManager());
 		labelPersonWriRoom.setText(user.getPhysicalDeliveryOfficeName());
 		labelPersonWriPhoneInside.setText(mail);
@@ -647,9 +713,14 @@ public class MainForm {
 		labelContactWriMobilePhone.setText(user.getMobile());
 		labelContactWriMail.setText(user.getMail());
 
+		labelRoomPic.setIcon(resizeIcon((null != user.getPhysicalDeliveryOfficeName())
+				? new ImageIcon(PLANS_IMAGE + user.getPhysicalDeliveryOfficeName() + ".jpg")
+				: new ImageIcon(EMPTY_IMAGE),labelRoomPic));
+		
 		labelPersonPic.setIcon(resizeIcon(
 				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : new ImageIcon(EMPTY_IMAGE),
 				labelPersonPic));
+
 		labelPersonQrCode.setIcon(
 				core.createQrCode(user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
 	}
@@ -740,8 +811,25 @@ public class MainForm {
 			}
 		});
 
+		comboBoxFilial.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				search();
+			}
+		});
+
 		comboBoxCompany.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
+				CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
+				if (!company.isAllSelected() & (company.getFilials().size() > 0)) {
+					comboBoxFilial.enable();
+					comboBoxFilial.removeAllItems();
+					comboBoxFilial.addItem(new CompanyDto());
+					setFilialSelector(company);
+				} else {
+					comboBoxFilial.disable();
+					comboBoxFilial.removeAllItems();
+					comboBoxFilial.addItem(new CompanyDto());
+				}
 				search();
 			}
 		});
@@ -766,9 +854,10 @@ public class MainForm {
 		String firstName = textFieldFirstName.getText();
 		String middleName = textFieldMiddleName.getText();
 		CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
+		CompanyDto filial = (CompanyDto) comboBoxFilial.getSelectedItem();
 		String phone = textFieldPhone.getText();
 		String description = textFieldDescription.getText();
-		core.localSearch(lastName, firstName, middleName, company, phone, description);
+		core.localSearch(lastName, firstName, middleName, company, filial, phone, description);
 	}
 
 }

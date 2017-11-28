@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
 import libs.Core;
@@ -44,6 +45,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 			if (status) {
 				form.setCompanySelector();
 				form.setTreeNode(core.getCompanys().all(),true);
+				form.removeTreePreload();
 				form.setStatusBar(core.getHintEmpty());
 			}
 			//System.out.println("Completed with status: " + status);

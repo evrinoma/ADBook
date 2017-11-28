@@ -230,20 +230,20 @@ public class Core {
 		}
 	}
 
-	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, String phone,
+	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial, String phone,
 			String description) {
 		if (localSearch == null || localSearch.isDone()) {
 			
 			localSearch = new LocalSearchThread(form);
 			
-			localSearch.setFilter(lastName, firstName, middleName, company, phone, description);
+			localSearch.setFilter(lastName, firstName, middleName, company,filial, phone, description);
 			localSearch.setCompanys(companys);
 
 			localSearch.setLock();
 			localSearch.execute();
 
 		} else {
-			localSearch.setFilter(lastName, firstName, middleName, company, phone, description);
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, phone, description);
 			localSearch.setCompanys(companys);
 			localSearch.restartSearch();
 		}		

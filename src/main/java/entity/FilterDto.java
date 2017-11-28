@@ -5,15 +5,17 @@ public class FilterDto {
 	private String filterFirstName = "";
 	private String filterMiddleName = "";
 	private CompanyDto filterCompany = null;
+	private CompanyDto filterFilial = null;
 	private String filterTelephoneNumber = "";
 	private String filterDescription = "";
 
-	public FilterDto(String lastName, String firstName, String middleName, CompanyDto company, String telephoneNumber,
+	public FilterDto(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial, String telephoneNumber,
 			String description) {
 		this.filterLastName = lastName;
 		this.filterFirstName = firstName;
 		this.filterMiddleName = middleName;
 		this.filterCompany = company;
+		this.filterFilial = filial;
 		this.filterTelephoneNumber = telephoneNumber;
 		this.filterDescription = description;
 	}
@@ -23,9 +25,10 @@ public class FilterDto {
 		this.filterFirstName = filter.getFilterFirstName();
 		this.filterMiddleName = filter.getFilterMiddleName();
 		this.filterCompany = filter.getFilterCompany();
+		this.filterFilial = filter.getFilterFilial();
 		this.filterTelephoneNumber = filter.getFilterTelephoneNumber();
 		this.filterDescription = filter.getFilterDescription();
-	}
+	}	
 	
 	public String getFilterLastName() {
 		return filterLastName.toLowerCase();
@@ -43,6 +46,11 @@ public class FilterDto {
 		return filterCompany;
 	}
 
+	public CompanyDto getFilterFilial() {
+		return filterFilial;
+	}
+
+	
 	public String getFilterTelephoneNumber() {
 		return filterTelephoneNumber.toLowerCase();
 	}
