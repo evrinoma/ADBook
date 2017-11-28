@@ -55,8 +55,15 @@ public class Core {
 				try {
 					sr = (SearchResult) users.next();
 					attrs = sr.getAttributes();
-					UserDto user = new UserDto(new String(""));
-					company.addNewUser(user.deployEntry(attrs, ldap.getDefaultSelectFields()));
+					UserDto user = new UserDto();
+					user.deployEntry(attrs, ldap.getDefaultSelectFields());					
+					company.addNewUser(user);
+					/*for (String manager : user.getManager()) {
+						addUserHead(user, ldap.getLdapUsers(manager));
+					}
+					for (String dependent : user.getDirectReports()) {
+						addUserDependent(user, ldap.getLdapUsers(dependent));
+					}*/
 				} catch (NamingException e) {
 					e.printStackTrace();
 				}
@@ -70,12 +77,13 @@ public class Core {
 				if (company.getFilials().size()>0){
 					for (CompanyDto filial : company.getFilials()) {
 						addUser(filial, ldap.getLdapUsers("ou="+filial.getOu()+","+company.getDn()));
+						companys.copyUser(filial.getUsers());
 					}
 				} else {
 					addUser(company, ldap.getLdapUsers(company.getDn()));
 				}
 			}
-		}
+		}		
 
 		return this;
 	}
@@ -248,5 +256,18 @@ public class Core {
 			localSearch.restartSearch();
 		}		
 
+	}
+	
+	public String getUserManagers(UserDto user)
+	{
+		String list = "";
+		for(String dn : user.getManager())
+		{
+			UserDto manager = companys.getUsers().get(dn);
+			if (null != manager) {
+				list += manager.getCn()+"\n";
+			}
+		}
+		return list;
 	}
 }

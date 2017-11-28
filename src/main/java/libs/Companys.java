@@ -1,12 +1,15 @@
 package libs;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import entity.CompanyDto;
+import entity.UserDto;
 
 public class Companys {
 	private List<CompanyDto> companys;
+	private HashMap<String,UserDto>  users;
 	
 	public void addNewCompany(String description, String ou, String dn) {
 		companys.add(new CompanyDto(description, ou, dn));
@@ -18,12 +21,21 @@ public class Companys {
 
 	public Companys() {		
 		companys = new ArrayList<CompanyDto>();
+		users = new HashMap<String,UserDto>();	
 	}
 	
 	public List<CompanyDto> all() {
 		return companys;
 	}
 
+	public HashMap<String,UserDto>  getUsers() {
+		return users;
+	}
+
+	public void copyUser(HashMap<String,UserDto> users) {		
+		this.users.putAll(users);
+	}
+	
 	public CompanyDto getLastInsertCompany()
 	{		
 		return (CompanyDto) companys.get(companys.size()-1); 

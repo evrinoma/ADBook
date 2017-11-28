@@ -182,7 +182,7 @@ public class MainForm {
 	}
 
 	private void addToCompanyUserTreeNode(DefaultMutableTreeNode top, CompanyDto company) {
-		for (UserDto user : company.getUsers()) {
+		for (UserDto user : company.getUsersSortedByCn().values()) {
 			top.add(new DefaultMutableTreeNode(user));
 		}
 	}
@@ -691,12 +691,15 @@ public class MainForm {
 		labelPersonWriFio.setText(user.getCn());
 		labelPersonWriCompany.setText(user.getCompany());
 		labelPersonWriDepartment.setText(user.getDepartment());
-		if (0 != user.getManager().length()) {
+		
+		if (!user.getManager().isEmpty()) {
 			labelPersonHead.setVisible(true);
+			labelPersonWriHead.setText(core.getUserManagers(user));
 		} else {
 			labelPersonHead.setVisible(false);
+			labelPersonWriHead.setText("");
 		}
-		labelPersonWriHead.setText(user.getManager());
+		
 		labelPersonWriRoom.setText(user.getPhysicalDeliveryOfficeName());
 		labelPersonWriPhoneInside.setText(mail);
 		labelPersonWriMail.setText(user.getMail());
@@ -859,5 +862,4 @@ public class MainForm {
 		String description = textFieldDescription.getText();
 		core.localSearch(lastName, firstName, middleName, company, filial, phone, description);
 	}
-
 }

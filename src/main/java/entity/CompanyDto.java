@@ -1,7 +1,14 @@
 package entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedList;
 
 public class CompanyDto {
 	
@@ -10,13 +17,13 @@ public class CompanyDto {
 	private String description;
 	private String dn;
 	private String ou;
-	private List<UserDto> users;
+	private HashMap<String,UserDto> users;
 	private List<CompanyDto> filials;
 
 	private void createCompanyDto(String description, String ou, String dn)
 	{
-		users = new ArrayList<UserDto>();
-		filials = new ArrayList<CompanyDto>();		
+		users = new HashMap<String,UserDto>();
+		filials = new ArrayList<CompanyDto>();	
 		this.description = description;
 		this.ou = ou;
 		this.dn = dn;
@@ -55,16 +62,42 @@ public class CompanyDto {
 		return description;
 	}
 
-	public List<UserDto> getUsers() {
+	public HashMap<String,UserDto> getUsers() {
 		return users;
 	}
 	
-	public void setUsers(List<UserDto> users) {
-		this.users = users;
+	private HashMap<String,UserDto> sortedByCn(HashMap<String,UserDto> users) {
+		List list = new LinkedList(users.entrySet());
+		 Collections.sort(list, new Comparator() {
+	            public int compare(Object o1, Object o2) {
+	            	UserDto user1 = (UserDto) ((Map.Entry) (o1)).getValue();
+	            	UserDto user2 = (UserDto) ((Map.Entry) (o2)).getValue();
+	               return (user1.getCn()).compareTo(user2.getCn());
+	            }
+	       });
+		
+		 HashMap sortedHashMap = new LinkedHashMap();
+	       for (Iterator it = list.iterator(); it.hasNext();) {
+	              Map.Entry entry = (Map.Entry) it.next();
+	              sortedHashMap.put(entry.getKey(), entry.getValue());
+	       } 
+	    return sortedHashMap;
+	}
+	
+	public HashMap<String,UserDto> getUsersSortedByCn() {		
+	    return sortedByCn(users);
+	}
+	
+	public HashMap<String,UserDto> getUsersSortedByCn(HashMap<String,UserDto> users) {		
+	    return sortedByCn(users);
+	}
+	
+	public void setUsers(HashMap<String,UserDto> users) {
+		this.users.putAll(users);
 	}
 
 	public void addNewUser(UserDto user) {
-		users.add(user);
+		users.put(user.getDistinguishedName(),user);
 	}
 	
 	public List<CompanyDto> getFilials() {

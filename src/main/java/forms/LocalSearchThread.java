@@ -1,7 +1,9 @@
 package forms;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 import javax.naming.NamingException;
@@ -73,7 +75,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		}
 	}
 
-	private boolean searchUser(List<UserDto> filteredUsers, List<UserDto> users, FilterDto filterDto) {
+	private boolean searchUser(HashMap<String,UserDto> filteredUsers, HashMap<String,UserDto> users, FilterDto filterDto) {
 		boolean searchByLastName = filterDto.isFilterLastNameSet();
 		boolean searchByFirstName = filterDto.isFilterFirstNameSet();
 		boolean searchByMiddleName = filterDto.isFilterMiddleNameSet();
@@ -83,11 +85,11 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 
 		if ((!searchByLastName) & (!searchByFirstName) & (!searchByMiddleName) & (!searchByPhone)
 				& (!searchByDescription)) {
-			filteredUsers.addAll(users);
+			filteredUsers.putAll(users);
 			return true;
 		}
 
-		for (UserDto user : users) {
+		for (UserDto user : users.values()) {
 
 			if (searchByFirstName & isNotFound) {
 				if (!user.isFirstName(filterDto.getFilterFirstName())) {
@@ -119,7 +121,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 			}
 
 			if (isNotFound) {
-				filteredUsers.add(user);
+				filteredUsers.put(user.getDistinguishedName(),user);
 			}
 
 			if (isRestartSearch()) {
@@ -140,7 +142,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 					if (filial.getDn() != filterDto.getFilterFilial().getDn())
 						continue;
 				}
-				List<UserDto> filteredUsers = new ArrayList<UserDto>();
+				HashMap<String,UserDto> filteredUsers = new HashMap<String,UserDto>();
 				if (!searchUser(filteredUsers, filial.getUsers(), filterDto)) {
 					return false;
 				}
@@ -156,7 +158,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 				}
 			}
 		} else {
-			List<UserDto> filteredUsers = new ArrayList<UserDto>();
+			HashMap<String,UserDto> filteredUsers = new HashMap<String,UserDto>();
 			if (!searchUser(filteredUsers, company.getUsers(), filterDto)) {
 				return false;
 			}

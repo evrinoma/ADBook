@@ -46,7 +46,7 @@ public class UserDto {
 	private String mail;
 	private String userPrincipalName;
 	private String sAMAccountName;
-	private String manager;
+	private ArrayList<String> manager;
 	private ArrayList<String> directReports;
 	private String itnumber;
 	private String info;
@@ -56,10 +56,20 @@ public class UserDto {
 	private String lastName = "";
 	private String middleName = "";
 	private String firstName = "";
-	
-	public UserDto(String displayName) {
+
+
+	private void createUser(String displayName) {
 		this.displayName = displayName;
 		this.directReports = new ArrayList<String>();
+		this.manager = new ArrayList<String>();
+	}
+
+	public UserDto(String displayName) {
+		createUser(displayName);
+	}
+
+	public UserDto() {
+		createUser(new String(""));
 	}
 
 	@Override
@@ -67,26 +77,23 @@ public class UserDto {
 		return displayName;
 	}
 
-	private void setLastName(String lastName)
-	{
+	private void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-	
-	private void setFirstName(String firstName)
-	{
+
+	private void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
-	
-	private void setMiddleName(String middleName)
-	{
+
+	private void setMiddleName(String middleName) {
 		this.middleName = middleName;
 	}
-	
+
 	private String paramToString(String param) {
 		return (null == param) ? "" : param;
 	}
-	
-	protected void setMobile(String mobile) {		
+
+	protected void setMobile(String mobile) {
 		this.mobile = mobile;
 	}
 
@@ -101,19 +108,22 @@ public class UserDto {
 	protected void setPostOfficeBox(String postOfficeBox) {
 		this.postOfficeBox = postOfficeBox;
 	}
-	
-	protected void setCn(String cn) {		
+
+	protected void setCn(String cn) {
 		if (null != cn) {
 			String[] s = cn.split(" ");
-			for (int i=0; i<s.length; i++) {
-				 switch (i) {
-		            case 0:  setLastName(s[i]);
-		                     break;
-		            case 1:  setFirstName(s[i]);
-		                     break;		                     
-		            case 2:  setMiddleName(s[i]);
-		                     break;
-		        }
+			for (int i = 0; i < s.length; i++) {
+				switch (i) {
+				case 0:
+					setLastName(s[i]);
+					break;
+				case 1:
+					setFirstName(s[i]);
+					break;
+				case 2:
+					setMiddleName(s[i]);
+					break;
+				}
 			}
 		}
 		this.cn = cn;
@@ -207,8 +217,8 @@ public class UserDto {
 		this.sAMAccountName = sAMAccountName;
 	}
 
-	protected void setManager(String manager) {
-		this.manager = manager;
+	protected void addManager(String manager) {
+		this.manager.add(manager);
 	}
 
 	protected void addDirectReports(String directReports) {
@@ -234,7 +244,7 @@ public class UserDto {
 	protected void setFname(String fname) {
 		this.fname = fname;
 	}
-	
+
 	public String getMobile() {
 		return paramToString(mobile);
 	}
@@ -343,8 +353,8 @@ public class UserDto {
 		return paramToString(sAMAccountName);
 	}
 
-	public String getManager() {
-		return paramToString(manager);
+	public ArrayList<String> getManager() {
+		return manager;
 	}
 
 	public ArrayList<String> getDirectReports() {
@@ -412,7 +422,7 @@ public class UserDto {
 	public String getFirstName() {
 		return paramToString(firstName);
 	}
-	
+
 	public boolean isLastName(String lastName) {
 		return getLastName().toLowerCase().contains(lastName);
 	}
@@ -424,7 +434,7 @@ public class UserDto {
 	public boolean isFirstName(String firstName) {
 		return getFirstName().toLowerCase().contains(firstName);
 	}
-	
+
 	public boolean isTelephoneNumber(String telephoneNumber) {
 		return getTelephoneNumber().toLowerCase().contains(telephoneNumber);
 	}
@@ -432,7 +442,7 @@ public class UserDto {
 	public boolean isDescription(String description) {
 		return getDescription().toLowerCase().contains(description);
 	}
-	
+
 	public String getVCard() {
 		String VCard = new String();
 		VCard += "BEGIN:VCARD\n";
@@ -441,7 +451,8 @@ public class UserDto {
 		VCard += "FN:" + getCn() + "\n";
 		VCard += "ORG:" + getCompany() + "\n";
 		VCard += "TITLE:" + getDescription() + "\n";
-		VCard += "TEL;WORK,VOICE:" + getOtherTelephone() + ((0 == getTelephoneNumber().length()) ? "p*" : "")+ getTelephoneNumber() + "\n";
+		VCard += "TEL;WORK,VOICE:" + getOtherTelephone() + ((0 == getTelephoneNumber().length()) ? "p*" : "")
+				+ getTelephoneNumber() + "\n";
 		VCard += "TEL;HOME,VOICE:" + getHomePhone() + "\n";
 		VCard += "EMAIL:" + getMail() + "\n";
 		VCard += "URL:http://www.ite-ng.ru\n";
