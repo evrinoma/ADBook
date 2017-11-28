@@ -47,24 +47,32 @@ public class Core {
 		this.form = form;
 	}
 
+	private void addUser(CompanyDto company,NamingEnumeration<?> users) {
+		Attributes attrs;
+		if (null != users) {
+			while (users.hasMoreElements()) {
+				SearchResult sr;
+				try {
+					sr = (SearchResult) users.next();
+					attrs = sr.getAttributes();
+					UserDto user = new UserDto(new String(""));
+					company.addNewUser(user.deployEntry(attrs, ldap.getDefaultSelectFields()));
+				} catch (NamingException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	private Core getLdapUsers(String $sort) {
 		if (ldap.isConnect()) {
-			NamingEnumeration<?> users = null;
 			for (CompanyDto company : companys.all()) {
-				users = ldap.getLdapUsers(company.getDn());
-				Attributes attrs;
-				if (null != users) {
-					while (users.hasMoreElements()) {
-						SearchResult sr;
-						try {
-							sr = (SearchResult) users.next();
-							attrs = sr.getAttributes();
-							UserDto user = new UserDto(new String(""));
-							company.addNewUser(user.deployEntry(attrs, ldap.getDefaultSelectFields()));
-						} catch (NamingException e) {
-							e.printStackTrace();
-						}
+				if (company.getFilials().size()>0){
+					for (CompanyDto filial : company.getFilials()) {
+						addUser(filial, ldap.getLdapUsers("ou="+filial.getOu()+","+company.getDn()));
 					}
+				} else {
+					addUser(company, ldap.getLdapUsers(company.getDn()));
 				}
 			}
 		}
@@ -75,35 +83,48 @@ public class Core {
 	private Core getLdapUsers() {
 		return getLdapUsers(new String("cn"));
 	}
-
-	private Core getLdapCompanys() {
-		if (ldap.isConnect()) {
-			NamingEnumeration<?> companys = ldap.getLdapCompanys();
-			Attributes attrs;
-			if (null != companys) {
-				while (companys.hasMoreElements()) {
-					SearchResult sr;
-					try {
-						sr = (SearchResult) companys.next();
-						attrs = sr.getAttributes();
-						if (null != attrs) {
-							Attribute description = attrs.get("description");
-							if (null != description) {
-								Attribute ou = attrs.get("ou");
-								this.companys.addNewCompany((String) description.get(), (String) ou.get(),
-										(String) sr.getName() + "," + Ldap.LDAP_BASE_DN);
+	
+	private void addCompany(NamingEnumeration<?> companys, boolean isFilial) {
+		Attributes attrs;
+		if (null != companys) {
+			while (companys.hasMoreElements()) {
+				SearchResult sr;
+				try {
+					sr = (SearchResult) companys.next();
+					attrs = sr.getAttributes();
+					if (null != attrs) {
+						Attribute description = attrs.get("description");
+						if (null != description) {
+							Attribute ou = attrs.get("ou");
+							CompanyDto companyDto = new CompanyDto((String) description.get(),(String) ou.get(),
+									(String) sr.getName() + "," + Ldap.LDAP_BASE_DN);
+							if (!isFilial) {								
+								this.companys.addNewCompany(companyDto);
+								addCompany(ldap.getLdapFilials(companyDto.getDn()), true);
+							} else {
+								CompanyDto lastCompanyDto = this.companys.getLastInsertCompany();
+								lastCompanyDto.addNewFilial(companyDto);
 							}
 						}
-					} catch (NamingException e) {
-						e.printStackTrace();
 					}
+				} catch (NamingException e) {
+					e.printStackTrace();
 				}
 			}
+		}
+	}
+	private void addCompany(NamingEnumeration<?> companys) {
+		addCompany(companys, false);
+	}
+	
+	private Core getLdapCompanys() {
+		if (ldap.isConnect()) {
+			addCompany(ldap.getLdapCompanys());
 		}
 
 		return this;
 	}
-
+	
 	private Core openLdapConnection() {
 		ldap = new Ldap();
 

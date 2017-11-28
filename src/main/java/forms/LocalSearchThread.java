@@ -11,6 +11,7 @@ import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import entity.CompanyDto;
+import entity.FilterDto;
 import entity.UserDto;
 import libs.Companys;
 
@@ -21,13 +22,9 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 	private MainForm form;
 	private boolean lock = false;
 	private boolean searching = false;
-
-	private String filterLastName = "";
-	private String filterFirstName = "";
-	private String filterMiddleName = "";
-	private CompanyDto filterCompany = null;
-	private String filterPhone = "";
-	private String filterDescription = "";
+	
+	private FilterDto filterDto = null;
+	
 
 	public LocalSearchThread(MainForm form) {
 		this.form = form;
@@ -56,7 +53,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 				form.setStatusBar("successful complite");
 				
 				form.top.removeAllChildren();
-				form.setTreeNode(filteredCompanys.all());
+				form.setTreeNode(filteredCompanys.all(),false);
 			}
 			// System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {
@@ -77,13 +74,12 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		}
 	}
 
-	private boolean searchUser(List<UserDto> filteredUsers, List<UserDto> users, String lastName, String firstName,
-			String middleName, String phone, String description) {
-		boolean searchByLastName = (0 != lastName.length());
-		boolean searchByFirstName = (0 != firstName.length());
-		boolean searchByMiddleName = (0 != middleName.length());
-		boolean searchByPhone = (0 != phone.length());
-		boolean searchByDescription = (0 != description.length());
+	private boolean searchUser(List<UserDto> filteredUsers, List<UserDto> users, FilterDto filterDto) {
+		boolean searchByLastName = filterDto.isFilterLastNameSet();
+		boolean searchByFirstName = filterDto.isFilterFirstNameSet();
+		boolean searchByMiddleName =  filterDto.isFilterMiddleNameSet();
+		boolean searchByPhone =  filterDto.isFilterPhoneSet();
+		boolean searchByDescription =  filterDto.isFilterDescriptionSet();
 		boolean isNotFound = true;
 		
 		if ((!searchByLastName) & (!searchByFirstName) & (!searchByMiddleName) & (!searchByPhone)
@@ -95,30 +91,30 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		for (UserDto user : users) {
 			
 			if (searchByFirstName & isNotFound) {
-				if (!user.getFirstName().toLowerCase().contains(firstName)) {
+				if (!user.isFirstName(filterDto.getFilterFirstName())) {
 					isNotFound = false;
 				}
 			}
 			if (searchByLastName & isNotFound) {
-				if (!user.getLastName().toLowerCase().contains(lastName)) {
+				if (!user.isLastName(filterDto.getFilterLastName())) {
 					isNotFound = false;
 				}
 			}
 
 			if (searchByMiddleName & isNotFound) {
-				if (!user.getMiddleName().toLowerCase().contains(middleName)) {
+				if (!user.isMiddleName(filterDto.getFilterMiddleName())) {
 					isNotFound = false;
 				}
 			}
 
 			if (searchByPhone & isNotFound) {
-				if (!user.getTelephoneNumber().toLowerCase().contains(phone)) {
+				if (!user.isTelephoneNumber(filterDto.getFilterTelephoneNumber())) {
 					isNotFound = false;
 				}
 			}
 
 			if (searchByDescription & isNotFound) {
-				if (!user.getDescription().toLowerCase().contains(description)) {
+				if (!user.isDescription(filterDto.getFilterDescription())) {
 					isNotFound = false;
 				}
 			}
@@ -137,35 +133,55 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 
 		return true;
 	}
-
-	private boolean doSearching() {
-		String filterLastName = this.filterLastName.toLowerCase();
-		String filterFirstName = this.filterFirstName.toLowerCase();
-		String filterMiddleName = this.filterMiddleName.toLowerCase();
-		CompanyDto filterCompany = this.filterCompany;
-		String filterPhone = this.filterPhone.toLowerCase();
-		String filterDescription = this.filterDescription.toLowerCase();
-		filteredCompanys = new Companys();
-		if (filterCompany.isAllSelected()) {
-			for (CompanyDto company : companys.all()) {
-				List<UserDto> filteredUsers = new ArrayList<UserDto>();
-				if (!searchUser(filteredUsers, company.getUsers(), filterLastName, filterFirstName, filterMiddleName,
-						filterPhone, filterDescription)) {
+	
+	private boolean searchCompany(CompanyDto filtered, CompanyDto company, FilterDto filterDto)
+	{
+		if (!company.getFilials().isEmpty()) {			
+			for (CompanyDto filial : company.getFilials()) {
+				List<UserDto> filteredUsers = new ArrayList<UserDto>();				
+				if (!searchUser(filteredUsers, filial.getUsers(), filterDto)){
 					return false;
 				}
-				CompanyDto filtered = new CompanyDto(company.getName(), company.getDescription(), company.getDn());
-				filtered.setUsers(filteredUsers);
-				filteredCompanys.addNewCompany(filtered);
+				if (!filteredUsers.isEmpty()) {
+					CompanyDto filteredFilial = new CompanyDto(filial);
+					filteredFilial.setUsers(filteredUsers);
+					filtered.addNewFilial(filteredFilial);
+				}
+				if (isRestartSearch()) {
+					form.setStatusBar("restart searching...");
+					return false;
+				}
 			}
 		} else {
 			List<UserDto> filteredUsers = new ArrayList<UserDto>();
-			if (!searchUser(filteredUsers, filterCompany.getUsers(), filterLastName, filterFirstName, filterMiddleName,
-					filterPhone, filterDescription)) {
+			if (!searchUser(filteredUsers, company.getUsers(), filterDto)){
 				return false;
 			}
-			CompanyDto filtered = new CompanyDto(filterCompany.getName(), filterCompany.getDescription(),
-					filterCompany.getDn());
 			filtered.setUsers(filteredUsers);
+		}	
+		
+		return true;
+	}
+	
+
+	private boolean doSearching() {
+		FilterDto savefilterDto = new FilterDto(filterDto);
+				
+		filteredCompanys = new Companys();
+		if (savefilterDto.getFilterCompany().isAllSelected()) {
+			for (CompanyDto company : companys.all()) {	
+				CompanyDto filtered = new CompanyDto(company);
+				if (!searchCompany(filtered, company, savefilterDto)) {
+					return false;
+				}					
+				filteredCompanys.addNewCompany(filtered);
+			}
+		} else {
+			CompanyDto company = savefilterDto.getFilterCompany();
+			CompanyDto filtered = new CompanyDto(company);
+			if (!searchCompany(filtered, company, savefilterDto)) {
+				return false;
+			}
 			filteredCompanys.addNewCompany(filtered);
 		}
 		return true;
@@ -195,14 +211,9 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		this.searching = true;
 	}
 
-	public void setFilter(String lastName, String firstName, String middleName, CompanyDto company, String phone,
+	public void setFilter(String lastName, String firstName, String middleName, CompanyDto company, String telephoneNumber,
 			String description) {
-		this.filterLastName = lastName;
-		this.filterFirstName = firstName;
-		this.filterMiddleName = middleName;
-		this.filterCompany = company;
-		this.filterPhone = phone;
-		this.filterDescription = description;
+		filterDto = new FilterDto(lastName,firstName, middleName, company, telephoneNumber, description);
 	}
 
 	public Companys getCompanys() {

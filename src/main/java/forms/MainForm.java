@@ -22,6 +22,9 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import entity.CompanyDto;
 import entity.UserDto;
@@ -36,6 +39,7 @@ import java.awt.Color;
 import javax.swing.JTabbedPane;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.event.CaretListener;
@@ -128,7 +132,7 @@ public class MainForm {
 		}
 	}
 
-	public void setTreeNode(List<CompanyDto> companys) {
+	public void setTreeNode(List<CompanyDto> companys,boolean isInit) {
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 		root.removeAllChildren();
@@ -141,16 +145,25 @@ public class MainForm {
 			}
 		}
 
-		expandTree().repaint();
+		expandTree(isInit);
 	}
 
-	private JTree expandTree() {
-		for (int i = 0; i < tree.getRowCount(); i++) {
-			tree.getModel();
-			tree.expandRow(i);
+	private void expandTree(boolean fullExpand) {
+		if (fullExpand) {
+			Enumeration<?> topLevelNodes = ((TreeNode) tree.getModel().getRoot()).children();
+			while (topLevelNodes.hasMoreElements()) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) topLevelNodes.nextElement();
+				CompanyDto company = (CompanyDto) node.getUserObject();
+				if (company.getUsers().isEmpty()) {
+					tree.expandPath(new TreePath(node.getPath()));
+				}
+			}
+		} else {
+			for (int i = 0; i < tree.getRowCount(); i++) {
+				tree.expandRow(i);
+			}
 		}
-
-		return tree;
+		tree.repaint();
 	}
 
 	private void addToCompanyUserTreeNode(DefaultMutableTreeNode top, CompanyDto company) {
@@ -164,7 +177,16 @@ public class MainForm {
 		if (!company.getUsers().isEmpty()) {
 			companyTreeNode = new DefaultMutableTreeNode(company);
 			addToCompanyUserTreeNode(companyTreeNode, company);
+		} else if (!company.getFilials().isEmpty()) {
+			companyTreeNode = new DefaultMutableTreeNode(company);
+			for (CompanyDto filial : company.getFilials()) {
+				DefaultMutableTreeNode filialTreeNode = createCompanyTreeNode(filial);
+				if (null != filialTreeNode) {
+					companyTreeNode.add(filialTreeNode);
+				}
+			}
 		}
+
 		return companyTreeNode;
 	}
 
@@ -402,7 +424,6 @@ public class MainForm {
 		panelQrCode = new JPanel();
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, panelQrCode, 5, SpringLayout.NORTH, panel);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, panelQrCode, 10, SpringLayout.WEST, panel);
-		panelQrCode.setBorder(new LineBorder(new Color(0, 0, 0)));
 		panelQrCode.setPreferredSize(DEMENSION_IMAGE);
 		panelQrCode.setMinimumSize(DEMENSION_IMAGE);
 		panelQrCode.setMaximumSize(DEMENSION_IMAGE);
@@ -421,11 +442,11 @@ public class MainForm {
 		labelPersonPic = new JLabel();
 		labelPersonPic.setSize(DEMENSION_IMAGE);
 		labelPersonPic.setIcon(resizeIcon(new ImageIcon(EMPTY_IMAGE), labelPersonPic));
-		panelPhoto.add(labelPersonPic);
+		panelQrCode.add(labelPersonPic);
 
 		labelPersonQrCode = new JLabel();
 		labelPersonQrCode.setSize(DEMENSION_IMAGE);
-		panelQrCode.add(labelPersonQrCode);
+		panelPhoto.add(labelPersonQrCode);
 
 		JLabel labelPersonFio = new JLabel("ФИО:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonFio, 13, SpringLayout.SOUTH, panelQrCode);

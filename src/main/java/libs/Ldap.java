@@ -142,6 +142,13 @@ public class Ldap {
 		return getLdapList(companyFilter, companySelector);
 	}
 	
+	public NamingEnumeration<?> getLdapFilials(String dn) {
+		String filialFilter = "(&(objectclass=organizationalUnit))";
+		String[] filialSelector = { "ou", "description", "dn" };
+
+		return getLdapList(dn, filialFilter, filialSelector);
+	}
+	
 	public NamingEnumeration<?> getLdapUsers(String companyDn) {
 		String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null)))";		
 

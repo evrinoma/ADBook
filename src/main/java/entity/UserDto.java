@@ -413,6 +413,26 @@ public class UserDto {
 		return paramToString(firstName);
 	}
 	
+	public boolean isLastName(String lastName) {
+		return getLastName().toLowerCase().contains(lastName);
+	}
+
+	public boolean isMiddleName(String middleName) {
+		return getMiddleName().toLowerCase().contains(middleName);
+	}
+
+	public boolean isFirstName(String firstName) {
+		return getFirstName().toLowerCase().contains(firstName);
+	}
+	
+	public boolean isTelephoneNumber(String telephoneNumber) {
+		return getTelephoneNumber().toLowerCase().contains(telephoneNumber);
+	}
+
+	public boolean isDescription(String description) {
+		return getDescription().toLowerCase().contains(description);
+	}
+	
 	public String getVCard() {
 		String VCard = new String();
 		VCard += "BEGIN:VCARD\n";

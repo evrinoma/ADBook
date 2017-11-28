@@ -43,7 +43,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 			status = (boolean) get();
 			if (status) {
 				form.setCompanySelector();
-				form.setTreeNode(core.getCompanys().all());
+				form.setTreeNode(core.getCompanys().all(),true);
 				form.setStatusBar(core.getHintEmpty());
 			}
 			//System.out.println("Completed with status: " + status);
