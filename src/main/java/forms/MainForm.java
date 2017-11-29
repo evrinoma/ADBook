@@ -25,8 +25,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.view.mxGraph;
+
 import entity.CompanyDto;
+import entity.LevelNodes;
 import entity.UserDto;
+import entity.VertexNode;
 import libs.Core;
 
 import java.awt.CardLayout;
@@ -38,8 +43,12 @@ import java.awt.Component;
 import javax.swing.JTabbedPane;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
@@ -104,6 +113,8 @@ public class MainForm {
 	private JPanel panelQrCode;
 	private JPanel panelPerson;
 	private JLabel labelPreload;
+	private JPanel panelDepend;
+	private mxGraphComponent graphComponent;
 
 	/**
 	 * Launch the application.
@@ -209,6 +220,54 @@ public class MainForm {
 		top.add(companyTreeNode);
 	}
 
+	private void showGraph(ArrayList<LevelNodes> nodes, ArrayList<Object> root) {
+		mxGraph graph = new mxGraph();
+		Object parent = graph.getDefaultParent();
+		graph.getModel().beginUpdate();		
+	
+		int x = 50;
+		int y = 50;
+		int j = y;
+		int deltaX = 10;
+		int deltaY = 100;
+		try {			
+			for(LevelNodes levelNodes : nodes)
+			{
+				ArrayList<VertexNode> vertexNodes = levelNodes.getVertexNodes();
+				
+				int i = x;				
+				
+				for(VertexNode node :vertexNodes)
+				{					
+					node.setX(i);					
+					node.setY(j);					
+					levelNodes.addLink(node.getVertex(graph, parent));					
+					i = node.getX()+deltaX+node.getWidth();
+				}		
+				ArrayList<Object> child = levelNodes.getVertexLinks();
+				if (null != root){
+					for(Object nodeRoot :root)
+					{
+						for(Object nodeChild :child)
+						{
+							graph.insertEdge(parent, null, "", nodeRoot, nodeChild);
+						}
+					}
+				} 
+				root = levelNodes.getVertexLinks();
+				
+				j += deltaY+levelNodes.calcMaxHeight();
+			}
+		} finally {
+			graph.getModel().endUpdate();
+		}
+		
+		graphComponent.setGraph(graph);
+		graphComponent.updateUI();
+		
+		
+	}
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -246,8 +305,19 @@ public class MainForm {
 		panelView.setLayout(new BorderLayout(0, 0));
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		panelView.add(tabbedPane);		
+		panelView.add(tabbedPane);
 
+		panelDepend = new JPanel();
+		panelDepend.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelDepend.setMinimumSize(new Dimension(10, 250));
+		tabbedPane.addTab("Подчинённые", panelDepend);
+		panelDepend.setLayout(new CardLayout(0, 0));
+		graphComponent = new mxGraphComponent(new mxGraph());
+		graphComponent.setToolTips(true);
+		panelDepend.add(graphComponent, "panelDepend");
+		
+		
+		
 		panelPerson = new JPanel();
 		panelPerson.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelPerson.setMinimumSize(new Dimension(10, 250));
@@ -264,7 +334,7 @@ public class MainForm {
 		panelRoom.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		tabbedPane.addTab("Схема", panelRoom);
 		createTabRoom(panelRoom);
-		
+
 		top = new DefaultMutableTreeNode("Сотрудники");
 		tree = new JTree(top);
 		JScrollPane treeView = new JScrollPane(tree);
@@ -300,14 +370,10 @@ public class MainForm {
 	private void createTabRoom(JPanel panel) {
 		labelRoomPic = new JLabel();
 		GroupLayout gl_panelRoom = new GroupLayout(panel);
-		gl_panelRoom.setHorizontalGroup(
-			gl_panelRoom.createParallelGroup(Alignment.LEADING)
-				.addComponent(labelRoomPic, GroupLayout.PREFERRED_SIZE, 546, GroupLayout.PREFERRED_SIZE)
-		);
-		gl_panelRoom.setVerticalGroup(
-			gl_panelRoom.createParallelGroup(Alignment.LEADING)
-				.addComponent(labelRoomPic, GroupLayout.PREFERRED_SIZE, 631, GroupLayout.PREFERRED_SIZE)
-		);
+		gl_panelRoom.setHorizontalGroup(gl_panelRoom.createParallelGroup(Alignment.LEADING).addComponent(labelRoomPic,
+				GroupLayout.PREFERRED_SIZE, 546, GroupLayout.PREFERRED_SIZE));
+		gl_panelRoom.setVerticalGroup(gl_panelRoom.createParallelGroup(Alignment.LEADING).addComponent(labelRoomPic,
+				GroupLayout.PREFERRED_SIZE, 631, GroupLayout.PREFERRED_SIZE));
 		panel.setLayout(gl_panelRoom);
 	}
 
@@ -691,15 +757,18 @@ public class MainForm {
 		labelPersonWriFio.setText(user.getCn());
 		labelPersonWriCompany.setText(user.getCompany());
 		labelPersonWriDepartment.setText(user.getDepartment());
-		
+
 		if (!user.getManager().isEmpty()) {
 			labelPersonHead.setVisible(true);
-			labelPersonWriHead.setText(core.getUserManagers(user));
+			labelPersonWriHead.setText(core.getUserManger(user));			
 		} else {
 			labelPersonHead.setVisible(false);
 			labelPersonWriHead.setText("");
+			
 		}
 		
+		showGraph(core.getUserDependency(user), null);
+
 		labelPersonWriRoom.setText(user.getPhysicalDeliveryOfficeName());
 		labelPersonWriPhoneInside.setText(mail);
 		labelPersonWriMail.setText(user.getMail());
@@ -718,8 +787,8 @@ public class MainForm {
 
 		labelRoomPic.setIcon(resizeIcon((null != user.getPhysicalDeliveryOfficeName())
 				? new ImageIcon(PLANS_IMAGE + user.getPhysicalDeliveryOfficeName() + ".jpg")
-				: new ImageIcon(EMPTY_IMAGE),labelRoomPic));
-		
+				: new ImageIcon(EMPTY_IMAGE), labelRoomPic));
+
 		labelPersonPic.setIcon(resizeIcon(
 				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : new ImageIcon(EMPTY_IMAGE),
 				labelPersonPic));

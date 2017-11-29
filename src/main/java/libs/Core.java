@@ -3,6 +3,10 @@ package libs;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -20,7 +24,9 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import entity.CompanyDto;
+import entity.VertexNode;
 import entity.UserDto;
+import entity.LevelNodes;
 import forms.LdapSearchThread;
 import forms.LocalSearchThread;
 import forms.MainForm;
@@ -258,16 +264,56 @@ public class Core {
 
 	}
 	
-	public String getUserManagers(UserDto user)
+	public String getUserManger(UserDto user)
 	{
-		String list = "";
+		String managerToString = "";
 		for(String dn : user.getManager())
 		{
 			UserDto manager = companys.getUsers().get(dn);
 			if (null != manager) {
-				list += manager.getCn()+"\n";
+				managerToString += manager.getCn()+"\n";
 			}
 		}
-		return list;
+		
+		return managerToString;
+	}
+	
+	public ArrayList<LevelNodes> getUserDependency(UserDto user)
+	{
+		ArrayList<LevelNodes>  users  = new ArrayList<LevelNodes>();
+		
+		LevelNodes managerPoints = new LevelNodes();
+		LevelNodes userPoints = new LevelNodes();
+		LevelNodes directReportPoints = new LevelNodes();
+		
+		int level = 0;
+		
+		for(String dn : user.getManager())
+		{
+			UserDto manager = companys.getUsers().get(dn);
+			if (null != manager) {
+				managerPoints.addListPoints(level,manager);
+			}
+		}
+		if(!managerPoints.isEmpty()) {						
+			users.add(managerPoints);
+			level++;
+		}		
+		userPoints.addListPoints(new VertexNode(user,level));
+		users.add(level,userPoints);
+		level++;
+		
+		for(String dn : user.getDirectReports())
+		{
+			UserDto manager = companys.getUsers().get(dn);
+			if (null != manager) {
+				directReportPoints.addListPoints(new VertexNode(manager,level));
+			}
+		}
+		if(!directReportPoints.isEmpty()) {
+			users.add(level,directReportPoints);
+		}
+		
+		return users;
 	}
 }
