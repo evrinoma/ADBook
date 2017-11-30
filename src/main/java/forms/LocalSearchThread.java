@@ -79,12 +79,17 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		boolean searchByLastName = filterDto.isFilterLastNameSet();
 		boolean searchByFirstName = filterDto.isFilterFirstNameSet();
 		boolean searchByMiddleName = filterDto.isFilterMiddleNameSet();
+		boolean searchByDepartment = filterDto.isFilterDepartmentSet();
 		boolean searchByPhone = filterDto.isFilterPhoneSet();
-		boolean searchByDescription = filterDto.isFilterDescriptionSet();
+		boolean searchByPesonPosition = filterDto.isFilterPesonPositionSet();
 		boolean isNotFound = true;
 
-		if ((!searchByLastName) & (!searchByFirstName) & (!searchByMiddleName) & (!searchByPhone)
-				& (!searchByDescription)) {
+		if ((!searchByLastName) 
+				& (!searchByFirstName) 
+				& (!searchByMiddleName) 
+				& (!searchByPhone)
+				& (!searchByPesonPosition)
+				& (!searchByDepartment)) {
 			filteredUsers.putAll(users);
 			return true;
 		}
@@ -114,8 +119,14 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 				}
 			}
 
-			if (searchByDescription & isNotFound) {
-				if (!user.isDescription(filterDto.getFilterDescription())) {
+			if (searchByPesonPosition & isNotFound) {
+				if (!user.isDescription(filterDto.getFilterPesonPosition())) {
+					isNotFound = false;
+				}
+			}
+			
+			if (searchByDepartment & isNotFound) {
+				if (!user.isDepartment(filterDto.getFilterDepartment())) {
 					isNotFound = false;
 				}
 			}
@@ -216,8 +227,8 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 	}
 
 	public void setFilter(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
-			String telephoneNumber, String description) {
-		filterDto = new FilterDto(lastName, firstName, middleName, company, filial, telephoneNumber, description);
+			String department, String telephoneNumber, String pesonPosition) {
+		filterDto = new FilterDto(lastName, firstName, middleName, company, filial, department, telephoneNumber, pesonPosition);
 	}
 
 	public Companys getCompanys() {

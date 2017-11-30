@@ -2,9 +2,13 @@ package entity;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,46 +21,46 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.swing.ImageIcon;
 
-public class UserDto {
-	private String mobile;
-	private String homePhone;
-	private String userPassword;
-	private String postOfficeBox;
-	private String cn;
-	private String sn;
-	private String c;
-	private String l;
-	private String st;
-	private String title;
-	private String description;
-	private String postalCode;
-	private String physicalDeliveryOfficeName;
-	private String telephoneNumber;
-	private String givenName;
-	private String distinguishedName;
-	private String displayName;
-	private String otherTelephone;
-	private String co;
-	private String department;
-	private String company;
-	private String streetAddress;
-	private String wwwhomepage;
-	private String userAccountControl;
-	private String mail;
-	private String userPrincipalName;
-	private String sAMAccountName;
+public class UserDto implements Serializable {
+	private String mobile = "";
+	private String homePhone = "";
+	private String userPassword = "";
+	private String postOfficeBox = "";
+	private String cn = "";
+	private String sn = "";
+	private String c = "";
+	private String l = "";
+	private String st = "";
+	private String title = "";
+	private String description = "";
+	private String postalCode = "";
+	private String physicalDeliveryOfficeName = "";
+	private String telephoneNumber = "";
+	private String givenName = "";
+	private String distinguishedName = "";
+	private String displayName = "";
+	private String otherTelephone = "";
+	private String co = "";
+	private String department = "";
+	private String company = "";
+	private String streetAddress = "";
+	private String wwwhomepage = "";
+	private String userAccountControl = "";
+	private String mail = "";
+	private String userPrincipalName = "";
+	private String sAMAccountName = "";
 	private ArrayList<String> manager;
 	private ArrayList<String> directReports;
-	private String itnumber;
-	private String info;
+	private String itnumber = "";
+	private String info = "";
 	private BufferedImage jpegPhoto;
-	private String fname;
+	private String fname = "";
 
 	private String lastName = "";
 	private String middleName = "";
 	private String firstName = "";
-
 
 	private void createUser(String displayName) {
 		this.displayName = displayName;
@@ -78,15 +82,15 @@ public class UserDto {
 	}
 
 	private void setLastName(String lastName) {
-		this.lastName = lastName;
+		this.lastName = paramToString(lastName);
 	}
 
 	private void setFirstName(String firstName) {
-		this.firstName = firstName;
+		this.firstName = paramToString(firstName);
 	}
 
 	private void setMiddleName(String middleName) {
-		this.middleName = middleName;
+		this.middleName = paramToString(middleName);
 	}
 
 	private String paramToString(String param) {
@@ -94,19 +98,19 @@ public class UserDto {
 	}
 
 	protected void setMobile(String mobile) {
-		this.mobile = mobile;
+		this.mobile = paramToString(mobile);
 	}
 
 	protected void setHomePhone(String homePhone) {
-		this.homePhone = homePhone;
+		this.homePhone = paramToString(homePhone);
 	}
 
 	protected void setUserPassword(String userPassword) {
-		this.userPassword = userPassword;
+		this.userPassword = paramToString(userPassword);
 	}
 
 	protected void setPostOfficeBox(String postOfficeBox) {
-		this.postOfficeBox = postOfficeBox;
+		this.postOfficeBox = paramToString(postOfficeBox);
 	}
 
 	protected void setCn(String cn) {
@@ -130,91 +134,91 @@ public class UserDto {
 	}
 
 	protected void setSn(String sn) {
-		this.sn = sn;
+		this.sn = paramToString(sn);
 	}
 
 	protected void setC(String c) {
-		this.c = c;
+		this.c = paramToString(c);
 	}
 
 	protected void setL(String l) {
-		this.l = l;
+		this.l = paramToString(l);
 	}
 
 	protected void setSt(String st) {
-		this.st = st;
+		this.st = paramToString(st);
 	}
 
 	protected void setTitle(String title) {
-		this.title = title;
+		this.title = paramToString(title);
 	}
 
 	protected void setDescription(String description) {
-		this.description = description;
+		this.description = paramToString(description);
 	}
 
 	protected void setPostalCode(String postalCode) {
-		this.postalCode = postalCode;
+		this.postalCode = paramToString(postalCode);
 	}
 
 	protected void setPhysicalDeliveryOfficeName(String physicalDeliveryOfficeName) {
-		this.physicalDeliveryOfficeName = physicalDeliveryOfficeName;
+		this.physicalDeliveryOfficeName = paramToString(physicalDeliveryOfficeName);
 	}
 
 	protected void setTelephoneNumber(String telephoneNumber) {
-		this.telephoneNumber = telephoneNumber;
+		this.telephoneNumber = paramToString(telephoneNumber);
 	}
 
 	protected void setGivenName(String givenName) {
-		this.givenName = givenName;
+		this.givenName = paramToString(givenName);
 	}
 
 	protected void setDistinguishedName(String distinguishedName) {
-		this.distinguishedName = distinguishedName;
+		this.distinguishedName = paramToString(distinguishedName);
 	}
 
 	protected void setDisplayName(String displayName) {
-		this.displayName = displayName;
+		this.displayName = paramToString(displayName);
 	}
 
 	protected void setOtherTelephone(String otherTelephone) {
-		this.otherTelephone = otherTelephone;
+		this.otherTelephone = paramToString(otherTelephone);
 	}
 
 	protected void setCo(String co) {
-		this.co = co;
+		this.co = paramToString(co);
 	}
 
 	protected void setDepartment(String department) {
-		this.department = department;
+		this.department = paramToString(department);
 	}
 
 	protected void setCompany(String company) {
-		this.company = company;
+		this.company = paramToString(company);
 	}
 
 	protected void setStreetAddress(String streetAddress) {
-		this.streetAddress = streetAddress;
+		this.streetAddress = paramToString(streetAddress);
 	}
 
 	protected void setWwwhomepage(String wwwhomepage) {
-		this.wwwhomepage = wwwhomepage;
+		this.wwwhomepage = paramToString(wwwhomepage);
 	}
 
 	protected void setUserAccountControl(String userAccountControl) {
-		this.userAccountControl = userAccountControl;
+		this.userAccountControl = paramToString(userAccountControl);
 	}
 
 	protected void setMail(String mail) {
-		this.mail = mail;
+		this.mail = paramToString(mail);
 	}
 
 	protected void setUserPrincipalName(String userPrincipalName) {
-		this.userPrincipalName = userPrincipalName;
+		this.userPrincipalName = paramToString(userPrincipalName);
 	}
 
 	protected void setsAMAccountName(String sAMAccountName) {
-		this.sAMAccountName = sAMAccountName;
+		this.sAMAccountName = paramToString(sAMAccountName);
 	}
 
 	protected void addManager(String manager) {
@@ -226,11 +230,11 @@ public class UserDto {
 	}
 
 	protected void setItnumber(String itnumber) {
-		this.itnumber = itnumber;
+		this.itnumber = paramToString(itnumber);
 	}
 
 	protected void setInfo(String info) {
-		this.info = info;
+		this.info = paramToString(info);
 	}
 
 	protected void setJpegPhoto(byte[] stream) {
@@ -242,115 +246,115 @@ public class UserDto {
 	}
 
 	protected void setFname(String fname) {
-		this.fname = fname;
+		this.fname = paramToString(fname);
 	}
 
 	public String getMobile() {
-		return paramToString(mobile);
+		return mobile;
 	}
 
 	public String getHomePhone() {
-		return paramToString(homePhone);
+		return homePhone;
 	}
 
 	public String getUserPassword() {
-		return paramToString(userPassword);
+		return userPassword;
 	}
 
 	public String getPostOfficeBox() {
-		return paramToString(postOfficeBox);
+		return postOfficeBox;
 	}
 
 	public String getCn() {
-		return paramToString(cn);
+		return cn;
 	}
 
 	public String getSn() {
-		return paramToString(sn);
+		return sn;
 	}
 
 	public String getC() {
-		return paramToString(c);
+		return c;
 	}
 
 	public String getL() {
-		return paramToString(l);
+		return l;
 	}
 
 	public String getSt() {
-		return paramToString(st);
+		return st;
 	}
 
 	public String getTitle() {
-		return paramToString(title);
+		return title;
 	}
 
 	public String getDescription() {
-		return paramToString(description);
+		return description;
 	}
 
 	public String getPostalCode() {
-		return paramToString(postalCode);
+		return postalCode;
 	}
 
 	public String getPhysicalDeliveryOfficeName() {
-		return paramToString(physicalDeliveryOfficeName);
+		return physicalDeliveryOfficeName;
 	}
 
 	public String getTelephoneNumber() {
-		return paramToString(telephoneNumber);
+		return telephoneNumber;
 	}
 
 	public String getGivenName() {
-		return paramToString(givenName);
+		return givenName;
 	}
 
 	public String getDistinguishedName() {
-		return paramToString(distinguishedName);
+		return distinguishedName;
 	}
 
 	public String getDisplayName() {
-		return paramToString(displayName);
+		return displayName;
 	}
 
 	public String getOtherTelephone() {
-		return paramToString(otherTelephone);
+		return otherTelephone;
 	}
 
 	public String getCo() {
-		return paramToString(co);
+		return co;
 	}
 
 	public String getDepartment() {
-		return paramToString(department);
+		return department;
 	}
 
 	public String getCompany() {
-		return paramToString(company);
+		return company;
 	}
 
 	public String getStreetAddress() {
-		return paramToString(streetAddress);
+		return streetAddress;
 	}
 
 	public String getWwwhomepage() {
-		return paramToString(wwwhomepage);
+		return wwwhomepage;
 	}
 
 	public String getUserAccountControl() {
-		return paramToString(userAccountControl);
+		return userAccountControl;
 	}
 
 	public String getMail() {
-		return paramToString(mail);
+		return mail;
 	}
 
 	public String getUserPrincipalName() {
-		return paramToString(userPrincipalName);
+		return userPrincipalName;
 	}
 
 	public String getsAMAccountName() {
-		return paramToString(sAMAccountName);
+		return sAMAccountName;
 	}
 
 	public ArrayList<String> getManager() {
@@ -362,11 +366,11 @@ public class UserDto {
 	}
 
 	public String getItnumber() {
-		return paramToString(itnumber);
+		return itnumber;
 	}
 
 	public String getInfo() {
-		return paramToString(info);
+		return info;
 	}
 
 	public BufferedImage getJpegPhoto() {
@@ -374,7 +378,7 @@ public class UserDto {
 	}
 
 	public String getFname() {
-		return paramToString(fname);
+		return fname;
 	}
 
 	protected void setValueUserDto(String fieldName, NamingEnumeration values)
@@ -412,15 +416,15 @@ public class UserDto {
 	}
 
 	public String getLastName() {
-		return paramToString(lastName);
+		return lastName;
 	}
 
 	public String getMiddleName() {
-		return paramToString(middleName);
+		return middleName;
 	}
 
 	public String getFirstName() {
-		return paramToString(firstName);
+		return firstName;
 	}
 
 	public boolean isLastName(String lastName) {
@@ -443,6 +447,10 @@ public class UserDto {
 		return getDescription().toLowerCase().contains(description);
 	}
 
+	public boolean isDepartment(String department) {
+		return  getDepartment().toLowerCase().contains(department);
+	}
+	
 	public String getVCard() {
 		String VCard = new String();
 		VCard += "BEGIN:VCARD\n";
@@ -459,5 +467,57 @@ public class UserDto {
 		VCard += "END:VCARD";
 
 		return VCard;
+	}
+
+	private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException {
+		System.out.println("read userDto");
+	}
+
+	private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
+	 	aOutputStream.writeUTF(mobile);
+		aOutputStream.writeUTF(homePhone);
+		aOutputStream.writeUTF(userPassword);
+		aOutputStream.writeUTF(postOfficeBox);
+		aOutputStream.writeUTF(cn);
+		aOutputStream.writeUTF(sn);
+		aOutputStream.writeUTF(c);
+		aOutputStream.writeUTF(l);
+		aOutputStream.writeUTF(st);
+		aOutputStream.writeUTF(title);
+		aOutputStream.writeUTF(description);
+		aOutputStream.writeUTF(postalCode);
+		aOutputStream.writeUTF(physicalDeliveryOfficeName);
+		aOutputStream.writeUTF(telephoneNumber);
+		aOutputStream.writeUTF(givenName);
+		aOutputStream.writeUTF(distinguishedName);
+		aOutputStream.writeUTF(displayName);
+		aOutputStream.writeUTF(otherTelephone);
+		aOutputStream.writeUTF(co);
+		aOutputStream.writeUTF(department);
+		aOutputStream.writeUTF(company);
+		aOutputStream.writeUTF(streetAddress);
+		aOutputStream.writeUTF(wwwhomepage);
+		aOutputStream.writeUTF(userAccountControl);
+		aOutputStream.writeUTF(mail);
+		aOutputStream.writeUTF(userPrincipalName);
+		aOutputStream.writeUTF(sAMAccountName);
+		aOutputStream.writeObject(manager);
+		aOutputStream.writeObject(directReports);
+		aOutputStream.writeUTF(itnumber);
+		aOutputStream.writeUTF(info);
+		
+		/*
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	    ImageIO.write(jpegPhoto, "jpg", buffer);
+	    aOutputStream.writeInt(buffer.size());
+	    buffer.writeTo(aOutputStream); 
+	   */
+		
+		//private BufferedImage jpegPhoto);		
+		aOutputStream.writeUTF(fname);
+		aOutputStream.writeUTF(lastName);
+		aOutputStream.writeUTF(middleName);
+		aOutputStream.writeUTF(firstName);
+		
 	}
 }

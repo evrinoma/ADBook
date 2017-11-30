@@ -13,26 +13,28 @@ import com.mxgraph.view.mxGraph;
  */
 public class LevelNode {
 
-	private String A = "";
-
 	private int level = 0;
 	private UserDto user;
 	private LevelNode parent = null;
 
 	private int startY = 50;
 	private int startX = 50;
-	
+
 	private int x = 0;
 	private int y = 0;
 
 	private int stepX = 50;
-	private int stepY = 250;
-
+	private int stepY = 150;
+	/*
+	 * private int stepX = 25; private int stepY = 75;
+	 */
 	private int height = 45;
 	private int width = 100;
-
+	/*
+	 * private int height = 5; private int width = 10;
+	 */
 	private mxGraph graph = null;
-	private Object vertex = null;	
+	private Object vertex = null;
 	private Object userVertex = null;
 
 	private ArrayList<LevelNode> childs;
@@ -43,7 +45,6 @@ public class LevelNode {
 		setParent(parent);
 		calcY(level);
 		this.childs = new ArrayList<LevelNode>();
-		this.A = user.getCn();
 	}
 
 	public LevelNode(UserDto user, LevelNode parent, int level) {
@@ -161,16 +162,17 @@ public class LevelNode {
 		return isVertex() ? null : getChildVertex();
 	}
 
-	private Object createVertex()
-	{
-		userVertex = graph.insertVertex(vertex, null, user.getLastName()+"\n"+user.getFirstName()+"\n"+user.getMiddleName()+"\n", x+startX, y+startY, width, height);
+	private Object createVertex() {
+		userVertex = graph.insertVertex(vertex, null,
+				user.getLastName() + "\n" + user.getFirstName() + "\n" + user.getMiddleName() + "\n", x + startX,
+				y + startY + (level * stepY), width, height);
 		return userVertex;
 	}
-	
+
 	private Object getChildVertex() {
-		return (null == userVertex)? createVertex(): userVertex;
+		return (null == userVertex) ? createVertex() : userVertex;
 	}
-	
+
 	public void setVertexLink() {
 		if (!isRoot() & !isVertex()) {
 			graph.insertEdge(vertex, null, "", parent.getVertex(), getChildVertex());

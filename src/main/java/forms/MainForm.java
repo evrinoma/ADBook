@@ -26,8 +26,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGeometry;
 import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxStylesheet;
 
 import entity.CompanyDto;
 import entity.LevelNode;
@@ -49,6 +52,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -101,7 +105,10 @@ public class MainForm {
 	private JComboBox<CompanyDto> comboBoxCompany;
 	private JComboBox<CompanyDto> comboBoxFilial;
 	private JTextField textFieldPhone;
-	private JTextField textFieldDescription;
+	private JTextField textFieldDepartment;
+	private JTextField textFieldPesonPosition;
+	
+	
 	private JLabel labelStatusBar;
 	private JTree tree;
 	private Core core;
@@ -225,7 +232,29 @@ public class MainForm {
 
 	private void showGraph(HashMap<Integer, ArrayList<LevelNode>> levels) {
 		mxGraph graph = new mxGraph();
+		/*
+		mxStylesheet stylesheet = graph.getStylesheet();
 		
+		HashMap<String, Object> edgeStyle = new HashMap<String, Object>();
+		edgeStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CONNECTOR);
+		edgeStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
+		edgeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+		edgeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+		edgeStyle.put(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, "#ffffff");
+		edgeStyle.put(mxConstants.STYLE_FONTSIZE, 5);
+		edgeStyle.put(mxConstants.STYLE_RESIZABLE, 0);		 	
+
+		HashMap<String, Object> vertexStyle = new HashMap<String, Object>();		
+		vertexStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CONNECTOR);
+		vertexStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
+		vertexStyle.put(mxConstants.STYLE_FONTSIZE, 2);
+		vertexStyle.put(mxConstants.STYLE_RESIZABLE, 0);		
+		
+		stylesheet.setDefaultEdgeStyle(edgeStyle);
+		stylesheet.setDefaultVertexStyle(vertexStyle);
+		
+		graph.setStylesheet(stylesheet);
+		*/
 		Object parent = graph.getDefaultParent();
 		graph.getModel().beginUpdate();
 
@@ -244,7 +273,9 @@ public class MainForm {
 			}			
 		} finally {
 			graph.getModel().endUpdate();
-		}		
+		}			
+			
+		
 		graphComponent.setGraph(graph);
 		graphComponent.updateUI();
 				
@@ -256,7 +287,7 @@ public class MainForm {
 				
 				if (cell != null)
 				{
-					System.out.println("cell="+graph.getLabel(cell));
+					//System.out.println("cell="+graph.getLabel(cell));
 				}
 			}			
 		});
@@ -302,15 +333,6 @@ public class MainForm {
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		panelView.add(tabbedPane);
 
-		panelDepend = new JPanel();
-		panelDepend.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelDepend.setMinimumSize(new Dimension(10, 250));
-		tabbedPane.addTab("Подчинённые", panelDepend);
-		panelDepend.setLayout(new CardLayout(0, 0));
-		graphComponent = new mxGraphComponent(new mxGraph());
-		graphComponent.setToolTips(true);
-		panelDepend.add(graphComponent, "panelDepend");
-
 		panelPerson = new JPanel();
 		panelPerson.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelPerson.setMinimumSize(new Dimension(10, 250));
@@ -328,6 +350,15 @@ public class MainForm {
 		tabbedPane.addTab("Схема", panelRoom);
 		createTabRoom(panelRoom);
 
+		panelDepend = new JPanel();
+		panelDepend.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelDepend.setMinimumSize(new Dimension(10, 250));
+		tabbedPane.addTab("Подчинённые", panelDepend);
+		panelDepend.setLayout(new CardLayout(0, 0));
+		graphComponent = new mxGraphComponent(new mxGraph());
+		graphComponent.setToolTips(true);
+		panelDepend.add(graphComponent, "panelDepend");
+		
 		top = new DefaultMutableTreeNode("Сотрудники");
 		tree = new JTree(top);
 		JScrollPane treeView = new JScrollPane(tree);
@@ -706,17 +737,24 @@ public class MainForm {
 		labelFilials.setMinimumSize(new Dimension(50, 0));
 		comboBoxFilial.disable();
 
+		textFieldDepartment = new JTextField();
+		textFieldDepartment.setToolTipText("Отдел");
+		textFieldDepartment.setHorizontalAlignment(SwingConstants.LEFT);
+		JLabel labelDepartment = new JLabel(textFieldDepartment.getToolTipText() + ':');
+		labelDepartment.setMinimumSize(new Dimension(50, 0));		
+		
 		textFieldPhone = new JTextField();
 		textFieldPhone.setToolTipText("Номер телефона");
 		textFieldPhone.setHorizontalAlignment(SwingConstants.LEFT);
 		JLabel labelPhone = new JLabel(textFieldPhone.getToolTipText() + ':');
 		labelPhone.setMinimumSize(new Dimension(50, 0));
 
-		textFieldDescription = new JTextField();
-		textFieldDescription.setToolTipText("Должность");
-		textFieldDescription.setHorizontalAlignment(SwingConstants.LEFT);
-		JLabel labelDescription = new JLabel(textFieldDescription.getToolTipText() + ':');
-		labelDescription.setMinimumSize(new Dimension(50, 0));
+			
+		textFieldPesonPosition = new JTextField();
+		textFieldPesonPosition.setToolTipText("Должность");
+		textFieldPesonPosition.setHorizontalAlignment(SwingConstants.LEFT);
+		JLabel labelPesonPosition = new JLabel(textFieldPesonPosition.getToolTipText() + ':');
+		labelPesonPosition.setMinimumSize(new Dimension(50, 0));
 
 		panelFSM.add(labelSurName);
 		panelFSM.add(textFieldLastName);
@@ -728,13 +766,17 @@ public class MainForm {
 		panelFSM.add(comboBoxCompany);
 		panelFSM.add(labelFilials);
 		panelFSM.add(comboBoxFilial);
-		panelFSM.add(labelPhone);
+		panelFSM.add(labelDepartment);
+		panelFSM.add(textFieldDepartment);
+		panelFSM.add(labelPesonPosition);
+		panelFSM.add(textFieldPesonPosition);
+		panelFSM.add(labelPhone);		
 		panelFSM.add(textFieldPhone);
-		panelFSM.add(labelDescription);
-		panelFSM.add(textFieldDescription);
+		
+
 
 		// rows, cols, initX, initY
-		SpringUtilities.makeCompactGrid(panelFSM, 7, 2, 6, 6, 20, 6);
+		SpringUtilities.makeCompactGrid(panelFSM, 8, 2, 6, 6, 20, 6);
 	}
 
 	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {
@@ -837,7 +879,16 @@ public class MainForm {
 				}
 			}
 		});
-		textFieldDescription.addKeyListener(new KeyAdapter() {
+		textFieldDepartment.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (filterOnlyAlphabetic(e)) {
+					e.consume();
+				}
+			}
+		});
+		
+		textFieldPesonPosition.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if (filterOnlyAlphabetic(e)) {
@@ -870,7 +921,7 @@ public class MainForm {
 			}
 		});
 
-		textFieldDescription.addCaretListener(new CaretListener() {
+		textFieldDepartment.addCaretListener(new CaretListener() {
 			public void caretUpdate(CaretEvent e) {
 				search();
 			}
@@ -882,6 +933,12 @@ public class MainForm {
 			}
 		});
 
+		textFieldPesonPosition.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+		
 		comboBoxCompany.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
@@ -919,9 +976,10 @@ public class MainForm {
 		String firstName = textFieldFirstName.getText();
 		String middleName = textFieldMiddleName.getText();
 		CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
-		CompanyDto filial = (CompanyDto) comboBoxFilial.getSelectedItem();
+		CompanyDto filial = (CompanyDto) comboBoxFilial.getSelectedItem();	
+		String department = textFieldDepartment.getText();		
 		String phone = textFieldPhone.getText();
-		String description = textFieldDescription.getText();
-		core.localSearch(lastName, firstName, middleName, company, filial, phone, description);
+		String pesonPosition = textFieldPesonPosition.getText();		
+		core.localSearch(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 	}
 }

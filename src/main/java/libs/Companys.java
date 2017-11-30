@@ -1,5 +1,9 @@
 package libs;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,40 +11,39 @@ import java.util.List;
 import entity.CompanyDto;
 import entity.UserDto;
 
-public class Companys {
+public class Companys implements Serializable {
 	private List<CompanyDto> companys;
-	private HashMap<String,UserDto>  users;
-	
+	private HashMap<String, UserDto> users;
+
 	public void addNewCompany(String description, String ou, String dn) {
 		companys.add(new CompanyDto(description, ou, dn));
 	}
-	
+
 	public void addNewCompany(CompanyDto company) {
 		companys.add(company);
 	}
 
-	public Companys() {		
+	public Companys() {
 		companys = new ArrayList<CompanyDto>();
-		users = new HashMap<String,UserDto>();	
+		users = new HashMap<String, UserDto>();
 	}
-	
+
 	public List<CompanyDto> all() {
 		return companys;
 	}
 
-	public HashMap<String,UserDto>  getUsers() {
+	public HashMap<String, UserDto> getUsers() {
 		return users;
 	}
 
-	public void copyUser(HashMap<String,UserDto> users) {		
+	public void copyUser(HashMap<String, UserDto> users) {
 		this.users.putAll(users);
 	}
-	
-	public CompanyDto getLastInsertCompany()
-	{		
-		return (CompanyDto) companys.get(companys.size()-1); 
+
+	public CompanyDto getLastInsertCompany() {
+		return (CompanyDto) companys.get(companys.size() - 1);
 	}
-	
+
 	public void setCompanys(List<CompanyDto> companys) {
 		this.companys = companys;
 	}
@@ -68,4 +71,13 @@ public class Companys {
 		}
 		return companysDn;
 	}
+/*
+	private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException {
+		System.out.println("read companys");
+	}
+
+	private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
+		System.out.println("write companys");
+	}*/
+
 }

@@ -47,6 +47,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 				form.setTreeNode(core.getCompanys().all(),true);
 				form.removeTreePreload();
 				form.setStatusBar(core.getHintEmpty());
+				core.saveCache();
 			}
 			//System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {

@@ -6,18 +6,20 @@ public class FilterDto {
 	private String filterMiddleName = "";
 	private CompanyDto filterCompany = null;
 	private CompanyDto filterFilial = null;
+	private String filterDepartment = "";	
 	private String filterTelephoneNumber = "";
-	private String filterDescription = "";
+	private String filterPesonPosition = "";
 
-	public FilterDto(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial, String telephoneNumber,
-			String description) {
+	public FilterDto(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial, String department, String telephoneNumber,
+			String pesonPosition) {
 		this.filterLastName = lastName;
 		this.filterFirstName = firstName;
 		this.filterMiddleName = middleName;
 		this.filterCompany = company;
 		this.filterFilial = filial;
+		this.filterDepartment = department;
 		this.filterTelephoneNumber = telephoneNumber;
-		this.filterDescription = description;
+		this.filterPesonPosition = pesonPosition;
 	}
 
 	public FilterDto(FilterDto filter) {
@@ -26,8 +28,9 @@ public class FilterDto {
 		this.filterMiddleName = filter.getFilterMiddleName();
 		this.filterCompany = filter.getFilterCompany();
 		this.filterFilial = filter.getFilterFilial();
+		this.filterDepartment = filter.getFilterDepartment();
 		this.filterTelephoneNumber = filter.getFilterTelephoneNumber();
-		this.filterDescription = filter.getFilterDescription();
+		this.filterPesonPosition = filter.getFilterPesonPosition();
 	}	
 	
 	public String getFilterLastName() {
@@ -50,13 +53,16 @@ public class FilterDto {
 		return filterFilial;
 	}
 
-	
+	public String getFilterDepartment() {
+		return filterDepartment.toLowerCase();
+	}
+
 	public String getFilterTelephoneNumber() {
 		return filterTelephoneNumber.toLowerCase();
 	}
 
-	public String getFilterDescription() {
-		return filterDescription.toLowerCase();
+	public String getFilterPesonPosition() {
+		return filterPesonPosition.toLowerCase();
 	}
 	
 	public boolean isFilterLastNameSet() {
@@ -75,8 +81,11 @@ public class FilterDto {
 		return (0 != filterTelephoneNumber.length());
 	}
 
-	public boolean isFilterDescriptionSet() {
-		return (0 != filterDescription.length());
+	public boolean isFilterPesonPositionSet() {
+		return (0 != filterPesonPosition.length());
 	}
 	
+	public boolean isFilterDepartmentSet() {
+		return (0 != filterDepartment.length());
+	}
 }

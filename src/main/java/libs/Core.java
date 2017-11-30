@@ -3,12 +3,20 @@ package libs;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -52,7 +60,7 @@ public class Core {
 		this.form = form;
 	}
 
-	private void addUser(CompanyDto company,NamingEnumeration<?> users) {
+	private void addUser(CompanyDto company, NamingEnumeration<?> users) {
 		Attributes attrs;
 		if (null != users) {
 			while (users.hasMoreElements()) {
@@ -61,34 +69,34 @@ public class Core {
 					sr = (SearchResult) users.next();
 					attrs = sr.getAttributes();
 					UserDto user = new UserDto();
-					user.deployEntry(attrs, ldap.getDefaultSelectFields());					
+					user.deployEntry(attrs, ldap.getDefaultSelectFields());
 					company.addNewUser(user);
-					/*for (String manager : user.getManager()) {
-						addUserHead(user, ldap.getLdapUsers(manager));
-					}
-					for (String dependent : user.getDirectReports()) {
-						addUserDependent(user, ldap.getLdapUsers(dependent));
-					}*/
+					/*
+					 * for (String manager : user.getManager()) {
+					 * addUserHead(user, ldap.getLdapUsers(manager)); } for
+					 * (String dependent : user.getDirectReports()) {
+					 * addUserDependent(user, ldap.getLdapUsers(dependent)); }
+					 */
 				} catch (NamingException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
-	
+
 	private Core getLdapUsers(String $sort) {
 		if (ldap.isConnect()) {
 			for (CompanyDto company : companys.all()) {
-				if (company.getFilials().size()>0){
+				if (company.getFilials().size() > 0) {
 					for (CompanyDto filial : company.getFilials()) {
-						addUser(filial, ldap.getLdapUsers("ou="+filial.getOu()+","+company.getDn()));
+						addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));
 						companys.copyUser(filial.getUsers());
 					}
 				} else {
 					addUser(company, ldap.getLdapUsers(company.getDn()));
 				}
 			}
-		}		
+		}
 
 		return this;
 	}
@@ -96,7 +104,7 @@ public class Core {
 	private Core getLdapUsers() {
 		return getLdapUsers(new String("cn"));
 	}
-	
+
 	private void addCompany(NamingEnumeration<?> companys, boolean isFilial) {
 		Attributes attrs;
 		if (null != companys) {
@@ -109,9 +117,9 @@ public class Core {
 						Attribute description = attrs.get("description");
 						if (null != description) {
 							Attribute ou = attrs.get("ou");
-							CompanyDto companyDto = new CompanyDto((String) description.get(),(String) ou.get(),
+							CompanyDto companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
 									(String) sr.getName() + "," + Ldap.LDAP_BASE_DN);
-							if (!isFilial) {								
+							if (!isFilial) {
 								this.companys.addNewCompany(companyDto);
 								addCompany(ldap.getLdapFilials(companyDto.getDn()), true);
 							} else {
@@ -126,10 +134,11 @@ public class Core {
 			}
 		}
 	}
+
 	private void addCompany(NamingEnumeration<?> companys) {
 		addCompany(companys, false);
 	}
-	
+
 	private Core getLdapCompanys() {
 		if (ldap.isConnect()) {
 			addCompany(ldap.getLdapCompanys());
@@ -137,7 +146,7 @@ public class Core {
 
 		return this;
 	}
-	
+
 	private Core openLdapConnection() {
 		ldap = new Ldap();
 
@@ -196,6 +205,30 @@ public class Core {
 		closeLdapConnection();
 	}
 
+	public void saveCache() {
+
+		try
+        {
+            FileOutputStream fileOut = new FileOutputStream("cache");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(companys);
+            out.close();
+            fileOut.close();
+        }
+        catch (IOException i)
+        {
+            i.printStackTrace();
+        }
+	}
+
+	/**
+	 * метод создает картинку qr-code с данными
+	 * 
+	 * @param vcard
+	 * @param width
+	 * @param height
+	 * @return
+	 */
 	public ImageIcon createQrCode(String vcard, int width, int height) {
 		Hashtable hintMap = new Hashtable();
 		hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -233,11 +266,17 @@ public class Core {
 
 		return new ImageIcon(image);
 	}
-	
+
+	/**
+	 * загрузка данных в приложение
+	 */
 	public void loadData() {
 		ldapSearch();
 	}
 
+	/**
+	 * выгрузка данных из ldap
+	 */
 	public void ldapSearch() {
 		if (null == ldapSearch) {
 			ldapSearch = new LdapSearchThread(this, form);
@@ -247,62 +286,56 @@ public class Core {
 		}
 	}
 
-	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial, String phone,
-			String description) {
+	/**
+	 * фильтр по параметрам заданным в фильтре
+	 * 
+	 * @param lastName
+	 * @param firstName
+	 * @param middleName
+	 * @param company
+	 * @param filial
+	 * @param phone
+	 * @param description
+	 */
+	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
+			String department, String phone, String pesonPosition) {
 		if (localSearch == null || localSearch.isDone()) {
-			
+
 			localSearch = new LocalSearchThread(form);
-			
-			localSearch.setFilter(lastName, firstName, middleName, company,filial, phone, description);
+
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 			localSearch.setCompanys(companys);
 
 			localSearch.setLock();
 			localSearch.execute();
 
 		} else {
-			localSearch.setFilter(lastName, firstName, middleName, company, filial, phone, description);
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 			localSearch.setCompanys(companys);
 			localSearch.restartSearch();
-		}		
+		}
 
 	}
-	
-	public String getUserManger(UserDto user)
-	{
+
+	public String getUserManger(UserDto user) {
 		String managerToString = "";
-		for(String dn : user.getManager())
-		{
+		for (String dn : user.getManager()) {
 			UserDto manager = companys.getUsers().get(dn);
 			if (null != manager) {
-				managerToString += manager.getCn()+"\n";
+				managerToString += manager.getCn() + "\n";
 			}
 		}
-		
+
 		return managerToString;
 	}
-	
-	
-	/*
-	public LevelNodes getUserDependency(UserDto user, int level, int deep)
-	{
-		LevelNodes  users  = new LevelNodes(user);
-		users.setLevel(level);
-		level++;
-		deep++;
-		for(String dn : user.getDirectReports())
-		{
-			UserDto manager = companys.getUsers().get(dn);
-			if (null != manager) {
-				users.addLink(getUserDependency(manager, level, deep));
-			}
-		}
-		
-		return users;
-	}
-	*/
-	
-	public HashMap<Integer, ArrayList<LevelNode>> getUserDependency(UserDto user)
-	{
+
+	/**
+	 * метод возвращет список подчиненных с главным узлом в виде пользователя
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public HashMap<Integer, ArrayList<LevelNode>> getUserDependency(UserDto user) {
 		Nodes nodesManager = new Nodes(companys.getUsers());
 		return nodesManager.getLevels(user);
 	}
