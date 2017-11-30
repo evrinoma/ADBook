@@ -22,7 +22,7 @@ public class CompanyDto implements Serializable {
 	private String dn;
 	private String ou;
 	private HashMap<String, UserDto> users;
-	private List<CompanyDto> filials;
+	private ArrayList<CompanyDto> filials;
 
 	private void createCompanyDto(String description, String ou, String dn) {
 		users = new HashMap<String, UserDto>();
@@ -103,11 +103,11 @@ public class CompanyDto implements Serializable {
 		users.put(user.getDistinguishedName(), user);
 	}
 
-	public List<CompanyDto> getFilials() {
+	public ArrayList<CompanyDto> getFilials() {
 		return filials;
 	}
 
-	public void setFilials(List<CompanyDto> filials) {
+	public void setFilials(ArrayList<CompanyDto> filials) {
 		this.filials = filials;
 	}
 

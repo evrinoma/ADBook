@@ -448,9 +448,9 @@ public class UserDto implements Serializable {
 	}
 
 	public boolean isDepartment(String department) {
-		return  getDepartment().toLowerCase().contains(department);
+		return getDepartment().toLowerCase().contains(department);
 	}
-	
+
 	public String getVCard() {
 		String VCard = new String();
 		VCard += "BEGIN:VCARD\n";
@@ -470,11 +470,60 @@ public class UserDto implements Serializable {
 	}
 
 	private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException {
-		System.out.println("read userDto");
+		mobile = aInputStream.readUTF();
+		homePhone = aInputStream.readUTF();
+		userPassword = aInputStream.readUTF();
+		postOfficeBox = aInputStream.readUTF();
+		cn = aInputStream.readUTF();
+		sn = aInputStream.readUTF();
+		c = aInputStream.readUTF();
+		l = aInputStream.readUTF();
+		st = aInputStream.readUTF();
+		title = aInputStream.readUTF();
+		description = aInputStream.readUTF();
+		postalCode = aInputStream.readUTF();
+		physicalDeliveryOfficeName = aInputStream.readUTF();
+		telephoneNumber = aInputStream.readUTF();
+		givenName = aInputStream.readUTF();
+		distinguishedName = aInputStream.readUTF();
+		displayName = aInputStream.readUTF();
+		otherTelephone = aInputStream.readUTF();
+		co = aInputStream.readUTF();
+		department = aInputStream.readUTF();
+		company = aInputStream.readUTF();
+		streetAddress = aInputStream.readUTF();
+		wwwhomepage = aInputStream.readUTF();
+		userAccountControl = aInputStream.readUTF();
+		mail = aInputStream.readUTF();
+		userPrincipalName = aInputStream.readUTF();
+		sAMAccountName = aInputStream.readUTF();
+		manager = (ArrayList<String>) aInputStream.readObject();
+		directReports = (ArrayList<String>) aInputStream.readObject();
+		itnumber = aInputStream.readUTF();
+		info = aInputStream.readUTF();		
+		// InputStream in = new ByteArrayInputStream(aInputStream);
+		/*
+		 * // convert byte array back to BufferedImage InputStream in = new
+		 * ByteArrayInputStream(aInputStream.); BufferedImage bImageFromConvert
+		 * = ImageIO.read(in);
+		 * 
+		 * if (null != jpegPhoto) { ByteArrayOutputStream buffer = new
+		 * ByteArrayOutputStream(); ImageIO.write(jpegPhoto, "jpg", buffer);
+		 * aOutputStream.writeInt(buffer.size()); buffer.writeTo(aOutputStream);
+		 * }
+		 */
+		fname = aInputStream.readUTF();
+		lastName = aInputStream.readUTF();
+		middleName = aInputStream.readUTF();
+		firstName = aInputStream.readUTF();
+		int size = aInputStream.readInt();
+		if (0 != size) {
+			jpegPhoto = ImageIO.read(aInputStream);
+		}
 	}
 
 	private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
-	 	aOutputStream.writeUTF(mobile);
+		aOutputStream.writeUTF(mobile);
 		aOutputStream.writeUTF(homePhone);
 		aOutputStream.writeUTF(userPassword);
 		aOutputStream.writeUTF(postOfficeBox);
@@ -504,20 +553,18 @@ public class UserDto implements Serializable {
 		aOutputStream.writeObject(manager);
 		aOutputStream.writeObject(directReports);
 		aOutputStream.writeUTF(itnumber);
-		aOutputStream.writeUTF(info);
-		
-		/*
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-	    ImageIO.write(jpegPhoto, "jpg", buffer);
-	    aOutputStream.writeInt(buffer.size());
-	    buffer.writeTo(aOutputStream); 
-	   */
-		
-		//private BufferedImage jpegPhoto);		
+		aOutputStream.writeUTF(info);		
 		aOutputStream.writeUTF(fname);
 		aOutputStream.writeUTF(lastName);
 		aOutputStream.writeUTF(middleName);
 		aOutputStream.writeUTF(firstName);
-		
+		if (null != jpegPhoto) {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			ImageIO.write(jpegPhoto, "jpg", buffer);
+			aOutputStream.writeInt(buffer.size());
+			buffer.writeTo(aOutputStream);
+		} else {
+			aOutputStream.writeInt(0);
+		}	
 	}
 }

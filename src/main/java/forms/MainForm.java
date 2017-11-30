@@ -152,6 +152,10 @@ public class MainForm {
 		core.loadData();
 	}
 
+	public DefaultMutableTreeNode getTopTree(){
+		return this.top;
+	}
+	
 	public void setStatusBar(String status) {
 		labelStatusBar.setText(status);
 	}
@@ -233,26 +237,28 @@ public class MainForm {
 	private void showGraph(HashMap<Integer, ArrayList<LevelNode>> levels) {
 		mxGraph graph = new mxGraph();
 		/*
-		mxStylesheet stylesheet = graph.getStylesheet();
-		
+		mxStylesheet stylesheet = graph.getStylesheet();		
 		HashMap<String, Object> edgeStyle = new HashMap<String, Object>();
+		edgeStyle.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ORTHOGONAL);
 		edgeStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CONNECTOR);
 		edgeStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
 		edgeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		edgeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		edgeStyle.put(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, "#ffffff");
 		edgeStyle.put(mxConstants.STYLE_FONTSIZE, 5);
-		edgeStyle.put(mxConstants.STYLE_RESIZABLE, 0);		 	
-
+		edgeStyle.put(mxConstants.STYLE_RESIZABLE, 0);
+		stylesheet.setDefaultEdgeStyle(edgeStyle);		
+		*/
+		/*
 		HashMap<String, Object> vertexStyle = new HashMap<String, Object>();		
 		vertexStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CONNECTOR);
 		vertexStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
 		vertexStyle.put(mxConstants.STYLE_FONTSIZE, 2);
-		vertexStyle.put(mxConstants.STYLE_RESIZABLE, 0);		
-		
-		stylesheet.setDefaultEdgeStyle(edgeStyle);
+		vertexStyle.put(mxConstants.STYLE_RESIZABLE, 0);	
+		stylesheet.setDefaultEdgeStyle(edgeStyle);	
 		stylesheet.setDefaultVertexStyle(vertexStyle);
-		
+		*/
+		/*
 		graph.setStylesheet(stylesheet);
 		*/
 		Object parent = graph.getDefaultParent();

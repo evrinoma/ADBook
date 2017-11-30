@@ -3,26 +3,17 @@ package libs;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
+
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchResult;
 import javax.swing.ImageIcon;
 
 import com.google.zxing.BarcodeFormat;
@@ -35,20 +26,18 @@ import entity.CompanyDto;
 import entity.UserDto;
 import entity.LevelNode;
 import forms.LdapSearchThread;
+import forms.LoadThread;
 import forms.LocalSearchThread;
 import forms.MainForm;
 
 public class Core {
-	private static final String HINT_LDAP_OPEN = "Connecting to LDAP Server";
-	private static final String HINT_LDAP_CLOSE = "Close connections";
-	private static final String HINT_LDAP_USERS = "Try to get all Users from LDAP Server";
-	private static final String HINT_LDAP_COMPANYS = "Try to get all Companys from LDAP Server";
+	
 	private static final String HINT_EMPTY = "";
-
-	private Ldap ldap = null;
+	
 	private Companys companys = null;
 	private LocalSearchThread localSearch = null;
 	private LdapSearchThread ldapSearch = null;
+	private LoadThread Load = null;
 
 	private MainForm form = null;
 
@@ -59,107 +48,7 @@ public class Core {
 	public void setMainForm(MainForm form) {
 		this.form = form;
 	}
-
-	private void addUser(CompanyDto company, NamingEnumeration<?> users) {
-		Attributes attrs;
-		if (null != users) {
-			while (users.hasMoreElements()) {
-				SearchResult sr;
-				try {
-					sr = (SearchResult) users.next();
-					attrs = sr.getAttributes();
-					UserDto user = new UserDto();
-					user.deployEntry(attrs, ldap.getDefaultSelectFields());
-					company.addNewUser(user);
-					/*
-					 * for (String manager : user.getManager()) {
-					 * addUserHead(user, ldap.getLdapUsers(manager)); } for
-					 * (String dependent : user.getDirectReports()) {
-					 * addUserDependent(user, ldap.getLdapUsers(dependent)); }
-					 */
-				} catch (NamingException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	private Core getLdapUsers(String $sort) {
-		if (ldap.isConnect()) {
-			for (CompanyDto company : companys.all()) {
-				if (company.getFilials().size() > 0) {
-					for (CompanyDto filial : company.getFilials()) {
-						addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));
-						companys.copyUser(filial.getUsers());
-					}
-				} else {
-					addUser(company, ldap.getLdapUsers(company.getDn()));
-				}
-			}
-		}
-
-		return this;
-	}
-
-	private Core getLdapUsers() {
-		return getLdapUsers(new String("cn"));
-	}
-
-	private void addCompany(NamingEnumeration<?> companys, boolean isFilial) {
-		Attributes attrs;
-		if (null != companys) {
-			while (companys.hasMoreElements()) {
-				SearchResult sr;
-				try {
-					sr = (SearchResult) companys.next();
-					attrs = sr.getAttributes();
-					if (null != attrs) {
-						Attribute description = attrs.get("description");
-						if (null != description) {
-							Attribute ou = attrs.get("ou");
-							CompanyDto companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
-									(String) sr.getName() + "," + Ldap.LDAP_BASE_DN);
-							if (!isFilial) {
-								this.companys.addNewCompany(companyDto);
-								addCompany(ldap.getLdapFilials(companyDto.getDn()), true);
-							} else {
-								CompanyDto lastCompanyDto = this.companys.getLastInsertCompany();
-								lastCompanyDto.addNewFilial(companyDto);
-							}
-						}
-					}
-				} catch (NamingException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	private void addCompany(NamingEnumeration<?> companys) {
-		addCompany(companys, false);
-	}
-
-	private Core getLdapCompanys() {
-		if (ldap.isConnect()) {
-			addCompany(ldap.getLdapCompanys());
-		}
-
-		return this;
-	}
-
-	private Core openLdapConnection() {
-		ldap = new Ldap();
-
-		return this;
-	}
-
-	private Core closeLdapConnection() {
-		if (null != ldap) {
-			ldap.closeConnect();
-		}
-
-		return this;
-	}
+		
 
 	public Core() {
 		companys = new Companys();
@@ -169,58 +58,7 @@ public class Core {
 		return companys;
 	}
 
-	public String getHintLoadCompanys() {
-		return HINT_LDAP_COMPANYS;
-	}
-
-	public String getHintLoadUsers() {
-		return HINT_LDAP_USERS;
-	}
-
-	public String getHintOpenConnection() {
-		return HINT_LDAP_OPEN;
-	}
-
-	public String getHintCloseConnection() {
-		return HINT_LDAP_CLOSE;
-	}
-
-	public String getHintEmpty() {
-		return HINT_EMPTY;
-	}
-
-	public void loadCompanys() {
-		getLdapCompanys();
-	}
-
-	public void loadUsers() {
-		getLdapUsers();
-	}
-
-	public void openConnection() {
-		openLdapConnection();
-	}
-
-	public void closeConnection() {
-		closeLdapConnection();
-	}
-
-	public void saveCache() {
-
-		try
-        {
-            FileOutputStream fileOut = new FileOutputStream("cache");
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(companys);
-            out.close();
-            fileOut.close();
-        }
-        catch (IOException i)
-        {
-            i.printStackTrace();
-        }
-	}
-
+	
 	/**
 	 * метод создает картинку qr-code с данными
 	 * 
@@ -270,22 +108,90 @@ public class Core {
 	/**
 	 * загрузка данных в приложение
 	 */
-	public void loadData() {
-		ldapSearch();
+	public void loadData() {	
+		localReadCache();
 	}
 
+	
+	/**
+	 * загрузка локального кеша
+	 */
+	public void localCache(boolean operation) {
+		if (null == Load  || Load.isDone()) {
+			Load = new LoadThread(this);
+			Load.setWriteStream(this.companys).setDirection(operation).execute();
+		} else {
+			Load.execute();
+		}
+	}
+	
+	public void localWriteCache() {
+		localCache(LoadThread.WRITE);
+	}
+	
+	public void localReadCache() {
+		localCache(LoadThread.READ);
+	}
+	/**
+	 * 
+	 * @param loadCompanys
+	 */
+	public void isLocalCacheSuccessful(Companys loadCompanys)
+	{
+		dataLoad(loadCompanys);
+	}
+	
+	public void isLocalCacheFail()
+	{
+		ldapSearch();
+	}
+	
 	/**
 	 * выгрузка данных из ldap
 	 */
 	public void ldapSearch() {
-		if (null == ldapSearch) {
-			ldapSearch = new LdapSearchThread(this, form);
-		}
-		if (ldapSearch instanceof LdapSearchThread) {
+		if (null == ldapSearch  || ldapSearch.isDone()) {
+			ldapSearch = new LdapSearchThread(this);
+			ldapSearch.execute();
+		} else {		
 			ldapSearch.execute();
 		}
 	}
+	
+	/**
+	 * выгрузка из ldap успешна
+	 * @param loadedCompanys
+	 */
+	private void dataLoad(Companys companys)
+	{
+		this.companys = companys;
+		form.setCompanySelector();
+		form.setTreeNode(getCompanys().all(),true);
+		form.removeTreePreload();
+		form.setStatusBar(HINT_EMPTY);
+	}
+	
 
+	/**
+	 * выгрузка из ldap успешна
+	 * @param loadedCompanys
+	 */
+	public void isLdapSearchSuccessful(Companys ldapCompanys)
+	{
+		dataLoad(ldapCompanys);
+		localWriteCache();
+	}
+	
+	
+	/**
+	 * печать в строку состояния из потоков
+	 * @param massage
+	 */
+	public void setStatusString(String message)
+	{
+		form.setStatusBar(message);
+	}
+	
 	/**
 	 * фильтр по параметрам заданным в фильтре
 	 * 
@@ -299,9 +205,9 @@ public class Core {
 	 */
 	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
 			String department, String phone, String pesonPosition) {
-		if (localSearch == null || localSearch.isDone()) {
+		if (null == localSearch || localSearch.isDone()) {
 
-			localSearch = new LocalSearchThread(form);
+			localSearch = new LocalSearchThread(this);
 
 			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 			localSearch.setCompanys(companys);
@@ -316,7 +222,22 @@ public class Core {
 		}
 
 	}
+	
+	/**
+	 * локальный поиск успешный
+	 * @param filteredCompanys
+	 */
+	public void isLocalSearchSuccessful(Companys filteredCompanys)
+	{
+		form.getTopTree().removeAllChildren();
+		form.setTreeNode(filteredCompanys.all(), false);
+	}
 
+	/**
+	 * метод возвращает список руководителей пользователя
+	 * @param user
+	 * @return
+	 */
 	public String getUserManger(UserDto user) {
 		String managerToString = "";
 		for (String dn : user.getManager()) {
