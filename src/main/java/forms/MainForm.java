@@ -25,13 +25,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 
 import entity.CompanyDto;
-import entity.LevelNodes;
+import entity.LevelNode;
 import entity.UserDto;
-import entity.VertexNode;
 import libs.Core;
 
 import java.awt.CardLayout;
@@ -43,6 +43,9 @@ import java.awt.Component;
 import javax.swing.JTabbedPane;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -139,7 +142,7 @@ public class MainForm {
 		core = new Core();
 		componentsInitialize();
 		core.setMainForm(this);
-		core.ldapSearch();
+		core.loadData();
 	}
 
 	public void setStatusBar(String status) {
@@ -220,52 +223,44 @@ public class MainForm {
 		top.add(companyTreeNode);
 	}
 
-	private void showGraph(ArrayList<LevelNodes> nodes, ArrayList<Object> root) {
+	private void showGraph(HashMap<Integer, ArrayList<LevelNode>> levels) {
 		mxGraph graph = new mxGraph();
+		
 		Object parent = graph.getDefaultParent();
-		graph.getModel().beginUpdate();		
-	
-		int x = 50;
-		int y = 50;
-		int j = y;
-		int deltaX = 10;
-		int deltaY = 100;
-		try {			
-			for(LevelNodes levelNodes : nodes)
-			{
-				ArrayList<VertexNode> vertexNodes = levelNodes.getVertexNodes();
-				
-				int i = x;				
-				
-				for(VertexNode node :vertexNodes)
-				{					
-					node.setX(i);					
-					node.setY(j);					
-					levelNodes.addLink(node.getVertex(graph, parent));					
-					i = node.getX()+deltaX+node.getWidth();
-				}		
-				ArrayList<Object> child = levelNodes.getVertexLinks();
-				if (null != root){
-					for(Object nodeRoot :root)
-					{
-						for(Object nodeChild :child)
-						{
-							graph.insertEdge(parent, null, "", nodeRoot, nodeChild);
-						}
-					}
-				} 
-				root = levelNodes.getVertexLinks();
-				
-				j += deltaY+levelNodes.calcMaxHeight();
-			}
+		graph.getModel().beginUpdate();
+
+		try {
+			int maxDeep = levels.size();
+			for (Entry<Integer, ArrayList<LevelNode>> entity : levels.entrySet()) {
+				ArrayList<LevelNode> nodes = entity.getValue();
+				int level = entity.getKey();
+				for(LevelNode node :  nodes)
+				{
+					Object rootNode = node.setGraph(graph).setVertex(parent).getVertex();
+					if (!node.isRoot()) {	
+						node.setVertexLink();
+					}	
+				}
+			}			
 		} finally {
 			graph.getModel().endUpdate();
-		}
-		
+		}		
 		graphComponent.setGraph(graph);
 		graphComponent.updateUI();
-		
-		
+				
+		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
+		{		
+			public void mouseReleased(MouseEvent e)
+			{
+				Object cell = graphComponent.getCellAt(e.getX(), e.getY());
+				
+				if (cell != null)
+				{
+					System.out.println("cell="+graph.getLabel(cell));
+				}
+			}			
+		});
+
 	}
 
 	/**
@@ -315,9 +310,7 @@ public class MainForm {
 		graphComponent = new mxGraphComponent(new mxGraph());
 		graphComponent.setToolTips(true);
 		panelDepend.add(graphComponent, "panelDepend");
-		
-		
-		
+
 		panelPerson = new JPanel();
 		panelPerson.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelPerson.setMinimumSize(new Dimension(10, 250));
@@ -760,14 +753,14 @@ public class MainForm {
 
 		if (!user.getManager().isEmpty()) {
 			labelPersonHead.setVisible(true);
-			labelPersonWriHead.setText(core.getUserManger(user));			
+			labelPersonWriHead.setText(core.getUserManger(user));
 		} else {
 			labelPersonHead.setVisible(false);
 			labelPersonWriHead.setText("");
-			
+
 		}
-		
-		showGraph(core.getUserDependency(user), null);
+		// core.getUserDependency(user);
+		showGraph(core.getUserDependency(user));
 
 		labelPersonWriRoom.setText(user.getPhysicalDeliveryOfficeName());
 		labelPersonWriPhoneInside.setText(mail);

@@ -24,9 +24,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import entity.CompanyDto;
-import entity.VertexNode;
 import entity.UserDto;
-import entity.LevelNodes;
+import entity.LevelNode;
 import forms.LdapSearchThread;
 import forms.LocalSearchThread;
 import forms.MainForm;
@@ -234,6 +233,10 @@ public class Core {
 
 		return new ImageIcon(image);
 	}
+	
+	public void loadData() {
+		ldapSearch();
+	}
 
 	public void ldapSearch() {
 		if (null == ldapSearch) {
@@ -278,42 +281,29 @@ public class Core {
 		return managerToString;
 	}
 	
-	public ArrayList<LevelNodes> getUserDependency(UserDto user)
+	
+	/*
+	public LevelNodes getUserDependency(UserDto user, int level, int deep)
 	{
-		ArrayList<LevelNodes>  users  = new ArrayList<LevelNodes>();
-		
-		LevelNodes managerPoints = new LevelNodes();
-		LevelNodes userPoints = new LevelNodes();
-		LevelNodes directReportPoints = new LevelNodes();
-		
-		int level = 0;
-		
-		for(String dn : user.getManager())
-		{
-			UserDto manager = companys.getUsers().get(dn);
-			if (null != manager) {
-				managerPoints.addListPoints(level,manager);
-			}
-		}
-		if(!managerPoints.isEmpty()) {						
-			users.add(managerPoints);
-			level++;
-		}		
-		userPoints.addListPoints(new VertexNode(user,level));
-		users.add(level,userPoints);
+		LevelNodes  users  = new LevelNodes(user);
+		users.setLevel(level);
 		level++;
-		
+		deep++;
 		for(String dn : user.getDirectReports())
 		{
 			UserDto manager = companys.getUsers().get(dn);
 			if (null != manager) {
-				directReportPoints.addListPoints(new VertexNode(manager,level));
+				users.addLink(getUserDependency(manager, level, deep));
 			}
-		}
-		if(!directReportPoints.isEmpty()) {
-			users.add(level,directReportPoints);
 		}
 		
 		return users;
+	}
+	*/
+	
+	public HashMap<Integer, ArrayList<LevelNode>> getUserDependency(UserDto user)
+	{
+		Nodes nodesManager = new Nodes(companys.getUsers());
+		return nodesManager.getLevels(user);
 	}
 }
