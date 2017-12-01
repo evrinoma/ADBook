@@ -1,10 +1,16 @@
 package forms;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -17,12 +23,14 @@ public class LoadThread extends SwingWorker<Object, String> {
 
 	public static final boolean READ = true;
 	public static final boolean WRITE = !READ;
-	private static final String FILE_CASHE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/cashe";
+	private static final String FILE_CAСHE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/cache";
 
 	private Core core = null;
 	private Companys writeStream = null;
 	private Companys readStream = null;
 	private boolean direction = READ;
+
+	private FileLock fileLock;
 
 	public LoadThread(Core core) {
 		this.core = core;
@@ -44,15 +52,24 @@ public class LoadThread extends SwingWorker<Object, String> {
 		return direction ? loadCache() : saveCache();
 	}
 
+	private boolean isEmptyRead() {
+		return (readStream.getCompanys().isEmpty() & readStream.getUsers().isEmpty()); 
+	}
+	
 	// Can safely update the GUI from this method.
 	protected void done() {
 		try {
 			// Retrieve the return value of doInBackground.
 			if ((boolean) get()) {
 				if (direction) {
+					if (!isEmptyRead()) {
 					core.isLocalCacheSuccessful(readStream);
 					core.setStatusString("successful read");
-				} else {					
+					} else {
+						core.isLocalCacheFail();
+						core.setStatusString("read is empty");
+					}
+				} else {
 					core.setStatusString("successful save");
 				}
 			} else {
@@ -80,42 +97,86 @@ public class LoadThread extends SwingWorker<Object, String> {
 	/**
 	 * сохранение в кеш
 	 */
-	private boolean saveCache() {
+	private boolean saveCache() throws IOException {
+		boolean status = false;
+		RandomAccessFile fileOut = null;
+		FileChannel channel = null;
+		FileLock lock = null;
+		readStream = new Companys();
+		
+		try {
+			fileOut = new RandomAccessFile(FILE_CAСHE, "rw");
+			channel = fileOut.getChannel();
+			lock = channel.lock();
 
-		if (null != writeStream) {
-			try {
-				FileOutputStream fileOut = new FileOutputStream(FILE_CASHE);
-				ObjectOutputStream out = new ObjectOutputStream(fileOut);
-				out.writeObject(writeStream);
-				out.close();
-				fileOut.close();
-				return true;
-			} catch (IOException i) {
-				i.printStackTrace();
+			if (lock != null) {
+				FileDescriptor descriptorOut = fileOut.getFD();
+				write(descriptorOut);
+				status = true;
+			} else {
+				System.out.println("Another instance is already running saveCache");
 			}
-		}
-		return false;
+		} finally {
+			if (lock != null && lock.isValid())
+				lock.release();
+			if (fileOut != null)
+				fileOut.close();
+			
+			return status;	
+		}	
 	}
 
 	/**
 	 * загрузка из кеша
 	 * 
 	 * @return
+	 * @throws IOException
 	 */
-	private boolean loadCache() {
+	private boolean loadCache() throws IOException {
+		boolean status = false;
+		RandomAccessFile fileIn = null;
+		FileChannel channel = null;
+		FileLock lock = null;
 		readStream = new Companys();
+		
 		try {
-			FileInputStream fileIn = new FileInputStream(FILE_CASHE);
-			ObjectInputStream in = new ObjectInputStream(fileIn);
-			readStream = (Companys) in.readObject();
-			in.close();
-			fileIn.close();
-			return true;
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} catch (ClassNotFoundException cnfe) {
-			cnfe.printStackTrace();
+			fileIn = new RandomAccessFile(FILE_CAСHE, "rw");
+			channel = fileIn.getChannel();
+			lock = channel.lock();
+
+			if (lock != null) {
+				FileDescriptor descriptorIn = fileIn.getFD();
+				read(descriptorIn);
+				status = true;
+			} else {
+				System.out.println("Another instance is already running loadCache");
+			}
+		} finally {
+			if (lock != null && lock.isValid())
+				lock.release();
+			if (fileIn != null)
+				fileIn.close();
+			
+			return status;
 		}
-		return false;
+	}
+
+	private void write(FileDescriptor fileDescriptor) throws IOException {
+		FileOutputStream fileOutputStream = new FileOutputStream(fileDescriptor);
+
+		ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+		objectOutputStream.writeObject(writeStream);
+		objectOutputStream.close();
+	}
+
+	private void read(FileDescriptor fileDescriptor) throws IOException {
+		FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
+		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+		try {
+			readStream = (Companys) objectInputStream.readObject();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		objectInputStream.close();
 	}
 }

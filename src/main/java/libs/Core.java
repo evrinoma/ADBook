@@ -109,7 +109,9 @@ public class Core {
 	 * загрузка данных в приложение
 	 */
 	public void loadData() {	
-		localReadCache();
+		localReadCache();		
+		//localWriteCache();
+		//localWriteCache();
 	}
 
 	
