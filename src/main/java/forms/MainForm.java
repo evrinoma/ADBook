@@ -67,6 +67,7 @@ public class MainForm {
 
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
+	private static final String EMPTY_IMAGE ="/resources/images/empty.png";
 	private static final String HUMANS_IMAGE ="/resources/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
 	private static final String LOGO_IMAGE = "/resources/images/logo.png";
 	private static final String PRELOAD_IMAGE = "/resources/images/ajax-loader.gif";
@@ -834,15 +835,12 @@ public class MainForm {
 
 		labelPersonQrCode.setIcon(
 				core.createQrCode(user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
-	}
+	}	
 	
-	private boolean isResourceImageExist(String nameFile)
-	{
-		return (null == this.getClass().getResource(nameFile)) ? false :true; 
-	}
 	
-	private  ImageIcon getResourceImage(String nameFile){			
-		return new ImageIcon(this.getClass().getResource(nameFile));		  
+	private  ImageIcon getResourceImage(String nameFile){
+		 URL url = this.getClass().getResource(nameFile);
+		return (null == url)? new ImageIcon(this.getClass().getResource(EMPTY_IMAGE)) : new ImageIcon(url);		  
 	}
 
 	private void addListners() {
