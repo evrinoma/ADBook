@@ -1,6 +1,7 @@
 package forms;
 
 import java.awt.EventQueue;
+import java.awt.Image;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -25,12 +26,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import com.mxgraph.model.mxCell;
-import com.mxgraph.model.mxGeometry;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxStylesheet;
 
 import entity.CompanyDto;
 import entity.LevelNode;
@@ -48,19 +45,21 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+
+import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 
@@ -68,10 +67,10 @@ public class MainForm {
 
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
-	private static final String EMPTY_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
-	private static final String LOGO_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/logo.gif";
-	private static final String PRELOAD_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/ajax-loader.gif";
-	private static final String PLANS_IMAGE = "/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/plans/";
+	private static final String HUMANS_IMAGE ="/resources/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
+	private static final String LOGO_IMAGE = "/resources/images/logo.png";
+	private static final String PRELOAD_IMAGE = "/resources/images/ajax-loader.gif";
+	private static final String PLANS_IMAGE = "/resources/images/plans/";
 
 	private JLabel labelPersonWriDescription;
 	private JLabel labelPersonWriFio;
@@ -265,13 +264,11 @@ public class MainForm {
 		graph.getModel().beginUpdate();
 
 		try {
-			int maxDeep = levels.size();
 			for (Entry<Integer, ArrayList<LevelNode>> entity : levels.entrySet()) {
-				ArrayList<LevelNode> nodes = entity.getValue();
-				int level = entity.getKey();
+				ArrayList<LevelNode> nodes = entity.getValue();				
 				for(LevelNode node :  nodes)
 				{
-					Object rootNode = node.setGraph(graph).setVertex(parent).getVertex();
+					node.setGraph(graph).setVertex(parent).getVertex();
 					if (!node.isRoot()) {	
 						node.setVertexLink();
 					}	
@@ -305,7 +302,8 @@ public class MainForm {
 	 */
 	private void componentsInitialize() {
 		frmHandbook = new JFrame();
-		frmHandbook.setIconImage(Toolkit.getDefaultToolkit().getImage(LOGO_IMAGE));
+		ImageIcon icon = getResourceImage(LOGO_IMAGE);
+		frmHandbook.setIconImage(icon.getImage());
 		frmHandbook.setTitle("HandBook");
 		frmHandbook.setBounds(100, 100, 952, 940);
 		frmHandbook.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -378,7 +376,7 @@ public class MainForm {
 
 		labelPreload = new JLabel();
 		labelPreload.setHorizontalAlignment(SwingConstants.CENTER);
-		labelPreload.setIcon(new ImageIcon(PRELOAD_IMAGE));
+		labelPreload.setIcon(getResourceImage(PRELOAD_IMAGE));
 		labelPreload.setName("labelPreload");
 		panel.add(labelPreload, "labelPreload");
 	}
@@ -589,7 +587,7 @@ public class MainForm {
 
 		labelPersonPic = new JLabel();
 		labelPersonPic.setSize(DEMENSION_IMAGE);
-		labelPersonPic.setIcon(resizeIcon(new ImageIcon(EMPTY_IMAGE), labelPersonPic));
+		labelPersonPic.setIcon(resizeIcon(getResourceImage(HUMANS_IMAGE), labelPersonPic));
 		panelQrCode.add(labelPersonPic);
 
 		labelPersonQrCode = new JLabel();
@@ -730,13 +728,13 @@ public class MainForm {
 		JLabel labelMiddleName = new JLabel(textFieldMiddleName.getToolTipText() + ':');
 		labelMiddleName.setMinimumSize(new Dimension(50, 0));
 
-		comboBoxCompany = new JComboBox();
+		comboBoxCompany = new JComboBox<CompanyDto>();
 		comboBoxCompany.addItem(new CompanyDto());
 		comboBoxCompany.setToolTipText("Комания");
 		JLabel labelCompany = new JLabel(comboBoxCompany.getToolTipText() + ':');
 		labelCompany.setMinimumSize(new Dimension(50, 0));
 
-		comboBoxFilial = new JComboBox();
+		comboBoxFilial = new JComboBox<CompanyDto>();
 		comboBoxFilial.addItem(new CompanyDto());
 		comboBoxFilial.setToolTipText("Представительство");
 		JLabel labelFilials = new JLabel(comboBoxFilial.getToolTipText() + ':');
@@ -785,9 +783,8 @@ public class MainForm {
 		SpringUtilities.makeCompactGrid(panelFSM, 8, 2, 6, 6, 20, 6);
 	}
 
-	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {
-		return new ImageIcon(image.getImage().getScaledInstance(label.getWidth(), label.getHeight(),
-				image.getImage().SCALE_DEFAULT));
+	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {		
+		return new ImageIcon(image.getImage().getScaledInstance(label.getWidth(), label.getHeight(),image.getImage().SCALE_DEFAULT));
 	}
 
 	private void updatePanelView(UserDto user) {
@@ -825,17 +822,27 @@ public class MainForm {
 		labelContactWriPhone.setText(user.getHomePhone());
 		labelContactWriMobilePhone.setText(user.getMobile());
 		labelContactWriMail.setText(user.getMail());
-
+		
+		
 		labelRoomPic.setIcon(resizeIcon((null != user.getPhysicalDeliveryOfficeName())
-				? new ImageIcon(PLANS_IMAGE + user.getPhysicalDeliveryOfficeName() + ".jpg")
-				: new ImageIcon(EMPTY_IMAGE), labelRoomPic));
-
+				? getResourceImage(PLANS_IMAGE + user.getPhysicalDeliveryOfficeName() + ".jpg")
+				: getResourceImage(HUMANS_IMAGE), labelRoomPic));
+				
 		labelPersonPic.setIcon(resizeIcon(
-				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : new ImageIcon(EMPTY_IMAGE),
+				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : getResourceImage(HUMANS_IMAGE),
 				labelPersonPic));
 
 		labelPersonQrCode.setIcon(
 				core.createQrCode(user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
+	}
+	
+	private boolean isResourceImageExist(String nameFile)
+	{
+		return (null == this.getClass().getResource(nameFile)) ? false :true; 
+	}
+	
+	private  ImageIcon getResourceImage(String nameFile){			
+		return new ImageIcon(this.getClass().getResource(nameFile));		  
 	}
 
 	private void addListners() {
