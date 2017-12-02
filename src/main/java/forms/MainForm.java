@@ -835,19 +835,16 @@ public class MainForm {
 				labelPersonPic));
 
 		labelPersonQrCode.setIcon(
-				core.createQrCode(user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
+				core.createQrCodeWithLogo(getResourceFile(LOGO_IMAGE),user.getVCard(), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
 	}	
 	
+	private URL getResourceFile(String nameFile){
+		return this.getClass().getResource(nameFile);
+	}
 	
 	private  ImageIcon getResourceImage(String nameFile){
-		 URL url = this.getClass().getResource(nameFile);
-		 try {
-			String tmp = new java.io.File( "." ).getCanonicalPath();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return (null == url)? new ImageIcon(this.getClass().getResource(EMPTY_IMAGE)) : new ImageIcon(url);		  
+		URL url = getResourceFile(nameFile);
+		return (null == url)? new ImageIcon(getResourceFile(EMPTY_IMAGE)) : new ImageIcon(url);		  
 	}
 
 	private void addListners() {

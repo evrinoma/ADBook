@@ -2,18 +2,26 @@ package libs;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 
 import com.google.zxing.BarcodeFormat;
@@ -66,8 +74,8 @@ public class Core {
 	 * @param width
 	 * @param height
 	 * @return
-	 */
-	public ImageIcon createQrCode(String vcard, int width, int height) {
+	 */	
+	public ImageIcon createQrCodeWithLogo(URL url, String vcard, int width, int height) {
 		Hashtable hintMap = new Hashtable();
 		hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
@@ -96,14 +104,63 @@ public class Core {
 						graphics.fillRect(i, j, 1, 1);
 					}
 				}
+			}		
+			
+			if (null != url) {
+			
+			BufferedImage logo = ImageIO.read(url);
+			
+			double scale = ((logo.getWidth() / image.getWidth()) > 0.3) ? 0.3 : 1;
+			logo = getScaledImage( logo,
+			 		(int)( logo.getWidth() * scale),
+			 		(int)( logo.getHeight() * scale) );        
+         graphics.drawImage( logo,
+        		 image.getWidth()/2 - logo.getWidth()/2,
+        		 image.getHeight()/2 - logo.getHeight()/2,
+         		image.getWidth()/2 + logo.getWidth()/2,
+         		image.getHeight()/2 + logo.getHeight()/2,
+         		0, 0, logo.getWidth(), logo.getHeight(), null);
+         
 			}
-
-		} catch (WriterException e) {
+		} catch (IOException | WriterException e) {
 			e.printStackTrace();
 		}
-
-		return new ImageIcon(image);
+		
+         return new ImageIcon(image);
 	}
+
+	
+	private BufferedImage getScaledImage(BufferedImage image, int width, int height) throws IOException {
+		int imageWidth  = image.getWidth();
+	    int imageHeight = image.getHeight();
+
+	    double scaleX = (double)width/imageWidth;
+	    double scaleY = (double)height/imageHeight;
+	    AffineTransform scaleTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
+	    AffineTransformOp bilinearScaleOp = new AffineTransformOp(
+	    		scaleTransform, AffineTransformOp.TYPE_BILINEAR);
+
+	    return bilinearScaleOp.filter(
+	        image,
+	        new BufferedImage(width, height, image.getType()));
+	}
+	/*
+	private BufferedImage getScaledImage(BufferedImage image, int width, int height) throws IOException {
+		int imageWidth  = image.getWidth();
+	    int imageHeight = image.getHeight();
+
+	    double scaleX = (double)width/imageWidth;
+	    double scaleY = (double)height/imageHeight;
+	    AffineTransform scaleTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
+	    AffineTransformOp bilinearScaleOp = new AffineTransformOp(
+	    		scaleTransform, AffineTransformOp.TYPE_BILINEAR);
+
+	    return bilinearScaleOp.filter(
+	        image,
+	        new BufferedImage(width, height, image.getType()));
+	}
+	*/
+	
 
 	/**
 	 * загрузка данных в приложение
