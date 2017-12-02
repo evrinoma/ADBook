@@ -67,11 +67,11 @@ public class MainForm {
 
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
-	private static final String EMPTY_IMAGE ="/resources/images/empty.png";
-	private static final String HUMANS_IMAGE ="/resources/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
-	private static final String LOGO_IMAGE = "/resources/images/logo.png";
-	private static final String PRELOAD_IMAGE = "/resources/images/ajax-loader.gif";
-	private static final String PLANS_IMAGE = "/resources/images/plans/";
+	private static final String EMPTY_IMAGE ="/images/empty.png";
+	private static final String HUMANS_IMAGE ="/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
+	private static final String LOGO_IMAGE = "/images/logo.png";
+	private static final String PRELOAD_IMAGE = "/images/ajax-loader.gif";
+	private static final String PLANS_IMAGE = "/images/plans/";
 
 	private JLabel labelPersonWriDescription;
 	private JLabel labelPersonWriFio;
@@ -281,8 +281,9 @@ public class MainForm {
 			
 		
 		graphComponent.setGraph(graph);
-		graphComponent.updateUI();
-				
+		//graphComponent.updateUI();
+		graphComponent.getGraphControl().repaint();
+		
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
 		{		
 			public void mouseReleased(MouseEvent e)
@@ -840,6 +841,12 @@ public class MainForm {
 	
 	private  ImageIcon getResourceImage(String nameFile){
 		 URL url = this.getClass().getResource(nameFile);
+		 try {
+			String tmp = new java.io.File( "." ).getCanonicalPath();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return (null == url)? new ImageIcon(this.getClass().getResource(EMPTY_IMAGE)) : new ImageIcon(url);		  
 	}
 
