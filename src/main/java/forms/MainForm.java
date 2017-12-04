@@ -8,6 +8,7 @@ import java.awt.SystemTray;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import java.awt.AWTException;
@@ -27,6 +28,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -55,13 +57,20 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
@@ -83,9 +92,9 @@ public class MainForm {
 	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
 	private static final String EMPTY_IMAGE ="/images/empty.png";
 	private static final String USERS_IMAGE = "/images/iphone/Users.png";//"/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
-	private static final String DOWNLOADS_IMAGE = "/images/iphone/Contacts.png";
-	private static final String COPYEMAILS_IMAGE = "/images/iphone/Mail.png";
-	
+	private static final String DOWNLOADS_IMAGE = "/images/iphone/Transmission.png";
+	private static final String COPY_EMAILS_IMAGE = "/images/iphone/Mail.png";
+	private static final String SAVE_XLS_IMAGE = "/images/iphone/Excel.png";
 	private static final String LOGO_IMAGE = "/images/logo.png";
 	private static final String PRELOAD_IMAGE = "/images/ajax-loader.gif";
 	private static final String PLANS_IMAGE = "/images/plans/";
@@ -146,6 +155,7 @@ public class MainForm {
 	private JPanel tools;
 	private JLabel labelUpdate;
 	private JLabel labelCopyMails;
+	private JLabel labelSaveXls;
 	private JPanel panelFSM;
 	
 	/**
@@ -313,7 +323,6 @@ public class MainForm {
 		}			
 			
 		graphComponent.setGraph(graph);
-		//graphComponent.updateUI();
 		graphComponent.getGraphControl().repaint();
 		
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
@@ -362,7 +371,6 @@ public class MainForm {
 		panelTree.setLayout(new CardLayout(0, 0));
 		splitPaneVert.setLeftComponent(panelTree);
 		createTreePanel(panelTree);	
-		
 		
 		panelView = new JPanel();
 		splitPaneVert.setRightComponent(panelView);
@@ -483,11 +491,19 @@ public class MainForm {
 		labelCopyMails.setMinimumSize(DEMENSION_ICON_MENU);
 		labelCopyMails.setSize(DEMENSION_ICON_MENU);
 		labelCopyMails.setToolTipText("Копировать почтовые адреса");
-		labelCopyMails.setIcon(resizeIcon(this.getResourceImage(COPYEMAILS_IMAGE), labelCopyMails));			
+		labelCopyMails.setIcon(resizeIcon(this.getResourceImage(COPY_EMAILS_IMAGE), labelCopyMails));			
 		tools.add(labelCopyMails);
-	}
-	
-	
+		
+		labelSaveXls = new JLabel("");
+		sl_tools.putConstraint(SpringLayout.NORTH, labelSaveXls, 2, SpringLayout.NORTH, tools);
+		sl_tools.putConstraint(SpringLayout.WEST, labelSaveXls, 55, SpringLayout.WEST, tools);
+		labelSaveXls.setMaximumSize(DEMENSION_ICON_MENU);		
+		labelSaveXls.setMinimumSize(DEMENSION_ICON_MENU);
+		labelSaveXls.setSize(DEMENSION_ICON_MENU);
+		labelSaveXls.setToolTipText("Сохранить в XLS");
+		labelSaveXls.setIcon(resizeIcon(this.getResourceImage(SAVE_XLS_IMAGE), labelSaveXls));			
+		tools.add(labelSaveXls);
+	}	
 	
 	private void lockPanelFSM(boolean lock)
 	{
@@ -922,8 +938,6 @@ public class MainForm {
 		panelFSM.add(textFieldPesonPosition);
 		panelFSM.add(labelPhone);		
 		panelFSM.add(textFieldPhone);
-		
-
 
 		// rows, cols, initX, initY
 		SpringUtilities.makeCompactGrid(panelFSM, 8, 2, 6, 6, 20, 6);
@@ -1130,6 +1144,7 @@ public class MainForm {
 		labelCopyMails.addMouseListener(new MouseAdapter() {			
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				labelCopyMails.setBorder(null);
 				TreePath[] paths = tree.getSelectionPaths();
 				if (paths == null) return;
 				HashMap<String, UserDto> users = new HashMap<String, UserDto>();
@@ -1146,16 +1161,107 @@ public class MainForm {
     				}
     				
                 }				
-				core.getCopyDataToBuffer(users);
-				labelCopyMails.setBorder(null);
+				core.getCopyDataToBuffer(users);				
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
 				labelCopyMails.setBorder(new LineBorder(new Color(214, 217, 223)));
 			}
 		});
+		
+		labelSaveXls.addMouseListener(new MouseAdapter() {			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				saveToXls();				
+				labelSaveXls.setBorder(null);
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				labelSaveXls.setBorder(new LineBorder(new Color(214, 217, 223)));
+			}
+		});
 	}
 
+	private void saveToXls()
+	{
+		JFrame parentFrame = new JFrame();
+		 
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Specify a file to save");   
+
+		FileNameExtensionFilter xlsFilter = new FileNameExtensionFilter("*.xlsx", "Microsoft Excel Documents");
+		fileChooser.addChoosableFileFilter(xlsFilter);
+		
+		int userSelection = fileChooser.showSaveDialog(parentFrame);
+		
+		if (userSelection == JFileChooser.APPROVE_OPTION) {
+		    File fileToSave = fileChooser.getSelectedFile();
+		    if (fileToSave.exists()) {
+		    	System.out.println("File exist Save as file: " + fileToSave.getAbsolutePath());
+		    } else {
+		    	System.out.println("File not exist Save as file: " + fileToSave.getAbsolutePath());
+		    }
+		    
+		    
+		    
+		    //Blank workbook
+		    XSSFWorkbook workbook = new XSSFWorkbook();
+
+		    //Create a blank sheet
+		    XSSFSheet sheet = workbook.createSheet("Employee Data");
+
+		    //This data needs to be written (Object[])
+		    Map<String, Object[]> data = new TreeMap<String, Object[]>();
+		    data.put("1", new Object[]{"ID", "NAME", "LASTNAME"});
+		    data.put("2", new Object[]{1, "Amit", "Shukla"});
+		    data.put("3", new Object[]{2, "Lokesh", "Gupta"});
+		    data.put("4", new Object[]{3, "John", "Adwards"});
+		    data.put("5", new Object[]{4, "Brian", "Schultz"});
+
+		    //Iterate over data and write to sheet
+		    Set<String> keyset = data.keySet();
+
+		    int rownum = 0;
+		    for (String key : keyset) 
+		    {
+		        //create a row of excelsheet
+		        Row row = sheet.createRow(rownum++);
+
+		        //get object array of prerticuler key
+		        Object[] objArr = data.get(key);
+
+		        int cellnum = 0;
+
+		        for (Object obj : objArr) 
+		        {
+		            Cell cell = row.createCell(cellnum++);
+		            if (obj instanceof String) 
+		            {
+		                cell.setCellValue((String) obj);
+		            }
+		            else if (obj instanceof Integer) 
+		            {
+		                cell.setCellValue((Integer) obj);
+		            }
+		        }
+		    }
+		    try 
+		    {
+		        //Write the workbook in file system
+		        FileOutputStream out = new FileOutputStream(new File("howtodoinjava_demo.xlsx"));
+		        workbook.write(out);
+		        out.close();
+		        System.out.println("howtodoinjava_demo.xlsx written successfully on disk.");
+		    } 
+		    catch (Exception e)
+		    {
+		        e.printStackTrace();
+		    }
+		    
+		    
+		}
+	}
+	
 	private boolean filterOnlyAlphabetic(KeyEvent e) {
 		if (Character.isAlphabetic(e.getKeyChar())) {
 			return false;
