@@ -312,7 +312,6 @@ public class MainForm {
 			graph.getModel().endUpdate();
 		}			
 			
-		
 		graphComponent.setGraph(graph);
 		//graphComponent.updateUI();
 		graphComponent.getGraphControl().repaint();
@@ -329,7 +328,6 @@ public class MainForm {
 				}
 			}			
 		});
-
 	}
 
 	/**
