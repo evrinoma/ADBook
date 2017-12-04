@@ -52,6 +52,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -154,23 +156,33 @@ public class MainForm {
 			public void run() {
 				try {
 					MainForm window = new MainForm();
-					window.frmHandbook.setVisible(true);
+					window.frmHandbook.setVisible(true);					
 					window.frmHandbook.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-
+	
 	/**
 	 * Create the application.
 	 */
-	public MainForm() {
+	public MainForm() {		
 		core = new Core();
 		componentsInitialize();
+		addWindowListener();
 		core.setMainForm(this);
 		core.loadData();
+	}
+	
+	private void addWindowListener() {	
+		frmHandbook.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent e){
+				createTray();
+			}
+		});
 	}
 
 	public DefaultMutableTreeNode getTopTree(){
@@ -390,10 +402,8 @@ public class MainForm {
 		createPanelStatus();
 
 		addListners();
-		
-		createTray();
 	}
-	
+
 	private void createTray()
 	{
 		 //checking for support
@@ -402,18 +412,21 @@ public class MainForm {
 	        return ;
 	    }
 	    
-	    SystemTray systemTray = SystemTray.getSystemTray();
+	    PopupMenu trayPopupMenu = new PopupMenu();
+	    
+	    final SystemTray systemTray = SystemTray.getSystemTray();
 
 	    ImageIcon icon = getResourceImage(LOGO_IMAGE);
 	    Image image = icon.getImage();
-
-	    PopupMenu trayPopupMenu = new PopupMenu();
+	    //setting tray icon
+	    final TrayIcon trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);	   
 
 	    MenuItem action = new MenuItem("Развернуть");
 	    action.addActionListener(new ActionListener() {
 	        @Override
 	        public void actionPerformed(ActionEvent e) {	        	
-	        	frmHandbook.setVisible(true);      
+	        	frmHandbook.setVisible(true);  
+	        	systemTray.remove(trayIcon);
 	        }
 	    });     
 	    trayPopupMenu.add(action);
@@ -427,14 +440,12 @@ public class MainForm {
 	        }
 	    });
 	    trayPopupMenu.add(close);
-
-	    //setting tray icon
-	    TrayIcon trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);
+	    
 	    //adjust to default size as per system recommendation 
 	    trayIcon.setImageAutoSize(true);
-
+         
 	    try{
-	        systemTray.add(trayIcon);
+	    	systemTray.add(trayIcon);	    
 	    }catch(AWTException awtException){
 	        awtException.printStackTrace();
 	    }
