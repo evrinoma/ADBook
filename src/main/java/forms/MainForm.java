@@ -2,10 +2,15 @@ package forms;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
@@ -16,6 +21,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
@@ -36,6 +42,7 @@ import libs.Core;
 
 import java.awt.CardLayout;
 import java.awt.Toolkit;
+import java.awt.TrayIcon;
 
 import javax.swing.border.EtchedBorder;
 import java.awt.Component;
@@ -57,6 +64,8 @@ import java.util.Map.Entry;
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 
 import javax.imageio.ImageIO;
@@ -146,6 +155,7 @@ public class MainForm {
 				try {
 					MainForm window = new MainForm();
 					window.frmHandbook.setVisible(true);
+					window.frmHandbook.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -380,6 +390,54 @@ public class MainForm {
 		createPanelStatus();
 
 		addListners();
+		
+		createTray();
+	}
+	
+	private void createTray()
+	{
+		 //checking for support
+	    if(!SystemTray.isSupported()){
+	        System.out.println("System tray is not supported !!! ");
+	        return ;
+	    }
+	    
+	    SystemTray systemTray = SystemTray.getSystemTray();
+
+	    ImageIcon icon = getResourceImage(LOGO_IMAGE);
+	    Image image = icon.getImage();
+
+	    PopupMenu trayPopupMenu = new PopupMenu();
+
+	    MenuItem action = new MenuItem("Развернуть");
+	    action.addActionListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {	        	
+	        	frmHandbook.setVisible(true);      
+	        }
+	    });     
+	    trayPopupMenu.add(action);
+
+	    //2nd menuitem of popupmenu
+	    MenuItem close = new MenuItem("Выход");
+	    close.addActionListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	        	System.exit(0);             
+	        }
+	    });
+	    trayPopupMenu.add(close);
+
+	    //setting tray icon
+	    TrayIcon trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);
+	    //adjust to default size as per system recommendation 
+	    trayIcon.setImageAutoSize(true);
+
+	    try{
+	        systemTray.add(trayIcon);
+	    }catch(AWTException awtException){
+	        awtException.printStackTrace();
+	    }
 	}
 	
 	private void createTreePanel(JPanel panelTree)
