@@ -62,13 +62,19 @@ import java.awt.event.ItemEvent;
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 public class MainForm {
 
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
+	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
 	private static final String EMPTY_IMAGE ="/images/empty.png";
-	private static final String HUMANS_IMAGE ="/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
+	private static final String USERS_IMAGE = "/images/iphone/Users.png";//"/images/humans.png"; //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
+	private static final String DOWNLOADS_IMAGE = "/images/iphone/Contacts.png";
+	private static final String COPYEMAILS_IMAGE = "/images/iphone/Mail.png";
+	
 	private static final String LOGO_IMAGE = "/images/logo.png";
 	private static final String PRELOAD_IMAGE = "/images/ajax-loader.gif";
 	private static final String PLANS_IMAGE = "/images/plans/";
@@ -111,6 +117,7 @@ public class MainForm {
 	
 	private JLabel labelStatusBar;
 	private JTree tree;
+	private JScrollPane treeView;
 	private Core core;
 
 	DefaultMutableTreeNode top;
@@ -125,7 +132,11 @@ public class MainForm {
 	private JLabel labelPreload;
 	private JPanel panelDepend;
 	private mxGraphComponent graphComponent;
-
+	private JPanel tools;
+	private JLabel labelUpdate;
+	private JLabel labelCopyMails;
+	private JPanel panelFSM;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -320,18 +331,19 @@ public class MainForm {
 		splitPaneVert.setPreferredSize(DEMENSION_TREE);
 		splitPaneHorz.setRightComponent(splitPaneVert);
 
+		JPanel panelSearch = new JPanel();
+		panelSearch.setLayout(new BorderLayout(0, 0));
+		splitPaneHorz.setLeftComponent(panelSearch);
+		createPanelFSM(panelSearch);
+		
 		panelTree = new JPanel();
 		panelTree.setPreferredSize(DEMENSION_TREE);
 		panelTree.setMinimumSize(DEMENSION_TREE);
 		panelTree.setLayout(new CardLayout(0, 0));
 		splitPaneVert.setLeftComponent(panelTree);
-		addTreePreloader(panelTree);
-
-		JPanel panelSearch = new JPanel();
-		panelSearch.setLayout(new BorderLayout(0, 0));
-		splitPaneHorz.setLeftComponent(panelSearch);
-		createPanelFSM(panelSearch);
-
+		createTreePanel(panelTree);	
+		
+		
 		panelView = new JPanel();
 		splitPaneVert.setRightComponent(panelView);
 		panelView.setLayout(new BorderLayout(0, 0));
@@ -364,27 +376,92 @@ public class MainForm {
 		graphComponent = new mxGraphComponent(new mxGraph());
 		graphComponent.setToolTips(true);
 		panelDepend.add(graphComponent, "panelDepend");
-		
-		top = new DefaultMutableTreeNode("Сотрудники");
-		tree = new JTree(top);
-		JScrollPane treeView = new JScrollPane(tree);
-		panelTree.add(treeView, "treeView");
+	
 		createPanelStatus();
 
 		addListners();
 	}
-
+	
+	private void createTreePanel(JPanel panelTree)
+	{
+		addTreePreloader(panelTree);
+		
+		top = new DefaultMutableTreeNode("Сотрудники");
+		tree = new JTree(top);
+		treeView = new JScrollPane(tree);
+		panelTree.add(treeView, "treeView");
+		
+		tools = new JPanel();
+		tools.setPreferredSize(new Dimension(20, 30));
+		tools.setMinimumSize(new Dimension(20, 30));
+		tools.setMaximumSize(new Dimension(20, 30));
+		treeView.setColumnHeaderView(tools);
+		SpringLayout sl_tools = new SpringLayout();
+		tools.setLayout(sl_tools);
+					
+		labelUpdate = new JLabel("");		
+		sl_tools.putConstraint(SpringLayout.NORTH, labelUpdate,2, SpringLayout.NORTH, tools);
+		sl_tools.putConstraint(SpringLayout.WEST, labelUpdate, 5, SpringLayout.WEST, tools);
+		labelUpdate.setMaximumSize(DEMENSION_ICON_MENU);		
+		labelUpdate.setMinimumSize(DEMENSION_ICON_MENU);
+		labelUpdate.setSize(DEMENSION_ICON_MENU);
+		labelUpdate.setToolTipText("Обновить");
+		labelUpdate.setIcon(resizeIcon(this.getResourceImage(DOWNLOADS_IMAGE), labelUpdate));
+		tools.add(labelUpdate);
+		
+		labelCopyMails = new JLabel("");
+		sl_tools.putConstraint(SpringLayout.NORTH, labelCopyMails, 2, SpringLayout.NORTH, tools);
+		sl_tools.putConstraint(SpringLayout.WEST, labelCopyMails, 30, SpringLayout.WEST, tools);
+		labelCopyMails.setMaximumSize(DEMENSION_ICON_MENU);		
+		labelCopyMails.setMinimumSize(DEMENSION_ICON_MENU);
+		labelCopyMails.setSize(DEMENSION_ICON_MENU);
+		labelCopyMails.setToolTipText("Копировать почтовые адреса");
+		labelCopyMails.setIcon(resizeIcon(this.getResourceImage(COPYEMAILS_IMAGE), labelCopyMails));			
+		tools.add(labelCopyMails);
+	}
+	
+	
+	
+	private void lockPanelFSM(boolean lock)
+	{
+		for( Component entity : panelFSM.getComponents()) {
+			if (lock) {
+				entity.disable();
+			} else {
+				entity.enable();
+			}
+		}
+		panelFSM.repaint();
+	}
+	
+	private void lockPanelFSM()
+	{
+		comboBoxCompany.setSelectedIndex(0);
+		comboBoxFilial.setSelectedIndex(0);
+		lockPanelFSM(true);		
+	}
+	
+	private void unLockPanelFSM()
+	{
+		lockPanelFSM(false);
+	}
+	
 	private void addTreePreloader(JPanel panel) {
-
 		labelPreload = new JLabel();
 		labelPreload.setHorizontalAlignment(SwingConstants.CENTER);
 		labelPreload.setIcon(getResourceImage(PRELOAD_IMAGE));
 		labelPreload.setName("labelPreload");
-		panel.add(labelPreload, "labelPreload");
+		if (null != treeView) {
+			treeView.hide();
+		} 			
+		lockPanelFSM();
+		panel.add(labelPreload,0);		
 	}
 
 	public void removeTreePreload() {
 		removePreload(panelTree);
+		unLockPanelFSM();
+		
 	}
 
 	private void removePreload(JPanel panel) {
@@ -589,7 +666,7 @@ public class MainForm {
 
 		labelPersonPic = new JLabel();
 		labelPersonPic.setSize(DEMENSION_IMAGE);
-		labelPersonPic.setIcon(resizeIcon(getResourceImage(HUMANS_IMAGE), labelPersonPic));
+		labelPersonPic.setIcon(resizeIcon(getResourceImage(USERS_IMAGE), labelPersonPic));
 		panelQrCode.add(labelPersonPic);
 
 		labelPersonQrCode = new JLabel();
@@ -705,7 +782,7 @@ public class MainForm {
 
 	private void createPanelFSM(JPanel panelSearch) {
 		SpringLayout layoutFSM = new SpringLayout();
-		JPanel panelFSM = new JPanel(layoutFSM);
+		panelFSM = new JPanel(layoutFSM);
 		TitledBorder borderFSM = new TitledBorder("Поиск по адресной книге");
 		borderFSM.setTitlePosition(TitledBorder.TOP);
 		panelFSM.setBorder(borderFSM);
@@ -828,10 +905,10 @@ public class MainForm {
 		
 		labelRoomPic.setIcon(resizeIcon((null != user.getPhysicalDeliveryOfficeName())
 				? getResourceImage(PLANS_IMAGE + user.getPhysicalDeliveryOfficeName() + ".jpg")
-				: getResourceImage(HUMANS_IMAGE), labelRoomPic));
+				: getResourceImage(USERS_IMAGE), labelRoomPic));
 				
 		labelPersonPic.setIcon(resizeIcon(
-				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : getResourceImage(HUMANS_IMAGE),
+				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : getResourceImage(USERS_IMAGE),
 				labelPersonPic));
 
 		labelPersonQrCode.setIcon(
@@ -854,11 +931,10 @@ public class MainForm {
 			public void valueChanged(TreeSelectionEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 				/* if nothing is selected */
-				if (node == null)
-					return;
+				if (node == null) return;
 				Object selectedValue = node.getUserObject();
 				if (selectedValue instanceof UserDto) {
-					updatePanelView((UserDto) node.getUserObject());
+					updatePanelView((UserDto) selectedValue);
 				}
 			}
 		});
@@ -968,6 +1044,47 @@ public class MainForm {
 					comboBoxFilial.addItem(new CompanyDto());
 				}
 				search();
+			}
+		});
+		
+		labelUpdate.addMouseListener(new MouseAdapter() {			
+			@Override
+			public void mouseClicked(MouseEvent e) {		
+				addTreePreloader(panelTree);				
+				core.loadData(false);
+				labelUpdate.setBorder(null);
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				labelUpdate.setBorder(new LineBorder(new Color(214, 217, 223)));
+			}
+		});
+
+		labelCopyMails.addMouseListener(new MouseAdapter() {			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				TreePath[] paths = tree.getSelectionPaths();
+				if (paths == null) return;
+				HashMap<String, UserDto> users = new HashMap<String, UserDto>();
+				/* if nothing is selected */
+				for (TreePath path : paths) {                    
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();    				  				
+    				Object selected = node.getUserObject();
+    				if (selected instanceof UserDto) {
+    					UserDto user = (UserDto) selected;
+    					users.put(user.getDistinguishedName(),user);
+    				} else if (selected instanceof CompanyDto) {
+    					CompanyDto company = (CompanyDto) selected;
+    					users.putAll(company.getUsers());
+    				}
+    				
+                }				
+				core.getCopyDataToBuffer(users);
+				labelCopyMails.setBorder(null);
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				labelCopyMails.setBorder(new LineBorder(new Color(214, 217, 223)));
 			}
 		});
 	}

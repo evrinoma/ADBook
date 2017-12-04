@@ -1,8 +1,14 @@
 package libs;
 
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -19,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -166,7 +173,16 @@ public class Core {
 	 * загрузка данных в приложение
 	 */
 	public void loadData() {	
-		localReadCache();
+		loadData(true);
+	}
+	
+	
+	public void loadData(boolean fromCache) {
+		if (fromCache) {
+			localReadCache();
+		} else {
+			ldapSearch();
+		}
 	}
 
 	
@@ -182,11 +198,11 @@ public class Core {
 		}
 	}
 	
-	public void localWriteCache() {
+	private void localWriteCache() {
 		localCache(LoadThread.WRITE);
 	}
 	
-	public void localReadCache() {
+	private void localReadCache() {
 		localCache(LoadThread.READ);
 	}
 	/**
@@ -316,5 +332,23 @@ public class Core {
 	public HashMap<Integer, ArrayList<LevelNode>> getUserDependency(UserDto user) {
 		Nodes nodesManager = new Nodes(companys.getUsers());
 		return nodesManager.getLevels(user);
+	}
+	
+	
+	public void getCopyDataToBuffer(HashMap<String, UserDto> users)
+	{		
+		String mails = "";
+		
+		for( Entry<String, UserDto> entity :users.entrySet())
+		{
+			UserDto user = entity.getValue();
+			mails += user.getMail();
+			mails +=";";
+		}
+		
+		StringSelection stringSelection = new StringSelection(mails);		
+		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clpbrd.setContents(stringSelection, null);
+		
 	}
 }
