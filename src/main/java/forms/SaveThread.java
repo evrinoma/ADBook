@@ -174,6 +174,6 @@ public class SaveThread extends SwingWorker<Object, String> {
 	}
 
 	public void setFileName(String file) {
-		this.file = file+FILE_EXTENSION;		
+		this.file = file;		
 	}
 }

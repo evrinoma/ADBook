@@ -430,9 +430,9 @@ public class MainForm {
 
 	    ImageIcon icon = getResourceImage(LOGO_IMAGE);
 	    Image image = icon.getImage();
-	    //setting tray icon
+	    
 	    final TrayIcon trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);	   
-
+	    //кликаем по менюшке Развернуть
 	    MenuItem action = new MenuItem("Развернуть");
 	    action.addActionListener(new ActionListener() {
 	        @Override
@@ -443,7 +443,7 @@ public class MainForm {
 	    });     
 	    trayPopupMenu.add(action);
 
-	    //2nd menuitem of popupmenu
+	    //кликаем по менюшке Выход
 	    MenuItem close = new MenuItem("Выход");
 	    close.addActionListener(new ActionListener() {
 	        @Override
@@ -453,6 +453,16 @@ public class MainForm {
 	        }
 	    });
 	    trayPopupMenu.add(close);
+	    //клик по трайиконке
+	    trayIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                	frmHandbook.setVisible(true);  
+    	        	systemTray.remove(trayIcon);
+                }
+            }
+        });
 	    
 	    //adjust to default size as per system recommendation 
 	    trayIcon.setImageAutoSize(true);
@@ -1209,7 +1219,7 @@ public class MainForm {
 
 		FileNameExtensionFilter xlsFilter = new FileNameExtensionFilter("*"+SaveThread.FILE_EXTENSION, "Microsoft Excel Documents");
 		fileChooser.addChoosableFileFilter(xlsFilter);
-		
+		fileChooser.setSelectedFile(new File("adbook"+SaveThread.FILE_EXTENSION));
 		int userSelection = fileChooser.showSaveDialog(parentFrame);
 		
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
