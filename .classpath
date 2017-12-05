@@ -18,11 +18,18 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/poi/poi-3.17.jar"/>
-	<classpathentry kind="lib" path="lib/poi/poi-ooxml-3.17.jar"/>
+	<classpathentry kind="lib" path="lib/poi/poi-ooxml-3.17.jar" sourcepath="/home/nikolns/.m2/repository/org/apache/poi/poi-ooxml/3.17/poi-ooxml-3.17-sources.jar"/>
 	<classpathentry kind="lib" path="lib/poi/poi-ooxml-schemas-3.17.jar"/>
 	<classpathentry kind="lib" path="lib/jgraphx/jgraphx.jar"/>
 	<classpathentry kind="lib" path="lib/swing/jgoodies-forms-1.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/swing/miglayout15-swing.jar"/>
 	<classpathentry kind="lib" path="lib/zxing/core-3.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/poi/lib/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="lib/poi/lib/commons-collections4-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/poi/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/poi/lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="lib/poi/lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/poi/ooxml-lib/curvesapi-1.04.jar"/>
+	<classpathentry kind="lib" path="lib/poi/ooxml-lib/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

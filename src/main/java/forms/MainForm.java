@@ -34,6 +34,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 
@@ -43,7 +48,6 @@ import entity.UserDto;
 import libs.Core;
 
 import java.awt.CardLayout;
-import java.awt.Toolkit;
 import java.awt.TrayIcon;
 
 import javax.swing.border.EtchedBorder;
@@ -56,21 +60,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
+
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
 
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
@@ -79,7 +78,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 
-import javax.imageio.ImageIO;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.LineBorder;
@@ -88,6 +87,7 @@ import java.awt.Color;
 public class MainForm {
 
 	private static final String VERSION = "05.12.17v1";
+	private static final String NAME = "ADBOOK" ;
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
 	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
@@ -98,7 +98,8 @@ public class MainForm {
 	private static final String SAVE_XLS_IMAGE = "/images/iphone/Excel.png";
 	private static final String LOGO_IMAGE = "/images/logo.png";
 	private static final String PRELOAD_IMAGE = "/images/ajax-loader.gif";
-	private static final String PLANS_IMAGE = "/images/plans/";
+	private static final String PLANS_IMAGE = "/images/plans/";	
+	
 
 	private JLabel labelPersonWriDescription;
 	private JLabel labelPersonWriFio;
@@ -169,7 +170,6 @@ public class MainForm {
 					MainForm window = new MainForm();
 					window.frmHandbook.setVisible(true);					
 					window.frmHandbook.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -179,13 +179,18 @@ public class MainForm {
 	
 	/**
 	 * Create the application.
+	 * @wbp.parser.entryPoint
 	 */
-	public MainForm() {		
+	public MainForm() {
 		core = new Core();
-		componentsInitialize();
-		addWindowListener();
-		core.setMainForm(this);
-		core.loadData();
+		if (!core.isRunningProcess(NAME)) {			
+			componentsInitialize();
+			addWindowListener();
+			core.setMainForm(this);
+			core.loadData();
+		} else {
+			System.exit(0);
+		}
 	}
 	
 	private void addWindowListener() {	
@@ -443,6 +448,7 @@ public class MainForm {
 	    close.addActionListener(new ActionListener() {
 	        @Override
 	        public void actionPerformed(ActionEvent e) {
+	        	core.removeRunningProcess();
 	        	System.exit(0);             
 	        }
 	    });
@@ -1201,76 +1207,15 @@ public class MainForm {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Specify a file to save");   
 
-		FileNameExtensionFilter xlsFilter = new FileNameExtensionFilter("*.xlsx", "Microsoft Excel Documents");
+		FileNameExtensionFilter xlsFilter = new FileNameExtensionFilter("*"+SaveThread.FILE_EXTENSION, "Microsoft Excel Documents");
 		fileChooser.addChoosableFileFilter(xlsFilter);
 		
 		int userSelection = fileChooser.showSaveDialog(parentFrame);
 		
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 		    File fileToSave = fileChooser.getSelectedFile();
-		    if (fileToSave.exists()) {
-		    	System.out.println("File exist Save as file: " + fileToSave.getAbsolutePath());
-		    } else {
-		    	System.out.println("File not exist Save as file: " + fileToSave.getAbsolutePath());
-		    }
-		    /*
-		    
-		    
-		    //Blank workbook
-		    XSSFWorkbook workbook = new XSSFWorkbook();
-
-		    //Create a blank sheet
-		    XSSFSheet sheet = workbook.createSheet("Employee Data");
-
-		    //This data needs to be written (Object[])
-		    Map<String, Object[]> data = new TreeMap<String, Object[]>();
-		    data.put("1", new Object[]{"ID", "NAME", "LASTNAME"});
-		    data.put("2", new Object[]{1, "Amit", "Shukla"});
-		    data.put("3", new Object[]{2, "Lokesh", "Gupta"});
-		    data.put("4", new Object[]{3, "John", "Adwards"});
-		    data.put("5", new Object[]{4, "Brian", "Schultz"});
-
-		    //Iterate over data and write to sheet
-		    Set<String> keyset = data.keySet();
-
-		    int rownum = 0;
-		    for (String key : keyset) 
-		    {
-		        //create a row of excelsheet
-		        Row row = sheet.createRow(rownum++);
-
-		        //get object array of prerticuler key
-		        Object[] objArr = data.get(key);
-
-		        int cellnum = 0;
-
-		        for (Object obj : objArr) 
-		        {
-		            Cell cell = row.createCell(cellnum++);
-		            if (obj instanceof String) 
-		            {
-		                cell.setCellValue((String) obj);
-		            }
-		            else if (obj instanceof Integer) 
-		            {
-		                cell.setCellValue((Integer) obj);
-		            }
-		        }
-		    }
-		    try 
-		    {
-		        //Write the workbook in file system
-		        FileOutputStream out = new FileOutputStream(new File("howtodoinjava_demo.xlsx"));
-		        workbook.write(out);
-		        out.close();
-		        System.out.println("howtodoinjava_demo.xlsx written successfully on disk.");
-		    } 
-		    catch (Exception e)
-		    {
-		        e.printStackTrace();
-		    }
-		    */
-		}
+		   	core.saveToFile(fileToSave.getAbsolutePath());		    		
+		}		
 	}
 	
 	private boolean filterOnlyAlphabetic(KeyEvent e) {

@@ -1,25 +1,19 @@
 package libs;
 
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.SystemTray;
 import java.awt.Toolkit;
-import java.awt.TrayIcon;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -28,7 +22,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 
 import com.google.zxing.BarcodeFormat;
@@ -44,15 +37,20 @@ import forms.LdapSearchThread;
 import forms.LoadThread;
 import forms.LocalSearchThread;
 import forms.MainForm;
+import forms.SaveThread;
 
 public class Core {
-	
+
 	private static final String HINT_EMPTY = "";
-	
+
+	private File fileLock = null;
+	RandomAccessFile fileLockAccess = null;
+	FileLock lock = null;
 	private Companys companys = null;
 	private LocalSearchThread localSearch = null;
 	private LdapSearchThread ldapSearch = null;
 	private LoadThread Load = null;
+	private SaveThread saveSearch = null;
 
 	private MainForm form = null;
 
@@ -63,7 +61,6 @@ public class Core {
 	public void setMainForm(MainForm form) {
 		this.form = form;
 	}
-		
 
 	public Core() {
 		companys = new Companys();
@@ -73,7 +70,6 @@ public class Core {
 		return companys;
 	}
 
-	
 	/**
 	 * метод создает картинку qr-code с данными
 	 * 
@@ -81,7 +77,7 @@ public class Core {
 	 * @param width
 	 * @param height
 	 * @return
-	 */	
+	 */
 	public ImageIcon createQrCodeWithLogo(URL url, String vcard, int width, int height) {
 		Hashtable hintMap = new Hashtable();
 		hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -111,56 +107,45 @@ public class Core {
 						graphics.fillRect(i, j, 1, 1);
 					}
 				}
-			}		
-			
+			}
+
 			if (null != url) {
-			
-			BufferedImage logo = ImageIO.read(url);
-			
-			double scale = ((logo.getWidth() / image.getWidth()) > 0.3) ? 0.3 : 1;
-			logo = getScaledImage( logo,
-			 		(int)( logo.getWidth() * scale),
-			 		(int)( logo.getHeight() * scale) );        
-         graphics.drawImage( logo,
-        		 image.getWidth()/2 - logo.getWidth()/2,
-        		 image.getHeight()/2 - logo.getHeight()/2,
-         		image.getWidth()/2 + logo.getWidth()/2,
-         		image.getHeight()/2 + logo.getHeight()/2,
-         		0, 0, logo.getWidth(), logo.getHeight(), null);
-         
+
+				BufferedImage logo = ImageIO.read(url);
+
+				double scale = ((logo.getWidth() / image.getWidth()) > 0.3) ? 0.3 : 1;
+				logo = getScaledImage(logo, (int) (logo.getWidth() * scale), (int) (logo.getHeight() * scale));
+				graphics.drawImage(logo, image.getWidth() / 2 - logo.getWidth() / 2,
+						image.getHeight() / 2 - logo.getHeight() / 2, image.getWidth() / 2 + logo.getWidth() / 2,
+						image.getHeight() / 2 + logo.getHeight() / 2, 0, 0, logo.getWidth(), logo.getHeight(), null);
+
 			}
 		} catch (IOException | WriterException e) {
 			e.printStackTrace();
 		}
-		
-         return new ImageIcon(image);
+
+		return new ImageIcon(image);
 	}
 
-	
 	private BufferedImage getScaledImage(BufferedImage image, int width, int height) throws IOException {
-		int imageWidth  = image.getWidth();
-	    int imageHeight = image.getHeight();
+		int imageWidth = image.getWidth();
+		int imageHeight = image.getHeight();
 
-	    double scaleX = (double)width/imageWidth;
-	    double scaleY = (double)height/imageHeight;
-	    AffineTransform scaleTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
-	    AffineTransformOp bilinearScaleOp = new AffineTransformOp(
-	    		scaleTransform, AffineTransformOp.TYPE_BILINEAR);
+		double scaleX = (double) width / imageWidth;
+		double scaleY = (double) height / imageHeight;
+		AffineTransform scaleTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
+		AffineTransformOp bilinearScaleOp = new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR);
 
-	    return bilinearScaleOp.filter(
-	        image,
-	        new BufferedImage(width, height, image.getType()));
+		return bilinearScaleOp.filter(image, new BufferedImage(width, height, image.getType()));
 	}
-	
 
 	/**
 	 * загрузка данных в приложение
 	 */
-	public void loadData() {	
+	public void loadData() {
 		loadData(true);
 	}
-	
-	
+
 	public void loadData(boolean fromCache) {
 		if (fromCache) {
 			localReadCache();
@@ -169,86 +154,92 @@ public class Core {
 		}
 	}
 
-	
 	/**
 	 * загрузка локального кеша
 	 */
 	public void localCache(boolean operation) {
-		if (null == Load  || Load.isDone()) {
+		if (null == Load || Load.isDone()) {
 			Load = new LoadThread(this);
 			Load.setWriteStream(this.companys).setDirection(operation).execute();
 		} else {
 			Load.execute();
 		}
 	}
-	
+
 	private void localWriteCache() {
 		localCache(LoadThread.WRITE);
 	}
-	
+
 	private void localReadCache() {
 		localCache(LoadThread.READ);
 	}
+
 	/**
 	 * 
 	 * @param loadCompanys
 	 */
-	public void isLocalCacheSuccessful(Companys loadCompanys)
-	{
+	public void isLocalCacheSuccessful(Companys loadCompanys) {
 		dataLoad(loadCompanys);
 	}
-	
-	public void isLocalCacheFail()
-	{
+
+	public void isLocalCacheFail() {
 		ldapSearch();
 	}
-	
+
 	/**
 	 * выгрузка данных из ldap
 	 */
 	public void ldapSearch() {
-		if (null == ldapSearch  || ldapSearch.isDone()) {
+		if (null == ldapSearch || ldapSearch.isDone()) {
 			ldapSearch = new LdapSearchThread(this);
 			ldapSearch.execute();
-		} else {		
+		} else {
 			ldapSearch.execute();
 		}
 	}
-	
-	/**
-	 * выгрузка из ldap успешна
-	 * @param loadedCompanys
-	 */
-	private void dataLoad(Companys companys)
-	{
-		this.companys = companys;
-		form.setCompanySelector();
-		form.setTreeNode(getCompanys().all(),true);
-		form.removeTreePreload();
-		form.setStatusBar(HINT_EMPTY);
-	}
-	
 
 	/**
 	 * выгрузка из ldap успешна
+	 * 
 	 * @param loadedCompanys
 	 */
-	public void isLdapSearchSuccessful(Companys ldapCompanys)
-	{
+	private void dataLoad(Companys companys) {
+		this.companys = companys;
+		form.setCompanySelector();
+		form.setTreeNode(getCompanys().all(), true);
+		form.removeTreePreload();
+		form.setStatusBar(HINT_EMPTY);
+	}
+
+	/**
+	 * выгрузка из ldap успешна
+	 * 
+	 * @param loadedCompanys
+	 */
+	public void isLdapSearchSuccessful(Companys ldapCompanys) {
 		dataLoad(ldapCompanys);
 		localWriteCache();
 	}
+
 	
+	public void saveToFile(String file) {
+		if (null == saveSearch || saveSearch.isDone()) {
+			saveSearch = new SaveThread(this);
+			saveSearch.setFileName(file);
+			saveSearch.execute();
+		}
+	}
+
 	
 	/**
 	 * печать в строку состояния из потоков
+	 * 
 	 * @param massage
 	 */
-	public void setStatusString(String message)
-	{
+	public void setStatusString(String message) {
 		form.setStatusBar(message);
 	}
-	
+
 	/**
 	 * фильтр по параметрам заданным в фильтре
 	 * 
@@ -279,19 +270,20 @@ public class Core {
 		}
 
 	}
-	
+
 	/**
 	 * локальный поиск успешный
+	 * 
 	 * @param filteredCompanys
 	 */
-	public void isLocalSearchSuccessful(Companys filteredCompanys)
-	{
+	public void isLocalSearchSuccessful(Companys filteredCompanys) {
 		form.getTopTree().removeAllChildren();
 		form.setTreeNode(filteredCompanys.all(), false);
 	}
 
 	/**
 	 * метод возвращает список руководителей пользователя
+	 * 
 	 * @param user
 	 * @return
 	 */
@@ -317,22 +309,52 @@ public class Core {
 		Nodes nodesManager = new Nodes(companys.getUsers());
 		return nodesManager.getLevels(user);
 	}
-	
-	
-	public void getCopyDataToBuffer(HashMap<String, UserDto> users)
-	{		
+
+	public void getCopyDataToBuffer(HashMap<String, UserDto> users) {
 		String mails = "";
-		
-		for( Entry<String, UserDto> entity :users.entrySet())
-		{
+
+		for (Entry<String, UserDto> entity : users.entrySet()) {
 			UserDto user = entity.getValue();
 			mails += user.getMail();
-			mails +=";";
+			mails += ";";
 		}
-		
-		StringSelection stringSelection = new StringSelection(mails);		
+
+		StringSelection stringSelection = new StringSelection(mails);
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
-		
+
 	}
+
+	public boolean isRunningProcess(String Name) {
+		boolean status = true;
+		FileChannel channel = null;
+		FileLock lock = null;
+
+		try {
+			fileLock = new File(System.getProperty("user.home"), Name + ".tmp");
+			fileLockAccess = new RandomAccessFile(fileLock, "rw");
+			channel = fileLockAccess.getChannel();
+			lock = channel.tryLock();
+			if (lock != null) {
+				status = false;
+			} else {
+				System.out.println("Another instance is already running");
+			}
+		} finally {
+			return status;
+		}
+	}
+
+	public void removeRunningProcess() {
+		try {
+			if (lock != null && lock.isValid())
+				lock.release();
+			if (fileLockAccess != null)
+				fileLockAccess.close();
+			fileLock.delete();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }
