@@ -87,6 +87,7 @@ import java.awt.Color;
 
 public class MainForm {
 
+	private static final String VERSION = "05.12.17v1";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
 	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
@@ -858,7 +859,7 @@ public class MainForm {
 	}
 
 	private void createPanelStatus() {
-		labelStatusBar = new JLabel("");
+		labelStatusBar = new JLabel("");		
 		labelStatusBar.setPreferredSize(new Dimension(60, 16));
 		frmHandbook.getContentPane().add(labelStatusBar, java.awt.BorderLayout.SOUTH);
 	}
@@ -1180,6 +1181,17 @@ public class MainForm {
 				labelSaveXls.setBorder(new LineBorder(new Color(214, 217, 223)));
 			}
 		});
+		
+		labelStatusBar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {				
+				labelStatusBar.setText(labelStatusBar.getText() + " " + VERSION);				
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				labelStatusBar.setText(labelStatusBar.getText().replace(VERSION,""));
+			}
+		});
 	}
 
 	private void saveToXls()
@@ -1201,7 +1213,7 @@ public class MainForm {
 		    } else {
 		    	System.out.println("File not exist Save as file: " + fileToSave.getAbsolutePath());
 		    }
-		    
+		    /*
 		    
 		    
 		    //Blank workbook
@@ -1257,8 +1269,7 @@ public class MainForm {
 		    {
 		        e.printStackTrace();
 		    }
-		    
-		    
+		    */
 		}
 	}
 	
