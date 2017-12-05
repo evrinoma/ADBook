@@ -179,18 +179,25 @@ public class MainForm {
 	
 	/**
 	 * Create the application.
-	 * @wbp.parser.entryPoint
 	 */
 	public MainForm() {
 		core = new Core();
 		if (!core.isRunningProcess(NAME)) {			
-			componentsInitialize();
-			addWindowListener();
-			core.setMainForm(this);
-			core.loadData();
+			createForm();
 		} else {
 			System.exit(0);
 		}
+	}
+	
+	/**
+	 * @wbp.parser.entryPoint
+	 */
+	public void createForm()
+	{
+		componentsInitialize();
+		addWindowListener();
+		core.setMainForm(this);
+		core.loadData();
 	}
 	
 	private void addWindowListener() {	
@@ -347,6 +354,7 @@ public class MainForm {
 
 	/**
 	 * Initialize the contents of the frame.
+	 * @wbp.parser.entryPoint
 	 */
 	private void componentsInitialize() {
 		frmHandbook = new JFrame();
