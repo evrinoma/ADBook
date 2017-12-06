@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.swing.ImageIcon;
 
 import com.google.zxing.BarcodeFormat;
@@ -36,6 +38,7 @@ import entity.LevelNode;
 import forms.LdapSearchThread;
 import forms.LoadThread;
 import forms.LocalSearchThread;
+import forms.MailThread;
 import forms.MainForm;
 import forms.SaveThread;
 
@@ -51,6 +54,7 @@ public class Core {
 	private LdapSearchThread ldapSearch = null;
 	private LoadThread Load = null;
 	private SaveThread saveSearch = null;
+	private MailThread mail = null;
 
 	private MainForm form = null;
 
@@ -221,7 +225,6 @@ public class Core {
 		localWriteCache();
 	}
 
-	
 	public void saveToFile(String file) {
 		if (null == saveSearch || saveSearch.isDone()) {
 			saveSearch = new SaveThread(this);
@@ -230,7 +233,6 @@ public class Core {
 		}
 	}
 
-	
 	/**
 	 * печать в строку состояния из потоков
 	 * 
@@ -356,5 +358,42 @@ public class Core {
 			e.printStackTrace();
 		}
 	}
+
+	private boolean isUserMailValid(String username){
+		 boolean result = true;
+		   try {
+		      InternetAddress emailAddr = new InternetAddress(username);
+		      emailAddr.validate();
+		   } catch (AddressException ex) {
+		      result = false;
+		   }
+		   
+		return result;
+	}
+	public void authorizeOnMail(String username, String password) {
+		if (null == mail || mail.isDone()) {
+			if (isUserMailValid(username)) {
+				mail = new MailThread(this);
+				mail.setUsername(username).setPassword(password);
+				mail.execute();
+			} else {
+				isMailAuthrizeFail("username is invalid");
+			}
+		} else {
+			mail.execute();
+		}		
+	}
 	
+	public void isMailAuthrizeSuccessful()
+	{
+		form.removeMessagePreload();
+		
+	}
+	
+	public void isMailAuthrizeFail(String status)
+	{
+		setStatusString(status);
+		form.removeMessagePreload();
+		
+	}
 }
