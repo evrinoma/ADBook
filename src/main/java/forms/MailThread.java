@@ -14,6 +14,7 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.swing.SwingWorker;
@@ -26,12 +27,16 @@ import libs.Core;
 
 public class MailThread extends SwingWorker<Object, String> {
 
-	public static final String MAIL_SERVER = "mail.ite-ng.ru";
-	public static final String MAIL_PORT = "465";
 	public static final boolean ACTION_AUTHORIZE = true;
 	public static final boolean ACTION_SEND_MAIL = !ACTION_AUTHORIZE;
-	public static final String HINT_TRY_AUTH = "Пытаемся авторизоваться на сервере:" + MAIL_SERVER;
-	public static final String HINT_TRY_FIND_USER = "Пытаемся найти пользователя...";
+	private static final String MAIL_SERVER = "mail.ite-ng.ru";
+	private static final String MAIL_PORT = "465";
+	private static final String HINT_TRY_AUTH = "Пытаемся авторизоваться на сервере:" + MAIL_SERVER;
+	private static final String HINT_TRY_FIND_USER = "Пытаемся найти пользователя...";
+	private static final String HINT_TRY_SEND = "Пытаемся послать почту на сервер:" + MAIL_SERVER;
+	private static final String HINT_DONE_SEND = "Сообщения отправлены";
+	private static final String HINT_AUTH_ERROR = "incorrect password or account name";
+	private static final String HINT_AUTH = "authorization successful";
 
 	private UserDto user;
 	private String username;
@@ -43,16 +48,25 @@ public class MailThread extends SwingWorker<Object, String> {
 	private Core core;
 	private HashMap<String, String> attachment = null;
 
+	private String body = "";
+	private String subject = "";
+	private ArrayList<String> to = null;
+	private ArrayList<String> toError = null;
+	private String from = "";
+
 	@Override
 	protected Boolean doInBackground() throws Exception {
 		boolean status = false;
-		if (action) {
-			publish(HINT_TRY_AUTH);
-			if (authorize()) {
-				publish(HINT_TRY_FIND_USER);
-				findUser();
-				status = true;
+
+		publish(HINT_TRY_AUTH);
+		if (authorize()) {
+			publish(HINT_TRY_FIND_USER);
+			findUser();
+			if (action == ACTION_SEND_MAIL) {
+				publish(HINT_TRY_SEND);
+				sendMessages();
 			}
+			status = true;
 		}
 
 		return status;
@@ -64,11 +78,14 @@ public class MailThread extends SwingWorker<Object, String> {
 			// Retrieve the return value of doInBackground.
 			if ((boolean) get()) {
 				if (action) {
-					core.isMailAuthrizeSuccessful();
-					core.setStatusString("authorization successful");
+					core.isMailAuthrizeSuccessful(getUserName());
+					core.setStatusString(HINT_AUTH);
+				} else {
+					core.isMailSendedSuccessful(from, toError);
+					core.setStatusString(HINT_DONE_SEND);
 				}
 			} else {
-				core.isMailAuthrizeFail("incorrect password or account name");
+				core.isMailAuthrizeFail(HINT_AUTH_ERROR);
 			}
 			// System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {
@@ -92,6 +109,8 @@ public class MailThread extends SwingWorker<Object, String> {
 	public MailThread(Core core) {
 		this.core = core;
 		createAttachments();
+		to = new ArrayList<String>();
+		toError = new ArrayList<String>();
 		propsSSL = new Properties();
 		try {
 			MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
@@ -115,7 +134,16 @@ public class MailThread extends SwingWorker<Object, String> {
 		}
 	}
 
-	public void sendMail() {
+	private void sendMessages() {
+		for (String mail : to) {
+			if (!sendMail(mail)) {
+				toError.add(mail);
+			}
+		}
+	}
+
+	private boolean sendMail(String to) {
+		boolean status = false;
 		if (this.valid) {
 			try {
 				session = Session.getInstance(propsSSL, new javax.mail.Authenticator() {
@@ -123,21 +151,19 @@ public class MailThread extends SwingWorker<Object, String> {
 						return new PasswordAuthentication(username, password);
 					}
 				});
-				session.setDebug(true);
 				Message message = new MimeMessage(session);
-				message.setFrom(new InternetAddress("nikolns@ite-ng.ru"));
-				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("nikolns@ite-ng.ru"));
-				message.setSubject("Testing Subject");
-				message.setText("Dear Mail Crawler," + "\n\n No spam to my email, please!");
+				message.setFrom(new InternetAddress(from));
+				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+				message.setSubject(subject);
+				message.setText(body);
 
-				Transport.send(message);
-
-				System.out.println("Done");
-
+				// Transport.send(message);
+				status = true;
 			} catch (MessagingException e) {
 				throw new RuntimeException(e);
 			}
 		}
+		return status;
 	}
 
 	public String getUserName() {
@@ -154,6 +180,31 @@ public class MailThread extends SwingWorker<Object, String> {
 
 	public MailThread setPassword(String password) {
 		this.password = password;
+		return this;
+	}
+
+	public MailThread setBody(String body) {
+		this.body = body;
+		return this;
+	}
+
+	public MailThread setSubject(String subject) {
+		this.subject = subject;
+		return this;
+	}
+
+	public MailThread setTo(ArrayList<String> to) {
+		this.to = to;
+		return this;
+	}
+
+	public MailThread setFrom(String from) {
+		this.from = from;
+		return this;
+	}
+
+	public MailThread setAction(boolean action) {
+		this.action = action;
 		return this;
 	}
 
@@ -183,17 +234,23 @@ public class MailThread extends SwingWorker<Object, String> {
 		user = core.getCompanys().findUserByMail(username);
 	}
 
-	public void addAttachment(String fileName, String pathToAttachment) {
-		attachment.put(fileName, pathToAttachment);
+	public void setAttachments(HashMap<String, String> attachment) {
+		this.attachment = attachment;
 	}
 
-	public  HashMap<String, String> getAttachments() {
-		return attachment;
-	}
-
-	public void createAttachments()
-	{
+	public void createAttachments() {
 		this.attachment = new HashMap<String, String>();
 	}
-	
+
+	public boolean isUserMailValid(String username) {
+		boolean result = true;
+		try {
+			InternetAddress emailAddr = new InternetAddress(username);
+			emailAddr.validate();
+		} catch (AddressException ex) {
+			result = false;
+		}
+
+		return result;
+	}
 }

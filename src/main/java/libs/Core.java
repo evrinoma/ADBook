@@ -57,7 +57,8 @@ public class Core {
 	private MailThread mail = null;
 
 	private MainForm form = null;
-
+	private HashMap<String, String> attachment = null;
+	
 	public String[] toStringArray(List<String> list) {
 		return list.toArray(new String[list.size()]);
 	}
@@ -68,6 +69,7 @@ public class Core {
 
 	public Core() {
 		companys = new Companys();
+		attachment = new HashMap<String, String>();
 	}
 
 	public Companys getCompanys() {
@@ -317,7 +319,7 @@ public class Core {
 		for (Entry<String, UserDto> entity : users.entrySet()) {
 			UserDto user = entity.getValue();
 			mails += user.getMail();
-			mails += ";";
+			mails += ",";
 		}
 		
 		return mails;
@@ -362,22 +364,10 @@ public class Core {
 		}
 	}
 
-	private boolean isUserMailValid(String username) {
-		boolean result = true;
-		try {
-			InternetAddress emailAddr = new InternetAddress(username);
-			emailAddr.validate();
-		} catch (AddressException ex) {
-			result = false;
-		}
-
-		return result;
-	}
-
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
-			if (isUserMailValid(username)) {
-				mail = new MailThread(this);
+			mail = new MailThread(this);
+			if (mail.isUserMailValid(username)) {				
 				mail.setUsername(username).setPassword(password);
 				mail.execute();
 			} else {
@@ -388,9 +378,9 @@ public class Core {
 		}
 	}
 
-	public void isMailAuthrizeSuccessful() {
+	public void isMailAuthrizeSuccessful(String authUser) {
 		form.removeMessagePreload();
-		form.showMessageEditorPanel();
+		form.showMessageEditorPanel(authUser);
 	}
 
 	public void isMailAuthrizeFail(String status) {
@@ -399,17 +389,53 @@ public class Core {
 
 	}
 
-	public String getMailAthorizedUser() {
-		return (mail.isAuthorize()) ? mail.getUserName() : "";
+	public void isMailSendedSuccessful(String authUser, ArrayList<String> emails)
+	{
+		form.removeMessagePreload();
+		form.showMessageEditorPanel(authUser);
+		form.clearMessages();
 	}
 	
+	
+	/**
+	 * добавление вложений к письму
+	 * @param fileName
+	 * @param pathToAttachment
+	 * @return
+	 */
 	public HashMap<String, String> addMailAttachmet(String fileName, String pathToAttachment){		
-		mail.addAttachment(fileName, pathToAttachment);
-		return mail.getAttachments();
+		if (null == attachment.get(fileName)) {
+			attachment.put(fileName, pathToAttachment);
+		}
+		return attachment;
 	}
 	
+	/**
+	 * очистка вложений
+	 */
 	public void clearMailAttachmet()
 	{
-		mail.createAttachments();
+		this.attachment = new HashMap<String, String>();
+	}
+	
+	/**
+	 * проверка правильности почтового ящика
+	 * @param username
+	 * @return
+	 */
+	public boolean isMailValid(String username)	{
+		MailThread mail = new MailThread(this);
+		
+		return mail.isUserMailValid(username);
+	}
+	
+	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username, String password){
+		if (null == mail || mail.isDone()) {
+			mail = new MailThread(this);							
+				mail.setAction(mail.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment);
+				mail.execute();			
+		} else {
+			mail.execute();
+		}
 	}
 }

@@ -21,6 +21,7 @@ import javax.swing.JSplitPane;
 
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.ListModel;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
@@ -84,6 +85,8 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import java.awt.TextArea;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
 
 public class MainForm {
 
@@ -173,7 +176,7 @@ public class MainForm {
 	private JLabel labelMessagesEditorFrom;
 	private JLabel labelMessagesEditorTo;
 	private JLabel labelMessagesEditorSubject;
-	private JTextArea textFieldMessagesEditorTo;
+	private JList listMessagesEditorTo;
 	private JTextField textFieldMessagesEditorSubject;
 	private JLabel labelMessagesEditorWriFrom;
 	private JButton buttonMessagesEditorSend;
@@ -182,6 +185,7 @@ public class MainForm {
 	private JButton buttonMessagesEditorClear;
 	private JList listMessagesEditorAttachment;
 	private JButton buttonMessagesEditorAttachmentClear;
+	private JList list;
 
 	/**
 	 * Launch the application.
@@ -603,11 +607,19 @@ public class MainForm {
 		removePreload(panel, "preloader");
 	}
 
-	public void addMessagePreloader() {
+	private void addMessagePreloader() {
 		if (null != panelAuth) {
 			panelAuth.hide();
 		}
+		if (null != panelMessagesEditor) {
+			panelMessagesEditor.hide();
+		}
 		createPanelPreloader(panelMessages);
+
+	}
+	
+	public void authorizeMessage(){
+		addMessagePreloader();
 		core.authorizeOnMail(textFieldLogin.getText(), passwordField.getText());
 	}
 
@@ -615,8 +627,8 @@ public class MainForm {
 		removePreload(panelMessages);
 	}
 
-	public void showMessageEditorPanel() {
-		this.labelMessagesEditorWriFrom.setText(core.getMailAthorizedUser());
+	public void showMessageEditorPanel(String authUser) {
+		this.labelMessagesEditorWriFrom.setText(authUser);
 		panelAuth.hide();
 		panelMessagesEditor.show();
 		panelMessagesEditor.repaint();
@@ -635,9 +647,9 @@ public class MainForm {
 		unLockPanelFSM();
 	}
 
-	private void clearMessages() {
+	public void clearMessages() {
 		this.textFieldMessagesEditorSubject.setText("");
-		this.textFieldMessagesEditorTo.setText("");
+		this.clearMessagesTo();
 		this.textAreaMessagesEditor.setText("");
 		clearMessagesAttachment();
 	}
@@ -647,6 +659,12 @@ public class MainForm {
 		listModel.clear();
 		this.listMessagesEditorAttachment.setModel(listModel);
 		core.clearMailAttachmet();
+	}
+
+	private void clearMessagesTo() {
+		DefaultListModel listModel = new DefaultListModel();
+		listModel.clear();
+		this.listMessagesEditorTo.setModel(listModel);
 	}
 
 	private void createTabRoom(JPanel panel) {
@@ -927,16 +945,19 @@ public class MainForm {
 
 		panelMessagesEditor.add(textFieldMessagesEditorSubject);
 
-		textFieldMessagesEditorTo = new JTextArea();
-		textFieldMessagesEditorTo.setWrapStyleWord(true);
-		textFieldMessagesEditorTo.setEditable(false);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, textFieldMessagesEditorTo, 0, SpringLayout.NORTH,
+		listMessagesEditorTo = new JList();
+		listMessagesEditorTo.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		JScrollPane scrollPaneMessagesEditorTo = new JScrollPane(listMessagesEditorTo);
+		scrollPaneMessagesEditorTo.setPreferredSize(new Dimension(262, 22));
+		scrollPaneMessagesEditorTo.setMinimumSize(new Dimension(262, 22));
+		scrollPaneMessagesEditorTo.setMaximumSize(new Dimension(262, 22));
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, scrollPaneMessagesEditorTo, 0, SpringLayout.NORTH,
 				labelMessagesEditorTo);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, textFieldMessagesEditorTo, 10, SpringLayout.EAST,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, scrollPaneMessagesEditorTo, 10, SpringLayout.EAST,
 				labelMessagesEditorSubject);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, textFieldMessagesEditorTo, -10, SpringLayout.EAST,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, scrollPaneMessagesEditorTo, -10, SpringLayout.EAST,
 				panelMessagesEditor);
-		panelMessagesEditor.add(textFieldMessagesEditorTo);
+		panelMessagesEditor.add(scrollPaneMessagesEditorTo);
 
 		textAreaMessagesEditor = new JTextArea();
 		textAreaMessagesEditor.setWrapStyleWord(true);
@@ -956,21 +977,20 @@ public class MainForm {
 		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, buttonMessagesEditorAttachment, 10, SpringLayout.WEST,
 				panelMessagesEditor);
 		panelMessagesEditor.add(buttonMessagesEditorAttachment);
-
-		JPanel panelMessagesEditorAttachment = new JPanel();
-		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, panelMessagesEditorAttachment, 10, SpringLayout.SOUTH,
+		//
+		JScrollPane paneMessagesEditorAttachment = new JScrollPane();
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, paneMessagesEditorAttachment, 10, SpringLayout.SOUTH,
 				textAreaMessagesEditor);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, panelMessagesEditorAttachment, 10, SpringLayout.EAST,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, paneMessagesEditorAttachment, 10, SpringLayout.EAST,
 				buttonMessagesEditorAttachment);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, panelMessagesEditorAttachment, -10, SpringLayout.SOUTH,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, paneMessagesEditorAttachment, -10, SpringLayout.SOUTH,
 				panelMessagesEditor);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, panelMessagesEditorAttachment, -10, SpringLayout.EAST,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, paneMessagesEditorAttachment, -10, SpringLayout.EAST,
 				panelMessagesEditor);
-		panelMessagesEditor.add(panelMessagesEditorAttachment);
-		panelMessagesEditorAttachment.setLayout(new CardLayout(0, 0));
+		panelMessagesEditor.add(paneMessagesEditorAttachment);
 
 		listMessagesEditorAttachment = new JList();
-		panelMessagesEditorAttachment.add(listMessagesEditorAttachment);
+		paneMessagesEditorAttachment.setViewportView(listMessagesEditorAttachment);
 
 		buttonMessagesEditorAttachmentClear = new JButton("Очистить вложения");
 		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorAttachmentClear, 10,
@@ -1275,15 +1295,15 @@ public class MainForm {
 					return;
 
 				Object selectedValue = eNode.getUserObject();
-				
+
 				if (!((selectedValue instanceof CompanyDto) || (selectedValue instanceof UserDto))) {
-					tree.getSelectionModel().removeSelectionPath(eTree);				
+					tree.getSelectionModel().removeSelectionPath(eTree);
 					return;
 				}
-				
+
 				if (selectedValue instanceof CompanyDto) {
 					String Dn = ((CompanyDto) selectedValue).getDn();
-					String parentDn = ((CompanyDto) selectedValue).getParentDn(); 
+					String parentDn = ((CompanyDto) selectedValue).getParentDn();
 					if (((CompanyDto) selectedValue).getFilials().size() != 0) {
 						for (int selectedId : tree.getSelectionRows()) {
 							TreePath treePath = tree.getPathForRow(selectedId);
@@ -1297,16 +1317,16 @@ public class MainForm {
 									}
 								} else if (value instanceof UserDto) {
 									String userDn = ((UserDto) value).getCompanyDn();
-									for (CompanyDto filial:(((CompanyDto) selectedValue).getFilials())) {									
+									for (CompanyDto filial : (((CompanyDto) selectedValue).getFilials())) {
 										if (filial.getDn().equals(userDn)) {
 											tree.getSelectionModel().removeSelectionPath(treePath);
 											break;
 										}
-									}	
+									}
 								}
 							}
 						}
-					} else {						
+					} else {
 						for (int selectedId : tree.getSelectionRows()) {
 							TreePath treePath = tree.getPathForRow(selectedId);
 							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
@@ -1335,12 +1355,12 @@ public class MainForm {
 							Object value = selectedItem.getUserObject();
 							if (value instanceof CompanyDto) {
 								if ((((CompanyDto) value).getFilials().size() != 0)) {
-									for (CompanyDto filial:(((CompanyDto) value).getFilials())) {										
+									for (CompanyDto filial : (((CompanyDto) value).getFilials())) {
 										if (filial.getDn().equals(Dn)) {
 											tree.getSelectionModel().removeSelectionPath(treePath);
 											break;
 										}
-									}									
+									}
 								} else if (((CompanyDto) value).getDn().equals(Dn)) {
 									tree.getSelectionModel().removeSelectionPath(treePath);
 								}
@@ -1350,7 +1370,7 @@ public class MainForm {
 					updatePanelView((UserDto) selectedValue);
 				}
 
-				getSelectedUsersMails();
+				setMessagesEditorTo();
 			}
 		});
 		textFieldLastName.addKeyListener(new KeyAdapter() {
@@ -1480,7 +1500,12 @@ public class MainForm {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				labelCopyMails.setBorder(null);
-				core.putStringToClipboard(getSelectedUsersMails());
+				String mails = "";
+				TreePath[] paths = tree.getSelectionPaths();
+				if (paths != null) {
+					mails = core.toStringUserMails(getListUsersFromTreePath(paths));
+				}
+				core.putStringToClipboard(mails);
 			}
 
 			@Override
@@ -1517,13 +1542,13 @@ public class MainForm {
 		buttonAuth.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				addMessagePreloader();
+				authorizeMessage();
 			}
 		});
 
 		passwordField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				addMessagePreloader();
+				authorizeMessage();				
 			}
 		});
 
@@ -1547,17 +1572,12 @@ public class MainForm {
 				clearMessagesAttachment();
 			}
 		});
-	}
 
-	private String getSelectedUsersMails() {
-		String mails = "";
-		TreePath[] paths = tree.getSelectionPaths();
-		if (paths != null) {
-			mails = core.toStringUserMails(getListUsersFromTreePath(paths));
-			setMessagesEditorToMails(mails);
-		}
-
-		return mails;
+		buttonMessagesEditorSend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				sendMessages();
+			}
+		});
 	}
 
 	private HashMap<String, UserDto> getListUsersFromTreePath(TreePath[] paths) {
@@ -1571,17 +1591,41 @@ public class MainForm {
 				users.put(user.getDistinguishedName(), user);
 			} else if (selected instanceof CompanyDto) {
 				CompanyDto company = (CompanyDto) selected;
-				users.putAll(company.getUsers());
+				if (company.getFilials().size() != 0) {
+					for (CompanyDto filial : company.getFilials()) {
+						users.putAll(filial.getUsers());
+					}
+				} else {
+					users.putAll(company.getUsers());
+				}
 			}
 
 		}
 		return users;
 	}
 
-	private void setMessagesEditorToMails(String mails) {
-		if (textFieldMessagesEditorTo.isVisible()) {
-			textFieldMessagesEditorTo.setText(mails);
-			textFieldMessagesEditorTo.setToolTipText(mails);
+	private void setMessagesEditorTo() {
+		if (panelMessagesEditor.isVisible()) {
+			TreePath[] paths = tree.getSelectionPaths();
+			if (paths != null) {
+				HashMap<String, UserDto> users = getListUsersFromTreePath(paths);
+				DefaultListModel listModel = new DefaultListModel();
+				listModel.clear();
+				for (UserDto user : users.values()) {
+					if (core.isMailValid(user.getMail())) {
+						listModel.addElement(user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName()
+								+ " <" + user.getMail() + ">");
+					}
+				}
+				this.listMessagesEditorTo.setModel(listModel);
+				/*
+				 * HashMap<String, String> filesList =
+				 * core.addMailAttachmet(fileToAttach.getName(),
+				 * fileToAttach.getAbsolutePath());
+				 * this.listMessagesEditorAttachment.setListData(filesList.
+				 * keySet().toArray());
+				 */
+			}
 		}
 	}
 
@@ -1603,6 +1647,9 @@ public class MainForm {
 		}
 	}
 
+	/**
+	 * добавляет пути до файлов вложений
+	 */
 	private void addToAttachment() {
 		JFrame parentFrame = new JFrame();
 		JFileChooser fileChooser = new JFileChooser();
@@ -1617,13 +1664,45 @@ public class MainForm {
 		}
 	}
 
-	private boolean filterOnlyAlphabetic(KeyEvent e) {
-		if (Character.isAlphabetic(e.getKeyChar())) {
-			return false;
+	/**
+	 * метод отправляет письма адресатам
+	 */
+	private void sendMessages() {
+		if (checkFieldMessage()) {
+			ArrayList<String>  to = new ArrayList<String> ();
+			ListModel<?> model = listMessagesEditorTo.getModel();
+			for(int i = 0; i< model.getSize();i++){
+				to.add(model.getElementAt(i).toString());				
+			}	
+			addMessagePreloader();
+			core.sendMessage(labelMessagesEditorWriFrom.getText(), to, textFieldMessagesEditorSubject.getText(), textAreaMessagesEditor.getText(), textFieldLogin.getText(), passwordField.getText());		
+		} else {
+			JOptionPane.showMessageDialog(null, "Не все поля сообщения заполены", "ADBook", JOptionPane.ERROR_MESSAGE);
 		}
-		return true;
 	}
 
+	/**
+	 * метод проверяет заполенены ли все поля сообщения
+	 * 
+	 * @return
+	 */
+	private boolean checkFieldMessage() {
+		boolean status = true;
+		if ((0 == this.listMessagesEditorTo.getModel().getSize())
+				|| (0 == this.textFieldMessagesEditorSubject.getText().length())
+				|| (0 == this.textAreaMessagesEditor.getText().length())) {
+			status = false;
+		}
+
+		return status;
+	}
+
+	/**
+	 * фильтрация только цыфр
+	 * 
+	 * @param e
+	 * @return
+	 */
 	private boolean filterOnlyDigit(KeyEvent e) {
 		if (Character.isDigit(e.getKeyChar())) {
 			return false;
@@ -1631,6 +1710,22 @@ public class MainForm {
 		return true;
 	}
 
+	/**
+	 * фильтрация только букв
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private boolean filterOnlyAlphabetic(KeyEvent e) {
+		if (Character.isAlphabetic(e.getKeyChar())) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * запуск поиска по фильтрам
+	 */
 	private void search() {
 		String lastName = textFieldLastName.getText();
 		String firstName = textFieldFirstName.getText();
@@ -1643,9 +1738,3 @@ public class MainForm {
 		core.localSearch(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 	}
 }
-
-
- 
-
-
-
