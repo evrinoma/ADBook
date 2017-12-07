@@ -22,7 +22,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
@@ -33,11 +32,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
@@ -54,6 +48,8 @@ import javax.swing.border.EtchedBorder;
 import java.awt.Component;
 
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -78,12 +74,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import java.awt.TextArea;
+import javax.swing.JList;
 
 public class MainForm {
 
@@ -104,7 +104,7 @@ public class MainForm {
 	private static final String PLANS_IMAGE = "/images/plans/";
 
 	private JFrame frmHandbook;
-	
+
 	private JLabel labelPersonWriDescription;
 	private JLabel labelPersonWriFio;
 	private JLabel labelPersonWriCompany;
@@ -129,7 +129,7 @@ public class MainForm {
 	private JLabel labelContactWriMail;
 
 	private JLabel labelRoomPic;
-	
+
 	private JPanel panelFSM;
 	private JTextField textFieldLastName;
 	private JTextField textFieldFirstName;
@@ -143,7 +143,7 @@ public class MainForm {
 	private JLabel labelStatusBar;
 	private JTree tree;
 	private JScrollPane treeView;
-	
+
 	private JPanel panelMessages;
 	private JPanel panelMessagesEditor;
 	private JPanel panelAuth;
@@ -153,27 +153,35 @@ public class MainForm {
 	private JLabel lblPassword;
 	private JButton buttonAuth;
 
-	
-	
 	DefaultMutableTreeNode top;
 	private JPanel panelView;
 	private JPanel panelTree;
 	private JPanel panelContact;
 	private JPanel panelRoom;
-	//private SpringLayout sl_panelPerson;
+	// private SpringLayout sl_panelPerson;
 	private JLabel labelPersonHead;
 	private JPanel panelQrCode;
-	private JPanel panelPerson;	
+	private JPanel panelPerson;
 	private JPanel panelDepend;
 	private mxGraphComponent graphComponent;
 	private JPanel tools;
 	private JLabel labelUpdate;
 	private JLabel labelCopyMails;
 	private JLabel labelSaveXls;
-	
-	
+
 	private Core core;
-	
+	private JLabel labelMessagesEditorFrom;
+	private JLabel labelMessagesEditorTo;
+	private JLabel labelMessagesEditorSubject;
+	private JTextArea textFieldMessagesEditorTo;
+	private JTextField textFieldMessagesEditorSubject;
+	private JLabel labelMessagesEditorWriFrom;
+	private JButton buttonMessagesEditorSend;
+	private JTextArea textAreaMessagesEditor;
+	private JButton buttonMessagesEditorAttachment;
+	private JButton buttonMessagesEditorClear;
+	private JList listMessagesEditorAttachment;
+	private JButton buttonMessagesEditorAttachmentClear;
 
 	/**
 	 * Launch the application.
@@ -568,9 +576,8 @@ public class MainForm {
 	private void unLockPanelFSM() {
 		lockPanelFSM(false);
 	}
-	
-	private void createPanelPreloader(JPanel panel, String nameComponent)
-	{
+
+	private void createPanelPreloader(JPanel panel, String nameComponent) {
 		JLabel labelPreload = new JLabel();
 		labelPreload.setHorizontalAlignment(SwingConstants.CENTER);
 		labelPreload.setIcon(getResourceImage(PRELOAD_IMAGE));
@@ -580,18 +587,18 @@ public class MainForm {
 
 	private void removePreload(JPanel panel, String name) {
 		for (Component component : panel.getComponents()) {
-			if (null != component.getName()) {				
+			if (null != component.getName()) {
 				if (name.contains(component.getName())) {
-					panel.remove(component);					
+					panel.remove(component);
 				}
 			}
 		}
 	}
-	private void createPanelPreloader(JPanel panel)
-	{
+
+	private void createPanelPreloader(JPanel panel) {
 		createPanelPreloader(panel, "preloader");
 	}
-	
+
 	private void removePreload(JPanel panel) {
 		removePreload(panel, "preloader");
 	}
@@ -601,12 +608,20 @@ public class MainForm {
 			panelAuth.hide();
 		}
 		createPanelPreloader(panelMessages);
+		core.authorizeOnMail(textFieldLogin.getText(), passwordField.getText());
 	}
-	
+
 	public void removeMessagePreload() {
-		removePreload(panelMessages);		
+		removePreload(panelMessages);
 	}
-	
+
+	public void showMessageEditorPanel() {
+		this.labelMessagesEditorWriFrom.setText(core.getMailAthorizedUser());
+		panelAuth.hide();
+		panelMessagesEditor.show();
+		panelMessagesEditor.repaint();
+	}
+
 	public void addTreePreloader() {
 		if (null != treeView) {
 			treeView.hide();
@@ -618,6 +633,20 @@ public class MainForm {
 	public void removeTreePreload() {
 		removePreload(panelTree);
 		unLockPanelFSM();
+	}
+
+	private void clearMessages() {
+		this.textFieldMessagesEditorSubject.setText("");
+		this.textFieldMessagesEditorTo.setText("");
+		this.textAreaMessagesEditor.setText("");
+		clearMessagesAttachment();
+	}
+
+	private void clearMessagesAttachment() {
+		DefaultListModel listModel = new DefaultListModel();
+		listModel.clear();
+		this.listMessagesEditorAttachment.setModel(listModel);
+		core.clearMailAttachmet();
 	}
 
 	private void createTabRoom(JPanel panel) {
@@ -835,9 +864,120 @@ public class MainForm {
 		sl_panelAuth.putConstraint(SpringLayout.NORTH, buttonAuth, 16, SpringLayout.SOUTH, lblPassword);
 		sl_panelAuth.putConstraint(SpringLayout.WEST, buttonAuth, 0, SpringLayout.WEST, lblLogin);
 		panelAuth.add(buttonAuth);
-		
+
 		panelMessagesEditor = new JPanel();
+		panelMessagesEditor.setVisible(false);
 		panelMessages.add(panelMessagesEditor);
+		SpringLayout sl_panelMessagesEditor = new SpringLayout();
+		panelMessagesEditor.setLayout(sl_panelMessagesEditor);
+
+		labelMessagesEditorFrom = new JLabel("От:");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, labelMessagesEditorFrom, 20, SpringLayout.NORTH,
+				panelMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, labelMessagesEditorFrom, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(labelMessagesEditorFrom);
+
+		labelMessagesEditorTo = new JLabel("Кому:");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, labelMessagesEditorTo, 30, SpringLayout.NORTH,
+				labelMessagesEditorFrom);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, labelMessagesEditorTo, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(labelMessagesEditorTo);
+
+		labelMessagesEditorSubject = new JLabel("Тема:");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, labelMessagesEditorSubject, 30, SpringLayout.NORTH,
+				labelMessagesEditorTo);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, labelMessagesEditorSubject, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(labelMessagesEditorSubject);
+
+		buttonMessagesEditorClear = new JButton("Очистить");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorClear, 15, SpringLayout.NORTH,
+				panelMessagesEditor);
+		panelMessagesEditor.add(buttonMessagesEditorClear);
+
+		buttonMessagesEditorSend = new JButton("Отправить");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, buttonMessagesEditorClear, -15, SpringLayout.WEST,
+				buttonMessagesEditorSend);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorSend, 15, SpringLayout.NORTH,
+				panelMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, buttonMessagesEditorSend, -10, SpringLayout.EAST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(buttonMessagesEditorSend);
+
+		labelMessagesEditorWriFrom = new JLabel("");
+		labelMessagesEditorWriFrom.setPreferredSize(new Dimension(12, 27));
+		labelMessagesEditorWriFrom.setMinimumSize(new Dimension(12, 27));
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, labelMessagesEditorWriFrom, -10, SpringLayout.WEST,
+				buttonMessagesEditorClear);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, labelMessagesEditorWriFrom, 0, SpringLayout.NORTH,
+				labelMessagesEditorFrom);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, labelMessagesEditorWriFrom, 10, SpringLayout.EAST,
+				labelMessagesEditorSubject);
+		panelMessagesEditor.add(labelMessagesEditorWriFrom);
+
+		textFieldMessagesEditorSubject = new JTextField();
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, textFieldMessagesEditorSubject, 0, SpringLayout.NORTH,
+				labelMessagesEditorSubject);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, textFieldMessagesEditorSubject, 10, SpringLayout.EAST,
+				labelMessagesEditorSubject);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, textFieldMessagesEditorSubject, -10, SpringLayout.EAST,
+				panelMessagesEditor);
+
+		panelMessagesEditor.add(textFieldMessagesEditorSubject);
+
+		textFieldMessagesEditorTo = new JTextArea();
+		textFieldMessagesEditorTo.setWrapStyleWord(true);
+		textFieldMessagesEditorTo.setEditable(false);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, textFieldMessagesEditorTo, 0, SpringLayout.NORTH,
+				labelMessagesEditorTo);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, textFieldMessagesEditorTo, 10, SpringLayout.EAST,
+				labelMessagesEditorSubject);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, textFieldMessagesEditorTo, -10, SpringLayout.EAST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(textFieldMessagesEditorTo);
+
+		textAreaMessagesEditor = new JTextArea();
+		textAreaMessagesEditor.setWrapStyleWord(true);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, textAreaMessagesEditor, 30, SpringLayout.NORTH,
+				labelMessagesEditorSubject);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, textAreaMessagesEditor, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, textAreaMessagesEditor, -144, SpringLayout.SOUTH,
+				panelMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, textAreaMessagesEditor, -10, SpringLayout.EAST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(textAreaMessagesEditor);
+
+		buttonMessagesEditorAttachment = new JButton("Добавить вложение");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorAttachment, 10, SpringLayout.SOUTH,
+				textAreaMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, buttonMessagesEditorAttachment, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(buttonMessagesEditorAttachment);
+
+		JPanel panelMessagesEditorAttachment = new JPanel();
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, panelMessagesEditorAttachment, 10, SpringLayout.SOUTH,
+				textAreaMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, panelMessagesEditorAttachment, 10, SpringLayout.EAST,
+				buttonMessagesEditorAttachment);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, panelMessagesEditorAttachment, -10, SpringLayout.SOUTH,
+				panelMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, panelMessagesEditorAttachment, -10, SpringLayout.EAST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(panelMessagesEditorAttachment);
+		panelMessagesEditorAttachment.setLayout(new CardLayout(0, 0));
+
+		listMessagesEditorAttachment = new JList();
+		panelMessagesEditorAttachment.add(listMessagesEditorAttachment);
+
+		buttonMessagesEditorAttachmentClear = new JButton("Очистить вложения");
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorAttachmentClear, 10,
+				SpringLayout.SOUTH, buttonMessagesEditorAttachment);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, buttonMessagesEditorAttachmentClear, 0,
+				SpringLayout.WEST, labelMessagesEditorFrom);
+		panelMessagesEditor.add(buttonMessagesEditorAttachmentClear);
 	}
 
 	private void createTabPerson(JPanel panel) {
@@ -1124,14 +1264,93 @@ public class MainForm {
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-				/* if nothing is selected */
-				if (node == null)
+
+				TreePath eTree = e.getNewLeadSelectionPath();
+				if (null == eTree)
 					return;
-				Object selectedValue = node.getUserObject();
-				if (selectedValue instanceof UserDto) {
+
+				DefaultMutableTreeNode eNode = (DefaultMutableTreeNode) eTree.getLastPathComponent();
+
+				if (null == eNode)
+					return;
+
+				Object selectedValue = eNode.getUserObject();
+				
+				if (!((selectedValue instanceof CompanyDto) || (selectedValue instanceof UserDto))) {
+					tree.getSelectionModel().removeSelectionPath(eTree);				
+					return;
+				}
+				
+				if (selectedValue instanceof CompanyDto) {
+					String Dn = ((CompanyDto) selectedValue).getDn();
+					String parentDn = ((CompanyDto) selectedValue).getParentDn(); 
+					if (((CompanyDto) selectedValue).getFilials().size() != 0) {
+						for (int selectedId : tree.getSelectionRows()) {
+							TreePath treePath = tree.getPathForRow(selectedId);
+							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+									.getLastPathComponent();
+							if (null != selectedItem) {
+								Object value = selectedItem.getUserObject();
+								if (value instanceof CompanyDto) {
+									if (((CompanyDto) value).getParentDn().equals(Dn)) {
+										tree.getSelectionModel().removeSelectionPath(treePath);
+									}
+								} else if (value instanceof UserDto) {
+									String userDn = ((UserDto) value).getCompanyDn();
+									for (CompanyDto filial:(((CompanyDto) selectedValue).getFilials())) {									
+										if (filial.getDn().equals(userDn)) {
+											tree.getSelectionModel().removeSelectionPath(treePath);
+											break;
+										}
+									}	
+								}
+							}
+						}
+					} else {						
+						for (int selectedId : tree.getSelectionRows()) {
+							TreePath treePath = tree.getPathForRow(selectedId);
+							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+									.getLastPathComponent();
+							if (null != selectedItem) {
+								Object value = selectedItem.getUserObject();
+								if (value instanceof UserDto) {
+									if (((UserDto) value).getCompanyDn().equals(Dn)) {
+										tree.getSelectionModel().removeSelectionPath(treePath);
+									}
+								} else if (value instanceof CompanyDto) {
+									if (((CompanyDto) value).getDn().equals(parentDn)) {
+										tree.getSelectionModel().removeSelectionPath(treePath);
+									}
+								}
+							}
+						}
+						tree.getSelectionModel().addSelectionPath(eTree);
+					}
+				} else if (selectedValue instanceof UserDto) {
+					String Dn = ((UserDto) selectedValue).getCompanyDn();
+					for (int selectedId : tree.getSelectionRows()) {
+						TreePath treePath = tree.getPathForRow(selectedId);
+						DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+						if (null != selectedItem) {
+							Object value = selectedItem.getUserObject();
+							if (value instanceof CompanyDto) {
+								if ((((CompanyDto) value).getFilials().size() != 0)) {
+									for (CompanyDto filial:(((CompanyDto) value).getFilials())) {										
+										if (filial.getDn().equals(Dn)) {
+											tree.getSelectionModel().removeSelectionPath(treePath);
+											break;
+										}
+									}									
+								} else if (((CompanyDto) value).getDn().equals(Dn)) {
+									tree.getSelectionModel().removeSelectionPath(treePath);
+								}
+							}
+						}
+					}
 					updatePanelView((UserDto) selectedValue);
 				}
+
+				getSelectedUsersMails();
 			}
 		});
 		textFieldLastName.addKeyListener(new KeyAdapter() {
@@ -1261,24 +1480,7 @@ public class MainForm {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				labelCopyMails.setBorder(null);
-				TreePath[] paths = tree.getSelectionPaths();
-				if (paths == null)
-					return;
-				HashMap<String, UserDto> users = new HashMap<String, UserDto>();
-				/* if nothing is selected */
-				for (TreePath path : paths) {
-					DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-					Object selected = node.getUserObject();
-					if (selected instanceof UserDto) {
-						UserDto user = (UserDto) selected;
-						users.put(user.getDistinguishedName(), user);
-					} else if (selected instanceof CompanyDto) {
-						CompanyDto company = (CompanyDto) selected;
-						users.putAll(company.getUsers());
-					}
-
-				}
-				core.getCopyDataToBuffer(users);
+				core.putStringToClipboard(getSelectedUsersMails());
 			}
 
 			@Override
@@ -1316,16 +1518,71 @@ public class MainForm {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				addMessagePreloader();
-				core.authorizeOnMail(textFieldLogin.getText(), passwordField.getText());
-				/*
-				core.connectToMail("nikolns@ite-ng.ru", "0631");
-				
-				if (username.length() > 0 & password.length() > 0) {
-					core.connectToMail(username, password);
-				}	
-				*/			
 			}
 		});
+
+		passwordField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				addMessagePreloader();
+			}
+		});
+
+		buttonMessagesEditorClear.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				clearMessages();
+			}
+		});
+
+		buttonMessagesEditorAttachment.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				addToAttachment();
+			}
+		});
+
+		buttonMessagesEditorAttachmentClear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				clearMessagesAttachment();
+			}
+		});
+	}
+
+	private String getSelectedUsersMails() {
+		String mails = "";
+		TreePath[] paths = tree.getSelectionPaths();
+		if (paths != null) {
+			mails = core.toStringUserMails(getListUsersFromTreePath(paths));
+			setMessagesEditorToMails(mails);
+		}
+
+		return mails;
+	}
+
+	private HashMap<String, UserDto> getListUsersFromTreePath(TreePath[] paths) {
+		HashMap<String, UserDto> users = new HashMap<String, UserDto>();
+		/* if nothing is selected */
+		for (TreePath path : paths) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+			Object selected = node.getUserObject();
+			if (selected instanceof UserDto) {
+				UserDto user = (UserDto) selected;
+				users.put(user.getDistinguishedName(), user);
+			} else if (selected instanceof CompanyDto) {
+				CompanyDto company = (CompanyDto) selected;
+				users.putAll(company.getUsers());
+			}
+
+		}
+		return users;
+	}
+
+	private void setMessagesEditorToMails(String mails) {
+		if (textFieldMessagesEditorTo.isVisible()) {
+			textFieldMessagesEditorTo.setText(mails);
+			textFieldMessagesEditorTo.setToolTipText(mails);
+		}
 	}
 
 	private void saveToXls() {
@@ -1343,6 +1600,20 @@ public class MainForm {
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File fileToSave = fileChooser.getSelectedFile();
 			core.saveToFile(fileToSave.getAbsolutePath());
+		}
+	}
+
+	private void addToAttachment() {
+		JFrame parentFrame = new JFrame();
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Добавить вложение...");
+		int userSelection = fileChooser.showOpenDialog(parentFrame);
+
+		if (userSelection == JFileChooser.APPROVE_OPTION) {
+			File fileToAttach = fileChooser.getSelectedFile();
+			HashMap<String, String> filesList = core.addMailAttachmet(fileToAttach.getName(),
+					fileToAttach.getAbsolutePath());
+			this.listMessagesEditorAttachment.setListData(filesList.keySet().toArray());
 		}
 	}
 
@@ -1372,3 +1643,9 @@ public class MainForm {
 		core.localSearch(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 	}
 }
+
+
+ 
+
+
+

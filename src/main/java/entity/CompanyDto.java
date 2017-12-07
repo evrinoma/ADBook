@@ -18,12 +18,13 @@ public class CompanyDto implements Serializable {
 
 	private static final String isAll = "*";
 
-	private String description;
-	private String dn;
-	private String ou;
+	private String description = "";
+	private String dn = "";
+	private String ou = "";
 	private HashMap<String, UserDto> users;
 	private ArrayList<CompanyDto> filials;
-
+	private String parentDn = "";
+	
 	private void createCompanyDto(String description, String ou, String dn) {
 		users = new HashMap<String, UserDto>();
 		filials = new ArrayList<CompanyDto>();
@@ -100,6 +101,7 @@ public class CompanyDto implements Serializable {
 	}
 
 	public void addNewUser(UserDto user) {
+		user.setCompanyDn(dn);		
 		users.put(user.getDistinguishedName(), user);
 	}
 
@@ -112,10 +114,19 @@ public class CompanyDto implements Serializable {
 	}
 
 	public void addNewFilial(CompanyDto filial) {
-		filials.add(filial);
+		filial.setParentDn(dn);		
+		filials.add(filial);		
 	}
 
 	public void addNewFilial(String name, String description, String ou) {
 		filials.add(new CompanyDto(name, description, ou));
 	}
+
+	public String getParentDn() {
+		return parentDn;
+	}
+
+	public void setParentDn(String parentDn) {
+		this.parentDn = parentDn;
+	}	
 }

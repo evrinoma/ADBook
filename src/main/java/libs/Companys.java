@@ -71,4 +71,14 @@ public class Companys implements Serializable {
 		}
 		return companysDn;
 	}
+	
+	public UserDto findUserByMail(String username)
+	{
+		for (UserDto user : users.values()){
+			if (username.equals(user.getMail())) {
+				return user;
+			}
+		}		
+		return null;
+	}
 }

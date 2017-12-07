@@ -81,7 +81,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 					sr = (SearchResult) users.next();
 					attrs = sr.getAttributes();
 					UserDto user = new UserDto();
-					user.deployEntry(attrs, ldap.getDefaultSelectFields());
+					user.deployEntry(attrs, ldap.getDefaultSelectFields());					
 					company.addNewUser(user);
 					/*
 					 * for (String manager : user.getManager()) {

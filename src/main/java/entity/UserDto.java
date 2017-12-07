@@ -3,25 +3,19 @@ package entity;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import javax.swing.ImageIcon;
 
 public class UserDto implements Serializable {
 	private String mobile = "";
@@ -61,6 +55,8 @@ public class UserDto implements Serializable {
 	private String lastName = "";
 	private String middleName = "";
 	private String firstName = "";
+	
+	private String companyDn = "";
 
 	private void createUser(String displayName) {
 		this.displayName = displayName;
@@ -450,7 +446,15 @@ public class UserDto implements Serializable {
 	public boolean isDepartment(String department) {
 		return getDepartment().toLowerCase().contains(department);
 	}
+	
+	public String getCompanyDn() {
+		return companyDn;
+	}
 
+	public void setCompanyDn(String companyDn) {
+		this.companyDn = companyDn;
+	}
+	
 	public String getVCard() {
 		String VCard = new String();
 		VCard += "BEGIN:VCARD\n";
@@ -516,6 +520,7 @@ public class UserDto implements Serializable {
 		lastName = aInputStream.readUTF();
 		middleName = aInputStream.readUTF();
 		firstName = aInputStream.readUTF();
+		companyDn  = aInputStream.readUTF();
 		int size = aInputStream.readInt();
 		if (0 != size) {
 			jpegPhoto = ImageIO.read(aInputStream);
@@ -558,6 +563,7 @@ public class UserDto implements Serializable {
 		aOutputStream.writeUTF(lastName);
 		aOutputStream.writeUTF(middleName);
 		aOutputStream.writeUTF(firstName);
+		aOutputStream.writeUTF(companyDn);		
 		if (null != jpegPhoto) {
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			ImageIO.write(jpegPhoto, "jpg", buffer);

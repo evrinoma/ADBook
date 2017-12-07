@@ -312,19 +312,22 @@ public class Core {
 		return nodesManager.getLevels(user);
 	}
 
-	public void getCopyDataToBuffer(HashMap<String, UserDto> users) {
+	public String toStringUserMails(HashMap<String, UserDto> users) {
 		String mails = "";
-
 		for (Entry<String, UserDto> entity : users.entrySet()) {
 			UserDto user = entity.getValue();
 			mails += user.getMail();
 			mails += ";";
 		}
-
-		StringSelection stringSelection = new StringSelection(mails);
+		
+		return mails;
+	}
+	
+	public void putStringToClipboard(String data)
+	{
+		StringSelection stringSelection = new StringSelection(data);
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
-
 	}
 
 	public boolean isRunningProcess(String Name) {
@@ -359,17 +362,18 @@ public class Core {
 		}
 	}
 
-	private boolean isUserMailValid(String username){
-		 boolean result = true;
-		   try {
-		      InternetAddress emailAddr = new InternetAddress(username);
-		      emailAddr.validate();
-		   } catch (AddressException ex) {
-		      result = false;
-		   }
-		   
+	private boolean isUserMailValid(String username) {
+		boolean result = true;
+		try {
+			InternetAddress emailAddr = new InternetAddress(username);
+			emailAddr.validate();
+		} catch (AddressException ex) {
+			result = false;
+		}
+
 		return result;
 	}
+
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
 			if (isUserMailValid(username)) {
@@ -381,19 +385,31 @@ public class Core {
 			}
 		} else {
 			mail.execute();
-		}		
+		}
 	}
-	
-	public void isMailAuthrizeSuccessful()
-	{
+
+	public void isMailAuthrizeSuccessful() {
 		form.removeMessagePreload();
-		
+		form.showMessageEditorPanel();
 	}
-	
-	public void isMailAuthrizeFail(String status)
-	{
+
+	public void isMailAuthrizeFail(String status) {
 		setStatusString(status);
 		form.removeMessagePreload();
-		
+
+	}
+
+	public String getMailAthorizedUser() {
+		return (mail.isAuthorize()) ? mail.getUserName() : "";
+	}
+	
+	public HashMap<String, String> addMailAttachmet(String fileName, String pathToAttachment){		
+		mail.addAttachment(fileName, pathToAttachment);
+		return mail.getAttachments();
+	}
+	
+	public void clearMailAttachmet()
+	{
+		mail.createAttachments();
 	}
 }

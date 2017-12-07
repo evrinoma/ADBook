@@ -1,7 +1,10 @@
 package forms;
 
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -17,6 +20,8 @@ import javax.swing.SwingWorker;
 
 import com.sun.mail.util.MailSSLSocketFactory;
 
+import entity.CompanyDto;
+import entity.UserDto;
 import libs.Core;
 
 public class MailThread extends SwingWorker<Object, String> {
@@ -26,7 +31,9 @@ public class MailThread extends SwingWorker<Object, String> {
 	public static final boolean ACTION_AUTHORIZE = true;
 	public static final boolean ACTION_SEND_MAIL = !ACTION_AUTHORIZE;
 	public static final String HINT_TRY_AUTH = "Пытаемся авторизоваться на сервере:" + MAIL_SERVER;
+	public static final String HINT_TRY_FIND_USER = "Пытаемся найти пользователя...";
 
+	private UserDto user;
 	private String username;
 	private String password;
 	private Session session = null;
@@ -34,15 +41,21 @@ public class MailThread extends SwingWorker<Object, String> {
 	private boolean action = ACTION_AUTHORIZE;
 	private Properties propsSSL = null;
 	private Core core;
+	private HashMap<String, String> attachment = null;
 
 	@Override
 	protected Boolean doInBackground() throws Exception {
+		boolean status = false;
 		if (action) {
 			publish(HINT_TRY_AUTH);
-			return authorize();
-		} else {
-			return action;
+			if (authorize()) {
+				publish(HINT_TRY_FIND_USER);
+				findUser();
+				status = true;
+			}
 		}
+
+		return status;
 	}
 
 	// Can safely update the GUI from this method.
@@ -78,6 +91,7 @@ public class MailThread extends SwingWorker<Object, String> {
 
 	public MailThread(Core core) {
 		this.core = core;
+		createAttachments();
 		propsSSL = new Properties();
 		try {
 			MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
@@ -126,6 +140,13 @@ public class MailThread extends SwingWorker<Object, String> {
 		}
 	}
 
+	public String getUserName() {
+		if (null != user) {
+			return user.getCn() + " <" + user.getMail() + ">";
+		} else
+			return this.username;
+	}
+
 	public MailThread setUsername(String username) {
 		this.username = username;
 		return this;
@@ -151,11 +172,28 @@ public class MailThread extends SwingWorker<Object, String> {
 				transport.close();
 				this.valid = true;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block				
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		return this.valid;
 	}
 
+	private void findUser() {
+		user = core.getCompanys().findUserByMail(username);
+	}
+
+	public void addAttachment(String fileName, String pathToAttachment) {
+		attachment.put(fileName, pathToAttachment);
+	}
+
+	public  HashMap<String, String> getAttachments() {
+		return attachment;
+	}
+
+	public void createAttachments()
+	{
+		this.attachment = new HashMap<String, String>();
+	}
+	
 }
