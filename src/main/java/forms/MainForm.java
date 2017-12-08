@@ -41,6 +41,7 @@ import entity.CompanyDto;
 import entity.LevelNode;
 import entity.UserDto;
 import libs.Core;
+import threads.SaveThread;
 
 import java.awt.CardLayout;
 import java.awt.TrayIcon;
@@ -82,16 +83,15 @@ import javax.swing.border.LineBorder;
 import java.awt.Color;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import java.awt.TextArea;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 
 public class MainForm {
 
-	private static final String VERSION = "05.12.17v1";
+	private static final String VERSION = "08.12.17v1";
 	private static final String NAME = "ADBOOK";
+	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
 	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
@@ -161,7 +161,7 @@ public class MainForm {
 	private JPanel panelTree;
 	private JPanel panelContact;
 	private JPanel panelRoom;
-	// private SpringLayout sl_panelPerson;
+
 	private JLabel labelPersonHead;
 	private JPanel panelQrCode;
 	private JPanel panelPerson;
@@ -172,7 +172,6 @@ public class MainForm {
 	private JLabel labelCopyMails;
 	private JLabel labelSaveXls;
 
-	private Core core;
 	private JLabel labelMessagesEditorFrom;
 	private JLabel labelMessagesEditorTo;
 	private JLabel labelMessagesEditorSubject;
@@ -185,7 +184,10 @@ public class MainForm {
 	private JButton buttonMessagesEditorClear;
 	private JList listMessagesEditorAttachment;
 	private JButton buttonMessagesEditorAttachmentClear;
-	private JList list;
+
+	TrayIcon trayIcon = null;
+	
+	private Core core;
 
 	/**
 	 * Launch the application.
@@ -209,7 +211,9 @@ public class MainForm {
 	 */
 	public MainForm() {
 		core = new Core();
-		if (!core.isRunningProcess(NAME)) {
+		//if (!core.isRunningProcess(NAME)) {
+		if (!core.sendServerSocket()) {
+			core.runServerSocket();
 			createForm();
 		} else {
 			System.exit(0);
@@ -228,8 +232,16 @@ public class MainForm {
 
 	private void addWindowListener() {
 		frmHandbook.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				createTray();
+			public void windowClosing(WindowEvent e) {	
+                int n = JOptionPane.showConfirmDialog(
+                		frmHandbook, "Свернуть Адресную книгу?",
+                        "Выход",
+                        JOptionPane.YES_NO_OPTION);  
+                 if (n == JOptionPane.YES_OPTION) {
+                	 createTray();
+                 }  else {
+                	 System.exit(0);
+                 }
 			}
 		});
 	}
@@ -386,7 +398,7 @@ public class MainForm {
 		frmHandbook = new JFrame();
 		ImageIcon icon = getResourceImage(LOGO_IMAGE);
 		frmHandbook.setIconImage(icon.getImage());
-		frmHandbook.setTitle("HandBook");
+		frmHandbook.setTitle(NAME_FORM);
 		frmHandbook.setBounds(100, 100, 952, 940);
 		frmHandbook.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmHandbook.getContentPane().setLayout(new BorderLayout(0, 0));
@@ -444,19 +456,24 @@ public class MainForm {
 		graphComponent = new mxGraphComponent(new mxGraph());
 		graphComponent.setToolTips(true);
 		panelDepend.add(graphComponent, "panelDepend");
-		
+
 		panelMessages = new JPanel();
 		panelMessages.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelMessages.setMinimumSize(new Dimension(10, 250));
 		tabbedPane.addTab("Рассылка", panelMessages);
 		createTabMessages();
-		
 
 		createPanelStatus();
 
 		addListners();
 	}
 
+	public void removeTray() {
+		final SystemTray systemTray = SystemTray.getSystemTray();
+		systemTray.remove(trayIcon);
+		frmHandbook.setVisible(true);
+	}
+	
 	private void createTray() {
 		// checking for support
 		if (!SystemTray.isSupported()) {
@@ -471,14 +488,13 @@ public class MainForm {
 		ImageIcon icon = getResourceImage(LOGO_IMAGE);
 		Image image = icon.getImage();
 
-		final TrayIcon trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);
+		trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);
 		// кликаем по менюшке Развернуть
 		MenuItem action = new MenuItem("Развернуть");
 		action.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				frmHandbook.setVisible(true);
-				systemTray.remove(trayIcon);
+				removeTray();
 			}
 		});
 		trayPopupMenu.add(action);
@@ -488,7 +504,8 @@ public class MainForm {
 		close.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				core.removeRunningProcess();
+				//core.removeRunningProcess();
+				core.close();
 				System.exit(0);
 			}
 		});
@@ -618,8 +635,8 @@ public class MainForm {
 		createPanelPreloader(panelMessages);
 
 	}
-	
-	public void authorizeMessage(){
+
+	public void authorizeMessage() {
 		addMessagePreloader();
 		core.authorizeOnMail(textFieldLogin.getText(), passwordField.getText());
 	}
@@ -1548,7 +1565,7 @@ public class MainForm {
 
 		passwordField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				authorizeMessage();				
+				authorizeMessage();
 			}
 		});
 
@@ -1617,7 +1634,7 @@ public class MainForm {
 								+ " <" + user.getMail() + ">");
 					}
 				}
-				this.listMessagesEditorTo.setModel(listModel);				
+				this.listMessagesEditorTo.setModel(listModel);
 			}
 		}
 	}
@@ -1662,13 +1679,14 @@ public class MainForm {
 	 */
 	private void sendMessages() {
 		if (checkFieldMessage()) {
-			ArrayList<String>  to = new ArrayList<String> ();
+			ArrayList<String> to = new ArrayList<String>();
 			ListModel<?> model = listMessagesEditorTo.getModel();
-			for(int i = 0; i< model.getSize();i++){
-				to.add(model.getElementAt(i).toString());				
-			}	
+			for (int i = 0; i < model.getSize(); i++) {
+				to.add(model.getElementAt(i).toString());
+			}
 			addMessagePreloader();
-			core.sendMessage(labelMessagesEditorWriFrom.getText(), to, textFieldMessagesEditorSubject.getText(), textAreaMessagesEditor.getText(), textFieldLogin.getText(), passwordField.getText());		
+			core.sendMessage(labelMessagesEditorWriFrom.getText(), to, textFieldMessagesEditorSubject.getText(),
+					textAreaMessagesEditor.getText(), textFieldLogin.getText(), passwordField.getText());
 		} else {
 			JOptionPane.showMessageDialog(null, "Не все поля сообщения заполены", "ADBook", JOptionPane.ERROR_MESSAGE);
 		}
@@ -1715,7 +1733,7 @@ public class MainForm {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * фильтрация только space
 	 * 

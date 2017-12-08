@@ -33,12 +33,13 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import entity.CompanyDto;
 import entity.UserDto;
 import entity.LevelNode;
-import forms.LdapSearchThread;
-import forms.LoadThread;
-import forms.LocalSearchThread;
-import forms.MailThread;
+import threads.LdapSearchThread;
+import threads.LoadThread;
+import threads.LocalSearchThread;
+import threads.MailThread;
 import forms.MainForm;
-import forms.SaveThread;
+import threads.SaveThread;
+import threads.ServerSocketThread;
 
 public class Core {
 
@@ -56,6 +57,10 @@ public class Core {
 
 	private MainForm form = null;
 	private HashMap<String, String> attachment = null;
+
+	private boolean close = false;
+
+	private ServerSocketThread serverSocket;
 	
 	public String[] toStringArray(List<String> list) {
 		return list.toArray(new String[list.size()]);
@@ -329,7 +334,7 @@ public class Core {
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 	}
-
+/*
 	public boolean isRunningProcess(String Name) {
 		boolean status = true;
 		FileChannel channel = null;
@@ -349,7 +354,8 @@ public class Core {
 			return status;
 		}
 	}
-
+	*/
+/*
 	public void removeRunningProcess() {
 		try {
 			if (lock != null && lock.isValid())
@@ -361,7 +367,7 @@ public class Core {
 			e.printStackTrace();
 		}
 	}
-
+*/
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);
@@ -453,5 +459,34 @@ public class Core {
 		}
 		
 		return signature;
+	}
+	
+	public void close()
+	{
+		close = true;
+	}
+	
+	public boolean isClose()
+	{
+		return close ;
+	}
+
+	public void runServerSocket() {
+		if (null == serverSocket || serverSocket.isDone()) {
+			serverSocket = new ServerSocketThread(this);
+			serverSocket.execute();
+		} 
+	}
+	
+	public boolean sendServerSocket() {
+		serverSocket = new ServerSocketThread(this);
+		boolean status = serverSocket.startClient();
+		serverSocket = null;
+		
+		return status;
+	}
+	
+	public void expandWindow() {
+		form.removeTray();
 	}
 }
