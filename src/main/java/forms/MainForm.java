@@ -233,10 +233,16 @@ public class MainForm {
 	private void addWindowListener() {
 		frmHandbook.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {	
-                int n = JOptionPane.showConfirmDialog(
-                		frmHandbook, "Свернуть Адресную книгу?",
-                        "Выход",
-                        JOptionPane.YES_NO_OPTION);  
+				Object[] options = {"Свернуть","Закрыть"};				
+                int n = JOptionPane.showOptionDialog(
+                		frmHandbook, "",  "",
+                		JOptionPane.YES_NO_OPTION,
+                		JOptionPane.PLAIN_MESSAGE,
+                		null,     
+                		options,  
+                		options[0]
+                		);  
+
                  if (n == JOptionPane.YES_OPTION) {
                 	 createTray();
                  }  else {
