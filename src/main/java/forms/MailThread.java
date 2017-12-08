@@ -1,5 +1,8 @@
 package forms;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,15 +11,22 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.swing.SwingWorker;
 
 import com.sun.mail.util.MailSSLSocketFactory;
@@ -37,6 +47,7 @@ public class MailThread extends SwingWorker<Object, String> {
 	private static final String HINT_DONE_SEND = "Сообщения отправлены";
 	private static final String HINT_AUTH_ERROR = "incorrect password or account name";
 	private static final String HINT_AUTH = "authorization successful";
+	private static final String HINT_CREATE_MAIL = "Возникли ошибки при создании почтового сообщения";
 
 	private UserDto user;
 	private String username;
@@ -46,13 +57,14 @@ public class MailThread extends SwingWorker<Object, String> {
 	private boolean action = ACTION_AUTHORIZE;
 	private Properties propsSSL = null;
 	private Core core;
-	private HashMap<String, String> attachment = null;
-
+	private HashMap<String, String> attachments = null;
+		
 	private String body = "";
 	private String subject = "";
 	private ArrayList<String> to = null;
 	private ArrayList<String> toError = null;
 	private String from = "";
+	private ArrayList<String> signature = null; 
 
 	@Override
 	protected Boolean doInBackground() throws Exception {
@@ -112,6 +124,7 @@ public class MailThread extends SwingWorker<Object, String> {
 		to = new ArrayList<String>();
 		toError = new ArrayList<String>();
 		propsSSL = new Properties();
+		signature = new ArrayList<String>(); 
 		try {
 			MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
 			socketFactory.setTrustedHosts(new String[] { MAIL_SERVER });
@@ -135,14 +148,19 @@ public class MailThread extends SwingWorker<Object, String> {
 	}
 
 	private void sendMessages() {
-		for (String mail : to) {
-			if (!sendMail(mail)) {
-				toError.add(mail);
+		Multipart multipart = createMail();
+		if (null != multipart) {
+			for (String mail : to) {
+				if (!sendMail(mail, multipart)) {
+					toError.add(mail);
+				}
 			}
+		} else {
+			publish(HINT_CREATE_MAIL);
 		}
 	}
 
-	private boolean sendMail(String to) {
+	private boolean sendMail(String to, Multipart multipart) {
 		boolean status = false;
 		if (this.valid) {
 			try {
@@ -152,25 +170,30 @@ public class MailThread extends SwingWorker<Object, String> {
 					}
 				});
 				Message message = new MimeMessage(session);
-				message.setFrom(new InternetAddress(from));
-				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+				message.setFrom(new InternetAddress(encodeMail(from)));
+				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(encodeMail(to)));
 				message.setSubject(subject);
 				message.setText(body);
-
-				// Transport.send(message);
+				message.setContent(multipart);
+				Transport.send(message);
 				status = true;
-			} catch (MessagingException e) {
-				throw new RuntimeException(e);
+			} catch (MessagingException | UnsupportedEncodingException e) {
+				e.printStackTrace();
 			}
 		}
 		return status;
+	}
+
+	private String encodeMail(String mail) throws UnsupportedEncodingException {
+		String[] splited = mail.split("<");
+		return MimeUtility.encodeText(splited[0], "UTF-8", "Q") + "<" + splited[1];
 	}
 
 	public String getUserName() {
 		if (null != user) {
 			return user.getCn() + " <" + user.getMail() + ">";
 		} else
-			return this.username;
+			return "<" + this.username + ">";
 	}
 
 	public MailThread setUsername(String username) {
@@ -208,6 +231,16 @@ public class MailThread extends SwingWorker<Object, String> {
 		return this;
 	}
 
+	public MailThread setAttachments(HashMap<String, String> attachments) {
+		this.attachments = attachments;
+		return this;
+	}
+	
+	public MailThread setSignature(ArrayList<String> signature) {
+		this.signature = signature;	
+		return this;
+	}
+	
 	public boolean isAuthorize() {
 		return this.valid;
 	}
@@ -234,12 +267,42 @@ public class MailThread extends SwingWorker<Object, String> {
 		user = core.getCompanys().findUserByMail(username);
 	}
 
-	public void setAttachments(HashMap<String, String> attachment) {
-		this.attachment = attachment;
+	private Multipart createMail() {
+		Multipart multipart = null;
+		try {
+			multipart = new MimeMultipart();
+			MimeBodyPart textBodyPart = new MimeBodyPart();
+			if (0!=signature.size()){
+				body += "\n\n\n\n\n\n";
+				for( String item :signature){
+					body += item;
+					body += "\n";
+				}
+			}
+			textBodyPart.setText(body);
+			multipart.addBodyPart(textBodyPart);
+			if (0 != attachments.size()) {
+				for (String attachment : attachments.keySet()) {
+					String filePath = attachments.get(attachment);
+					if (Files.isRegularFile(Paths.get(filePath))) {
+						MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+						DataSource source = new FileDataSource(filePath);
+						attachmentBodyPart.setDataHandler(new DataHandler(source));
+						attachmentBodyPart.setFileName(attachment);
+						multipart.addBodyPart(attachmentBodyPart);
+					}
+				}
+			}
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return multipart;
 	}
 
 	public void createAttachments() {
-		this.attachment = new HashMap<String, String>();
+		this.attachments = new HashMap<String, String>();
 	}
 
 	public boolean isUserMailValid(String username) {

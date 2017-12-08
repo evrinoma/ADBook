@@ -419,12 +419,6 @@ public class MainForm {
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		panelView.add(tabbedPane);
 
-		panelMessages = new JPanel();
-		panelMessages.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panelMessages.setMinimumSize(new Dimension(10, 250));
-		tabbedPane.addTab("Рассылка", panelMessages);
-		createTabMessages();
-
 		panelPerson = new JPanel();
 		panelPerson.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelPerson.setMinimumSize(new Dimension(10, 250));
@@ -450,6 +444,13 @@ public class MainForm {
 		graphComponent = new mxGraphComponent(new mxGraph());
 		graphComponent.setToolTips(true);
 		panelDepend.add(graphComponent, "panelDepend");
+		
+		panelMessages = new JPanel();
+		panelMessages.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panelMessages.setMinimumSize(new Dimension(10, 250));
+		tabbedPane.addTab("Рассылка", panelMessages);
+		createTabMessages();
+		
 
 		createPanelStatus();
 
@@ -862,7 +863,6 @@ public class MainForm {
 
 		demension = new Dimension(100, 20);
 		textFieldLogin = new JTextField();
-		textFieldLogin.setText("nikolns@ite-ng.ru");
 		sl_panelAuth.putConstraint(SpringLayout.NORTH, textFieldLogin, 10, SpringLayout.NORTH, panelAuth);
 		sl_panelAuth.putConstraint(SpringLayout.WEST, textFieldLogin, 0, SpringLayout.EAST, lblLogin);
 		textFieldLogin.setPreferredSize(demension);
@@ -1408,7 +1408,7 @@ public class MainForm {
 		textFieldDepartment.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)) {
+				if (filterOnlyAlphabetic(e) & filterOnlySpace(e)) {
 					e.consume();
 				}
 			}
@@ -1417,7 +1417,7 @@ public class MainForm {
 		textFieldPesonPosition.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)) {
+				if (filterOnlyAlphabetic(e) & filterOnlySpace(e)) {
 					e.consume();
 				}
 			}
@@ -1617,14 +1617,7 @@ public class MainForm {
 								+ " <" + user.getMail() + ">");
 					}
 				}
-				this.listMessagesEditorTo.setModel(listModel);
-				/*
-				 * HashMap<String, String> filesList =
-				 * core.addMailAttachmet(fileToAttach.getName(),
-				 * fileToAttach.getAbsolutePath());
-				 * this.listMessagesEditorAttachment.setListData(filesList.
-				 * keySet().toArray());
-				 */
+				this.listMessagesEditorTo.setModel(listModel);				
 			}
 		}
 	}
@@ -1718,6 +1711,19 @@ public class MainForm {
 	 */
 	private boolean filterOnlyAlphabetic(KeyEvent e) {
 		if (Character.isAlphabetic(e.getKeyChar())) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * фильтрация только space
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private boolean filterOnlySpace(KeyEvent e) {
+		if (Character.isSpaceChar(e.getKeyChar())) {
 			return false;
 		}
 		return true;

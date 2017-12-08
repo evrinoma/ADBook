@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.swing.ImageIcon;
 
 import com.google.zxing.BarcodeFormat;
@@ -431,11 +429,29 @@ public class Core {
 	
 	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username, String password){
 		if (null == mail || mail.isDone()) {
-			mail = new MailThread(this);							
-				mail.setAction(mail.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment);
+			mail = new MailThread(this);		
+				mail.setAction(mail.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment).setSignature(signature(companys.findUserByMail(username)));
 				mail.execute();			
 		} else {
 			mail.execute();
 		}
+	}
+	
+	public ArrayList<String> signature(UserDto user)
+	{
+		ArrayList<String> signature = new ArrayList<String>(); 
+		
+		if (null != user) {
+			signature.add("--------------------------------------");
+			signature.add("С уважением, "+user.getCn());
+			signature.add(user.getDescription());
+			signature.add(user.getDepartment());
+			signature.add(user.getCompany());
+			if (0 != user.getTelephoneNumber().length()) {
+				signature.add("телефон:"+user.getTelephoneNumber());	
+			}			
+		}
+		
+		return signature;
 	}
 }
