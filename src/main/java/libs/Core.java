@@ -259,18 +259,18 @@ public class Core {
 	 * @param description
 	 */
 	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
-			String department, String phone, String pesonPosition) {
+			String department, String phone, String pesonPosition, String room) {
 		if (null == localSearch || localSearch.isDone()) {
 
 			localSearch = new LocalSearchThread(this);
 
-			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition, room);
 			localSearch.setCompanys(companys);
 
 			localSearch.setLock();
 			localSearch.execute();			
 		} else {
-			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition, room);
 			localSearch.setCompanys(companys);
 			localSearch.restartSearch();
 		}
@@ -333,40 +333,7 @@ public class Core {
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 	}
-/*
-	public boolean isRunningProcess(String Name) {
-		boolean status = true;
-		FileChannel channel = null;
-		FileLock lock = null;
 
-		try {
-			fileLock = new File(System.getProperty("user.home"), Name + ".tmp");
-			fileLockAccess = new RandomAccessFile(fileLock, "rw");
-			channel = fileLockAccess.getChannel();
-			lock = channel.tryLock();
-			if (lock != null) {
-				status = false;
-			} else {
-				System.out.println("Another instance is already running");
-			}
-		} finally {
-			return status;
-		}
-	}
-	*/
-/*
-	public void removeRunningProcess() {
-		try {
-			if (lock != null && lock.isValid())
-				lock.release();
-			if (fileLockAccess != null)
-				fileLockAccess.close();
-			fileLock.delete();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-*/
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);

@@ -89,7 +89,7 @@ import javax.swing.ListSelectionModel;
 
 public class MainForm {
 
-	private static final String VERSION = "08.12.17v1";
+	private static final String VERSION = "11.12.17v2";
 	private static final String NAME = "ADBOOK";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
@@ -143,6 +143,7 @@ public class MainForm {
 	private JTextField textFieldPhone;
 	private JTextField textFieldDepartment;
 	private JTextField textFieldPesonPosition;
+	private JTextField textFieldRoom;
 
 	private JLabel labelStatusBar;
 	private JTree tree;
@@ -212,7 +213,6 @@ public class MainForm {
 	 */
 	public MainForm() {
 		core = new Core();
-		// if (!core.isRunningProcess(NAME)) {
 		if (!core.sendServerSocket()) {
 			core.runServerSocket();
 			createForm();
@@ -235,7 +235,7 @@ public class MainForm {
 		frmHandbook.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				Object[] options = { "Свернуть", "Закрыть" };
-				int n = JOptionPane.showOptionDialog(frmHandbook, "", "", JOptionPane.YES_NO_OPTION,
+				int n = JOptionPane.showOptionDialog(frmHandbook, "", "Что-то написано...", JOptionPane.YES_NO_OPTION,
 						JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
 				if (n == JOptionPane.YES_OPTION) {
@@ -1219,6 +1219,12 @@ public class MainForm {
 		JLabel labelPesonPosition = new JLabel(textFieldPesonPosition.getToolTipText() + ':');
 		labelPesonPosition.setMinimumSize(new Dimension(50, 0));
 
+		textFieldRoom = new JTextField();
+		textFieldRoom.setToolTipText("Комната");
+		textFieldRoom.setHorizontalAlignment(SwingConstants.LEFT);
+		JLabel labelRoom = new JLabel(textFieldRoom.getToolTipText() + ':');
+		textFieldRoom.setMinimumSize(new Dimension(50, 0));
+		
 		panelFSM.add(labelSurName);
 		panelFSM.add(textFieldLastName);
 		panelFSM.add(labelFirstName);
@@ -1235,9 +1241,11 @@ public class MainForm {
 		panelFSM.add(textFieldPesonPosition);
 		panelFSM.add(labelPhone);
 		panelFSM.add(textFieldPhone);
-
+		panelFSM.add(labelRoom);
+		panelFSM.add(textFieldRoom);
+		
 		// rows, cols, initX, initY
-		SpringUtilities.makeCompactGrid(panelFSM, 8, 2, 6, 6, 20, 6);
+		SpringUtilities.makeCompactGrid(panelFSM, 9, 2, 6, 6, 20, 6);
 	}
 
 	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {
@@ -1499,6 +1507,12 @@ public class MainForm {
 			}
 		});
 
+		textFieldRoom.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent e) {
+				search();
+			}
+		});
+		
 		comboBoxCompany.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
@@ -1776,6 +1790,7 @@ public class MainForm {
 		String department = textFieldDepartment.getText();
 		String phone = textFieldPhone.getText();
 		String pesonPosition = textFieldPesonPosition.getText();
-		core.localSearch(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
+		String room = textFieldRoom.getText();
+		core.localSearch(lastName, firstName, middleName, company, filial, department, phone, pesonPosition, room);
 	}
 }

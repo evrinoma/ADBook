@@ -448,6 +448,10 @@ public class UserDto implements Serializable {
 		return getDepartment().toLowerCase().contains(department);
 	}
 	
+	public boolean isPhysicalDeliveryOfficeName(String room) {
+		return getPhysicalDeliveryOfficeName().toLowerCase().contains(room);
+	}
+	
 	public String getCompanyDn() {
 		return companyDn;
 	}
@@ -470,13 +474,14 @@ public class UserDto implements Serializable {
 		VCard += "EMAIL:" + getMail() + "\n";
 		VCard += "URL:http://www.ite-ng.ru\n";
 		VCard += "END:VCARD";
-		
+		/*
 		try {
 			VCard = new String(VCard.getBytes(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 		return VCard;
 	}
 

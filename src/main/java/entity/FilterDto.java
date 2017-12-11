@@ -9,9 +9,11 @@ public class FilterDto {
 	private String filterDepartment = "";	
 	private String filterTelephoneNumber = "";
 	private String filterPesonPosition = "";
+	private String filterRoom = "";
+	
 
 	public FilterDto(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial, String department, String telephoneNumber,
-			String pesonPosition) {
+			String pesonPosition, String room) {
 		this.filterLastName = lastName;
 		this.filterFirstName = firstName;
 		this.filterMiddleName = middleName;
@@ -20,6 +22,7 @@ public class FilterDto {
 		this.filterDepartment = department;
 		this.filterTelephoneNumber = telephoneNumber;
 		this.filterPesonPosition = pesonPosition;
+		this.filterRoom = room;
 	}
 
 	public FilterDto(FilterDto filter) {
@@ -31,6 +34,7 @@ public class FilterDto {
 		this.filterDepartment = filter.getFilterDepartment();
 		this.filterTelephoneNumber = filter.getFilterTelephoneNumber();
 		this.filterPesonPosition = filter.getFilterPesonPosition();
+		this.filterRoom = filter.getFilterRoom();
 	}	
 	
 	public String getFilterLastName() {
@@ -65,6 +69,10 @@ public class FilterDto {
 		return filterPesonPosition.toLowerCase();
 	}
 	
+	public String getFilterRoom() {
+		return filterRoom.toLowerCase();
+	}	
+	
 	public boolean isFilterLastNameSet() {
 		return (0 != filterLastName.length());
 	}
@@ -87,5 +95,9 @@ public class FilterDto {
 	
 	public boolean isFilterDepartmentSet() {
 		return (0 != filterDepartment.length());
+	}
+	
+	public boolean isFilterRoomSet() {
+		return (0 != filterRoom.length());
 	}
 }

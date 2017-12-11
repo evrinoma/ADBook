@@ -71,10 +71,11 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		boolean searchByDepartment = filterDto.isFilterDepartmentSet();
 		boolean searchByPhone = filterDto.isFilterPhoneSet();
 		boolean searchByPesonPosition = filterDto.isFilterPesonPositionSet();
+		boolean searchByRoom = filterDto.isFilterRoomSet();
 		boolean isNotFound = true;
 
 		if ((!searchByLastName) & (!searchByFirstName) & (!searchByMiddleName) & (!searchByPhone)
-				& (!searchByPesonPosition) & (!searchByDepartment)) {
+				& (!searchByPesonPosition) & (!searchByDepartment) & (!searchByRoom)) {
 			filteredUsers.putAll(users);
 			return true;
 		}
@@ -116,6 +117,12 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 				}
 			}
 
+			if (searchByRoom & isNotFound) {
+				if (!user.isPhysicalDeliveryOfficeName(filterDto.getFilterRoom())) {
+					isNotFound = false;
+				}
+			}
+			
 			if (isNotFound) {
 				filteredUsers.put(user.getDistinguishedName(), user);
 			}
@@ -212,9 +219,9 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 	}
 
 	public void setFilter(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
-			String department, String telephoneNumber, String pesonPosition) {
+			String department, String telephoneNumber, String pesonPosition, String room) {
 		filterDto = new FilterDto(lastName, firstName, middleName, company, filial, department, telephoneNumber,
-				pesonPosition);
+				pesonPosition, room);
 	}
 
 	public Companys getCompanys() {
