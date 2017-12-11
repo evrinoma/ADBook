@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -469,7 +470,13 @@ public class UserDto implements Serializable {
 		VCard += "EMAIL:" + getMail() + "\n";
 		VCard += "URL:http://www.ite-ng.ru\n";
 		VCard += "END:VCARD";
-
+		
+		try {
+			VCard = new String(VCard.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return VCard;
 	}
 

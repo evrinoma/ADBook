@@ -30,13 +30,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 	@Override
 	protected Boolean doInBackground() throws Exception {
 		while (true) {
-			doSearching();
-			if (isRestartSearch()) {
-				stopSearch();
-				doSearching();
-			} else {
-				return true;
-			}
+			return doSearching();		
 		}
 	}
 

@@ -672,6 +672,11 @@ public class MainForm {
 		this.textAreaMessagesEditor.setText("");
 		clearMessagesAttachment();
 	}
+	
+	public void repaint(){
+		frmHandbook.repaint();
+	}
+	
 
 	private void clearMessagesAttachment() {
 		DefaultListModel listModel = new DefaultListModel();

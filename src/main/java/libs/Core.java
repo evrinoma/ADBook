@@ -268,8 +268,7 @@ public class Core {
 			localSearch.setCompanys(companys);
 
 			localSearch.setLock();
-			localSearch.execute();
-
+			localSearch.execute();			
 		} else {
 			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition);
 			localSearch.setCompanys(companys);
@@ -385,12 +384,13 @@ public class Core {
 	public void isMailAuthrizeSuccessful(String authUser) {
 		form.removeMessagePreload();
 		form.showMessageEditorPanel(authUser);
+		form.repaint();
 	}
 
 	public void isMailAuthrizeFail(String status) {
 		setStatusString(status);
 		form.removeMessagePreload();
-
+		form.repaint();
 	}
 
 	public void isMailSendedSuccessful(String authUser, ArrayList<String> emails)
@@ -398,6 +398,7 @@ public class Core {
 		form.removeMessagePreload();
 		form.showMessageEditorPanel(authUser);
 		form.clearMessages();
+		form.repaint();
 	}
 	
 	
@@ -440,7 +441,7 @@ public class Core {
 				mail.execute();			
 		} else {
 			mail.execute();
-		}
+		}		
 	}
 	
 	public ArrayList<String> signature(UserDto user)
