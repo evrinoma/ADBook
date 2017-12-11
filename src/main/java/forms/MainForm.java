@@ -89,7 +89,7 @@ import javax.swing.ListSelectionModel;
 
 public class MainForm {
 
-	private static final String VERSION = "11.12.17v2";
+	private static final String VERSION = "11.12.17v3";
 	private static final String NAME = "ADBOOK";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
