@@ -60,7 +60,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import java.io.File;
-
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.ArrayList;
@@ -95,16 +95,17 @@ public class MainForm {
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
 	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
-	private static final String EMPTY_IMAGE = "/images/empty.png";
-	private static final String USERS_IMAGE = "/images/iphone/Users.png";// "/images/humans.png";
-																			// //"/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/src/main/resources/images/empty.png";
-	private static final String DOWNLOADS_IMAGE = "/images/iphone/Transmission.png";
-	private static final String COPY_EMAILS_IMAGE = "/images/iphone/Mail.png";
-	private static final String SAVE_XLS_IMAGE = "/images/iphone/Excel.png";
-	private static final String MESSAGES_IMAGE = "/images/iphone/Messages.png";
-	private static final String LOGO_IMAGE = "/images/logo.png";
-	private static final String PRELOAD_IMAGE = "/images/ajax-loader.gif";
-	private static final String PLANS_IMAGE = "/images/plans/";
+	private static final boolean IS_LOADER_CLASS_PATH = false;
+	private static final String FOLDER_IMAGE = "images";
+	private static final String EMPTY_IMAGE = "/empty.png";
+	private static final String USERS_IMAGE = "/iphone/Users.png";
+	private static final String DOWNLOADS_IMAGE = "/iphone/Transmission.png";
+	private static final String COPY_EMAILS_IMAGE = "/iphone/Mail.png";
+	private static final String SAVE_XLS_IMAGE = "/iphone/Excel.png";
+	private static final String MESSAGES_IMAGE = "/iphone/Messages.png";
+	private static final String LOGO_IMAGE = "/logo.png";
+	private static final String PRELOAD_IMAGE = "/ajax-loader.gif";
+	private static final String PLANS_IMAGE = "/plans/";
 
 	private JFrame frmHandbook;
 
@@ -186,7 +187,7 @@ public class MainForm {
 	private JButton buttonMessagesEditorAttachmentClear;
 
 	TrayIcon trayIcon = null;
-	
+
 	private Core core;
 
 	/**
@@ -211,7 +212,7 @@ public class MainForm {
 	 */
 	public MainForm() {
 		core = new Core();
-		//if (!core.isRunningProcess(NAME)) {
+		// if (!core.isRunningProcess(NAME)) {
 		if (!core.sendServerSocket()) {
 			core.runServerSocket();
 			createForm();
@@ -232,22 +233,16 @@ public class MainForm {
 
 	private void addWindowListener() {
 		frmHandbook.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {	
-				Object[] options = {"Свернуть","Закрыть"};				
-                int n = JOptionPane.showOptionDialog(
-                		frmHandbook, "",  "",
-                		JOptionPane.YES_NO_OPTION,
-                		JOptionPane.PLAIN_MESSAGE,
-                		null,     
-                		options,  
-                		options[0]
-                		);  
+			public void windowClosing(WindowEvent e) {
+				Object[] options = { "Свернуть", "Закрыть" };
+				int n = JOptionPane.showOptionDialog(frmHandbook, "", "", JOptionPane.YES_NO_OPTION,
+						JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
-                 if (n == JOptionPane.YES_OPTION) {
-                	 createTray();
-                 }  else {
-                	 System.exit(0);
-                 }
+				if (n == JOptionPane.YES_OPTION) {
+					createTray();
+				} else {
+					System.exit(0);
+				}
 			}
 		});
 	}
@@ -479,7 +474,7 @@ public class MainForm {
 		systemTray.remove(trayIcon);
 		frmHandbook.setVisible(true);
 	}
-	
+
 	private void createTray() {
 		// checking for support
 		if (!SystemTray.isSupported()) {
@@ -510,7 +505,7 @@ public class MainForm {
 		close.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//core.removeRunningProcess();
+				// core.removeRunningProcess();
 				core.close();
 				System.exit(0);
 			}
@@ -1294,7 +1289,18 @@ public class MainForm {
 	}
 
 	private URL getResourceFile(String nameFile) {
-		return this.getClass().getResource(nameFile);
+		URL url = null;
+		if (IS_LOADER_CLASS_PATH) {
+			url = this.getClass().getResource(nameFile);
+		} else {
+			try {
+				url = new File(FOLDER_IMAGE + nameFile).toURI().toURL();
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return url;
 	}
 
 	private ImageIcon getResourceImage(String nameFile) {
