@@ -89,13 +89,15 @@ import javax.swing.ListSelectionModel;
 
 public class MainForm {
 
-	private static final String VERSION = "11.12.17v3";
+	private static final String VERSION = "12.12.17v1";
 	private static final String NAME = "ADBOOK";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
 	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
 	private static final boolean IS_LOADER_CLASS_PATH = false;
+	private static final String IS_CONTACT_RU = "Контакт в кириллице";
+	private static final String IS_CONTACT_EN = "Контакт в транслите";
 	private static final String FOLDER_IMAGE = "images";
 	private static final String EMPTY_IMAGE = "/empty.png";
 	private static final String USERS_IMAGE = "/iphone/Users.png";
@@ -144,6 +146,7 @@ public class MainForm {
 	private JTextField textFieldDepartment;
 	private JTextField textFieldPesonPosition;
 	private JTextField textFieldRoom;
+	private boolean isTransQrcode = false;
 
 	private JLabel labelStatusBar;
 	private JTree tree;
@@ -190,6 +193,9 @@ public class MainForm {
 	TrayIcon trayIcon = null;
 
 	private Core core;
+	private SpringLayout sl_panelPerson;
+	private JPanel panelPhoto;
+	private UserDto selectedUser;
 
 	/**
 	 * Launch the application.
@@ -672,11 +678,10 @@ public class MainForm {
 		this.textAreaMessagesEditor.setText("");
 		clearMessagesAttachment();
 	}
-	
-	public void repaint(){
+
+	public void repaint() {
 		frmHandbook.repaint();
 	}
-	
 
 	private void clearMessagesAttachment() {
 		DefaultListModel listModel = new DefaultListModel();
@@ -1024,7 +1029,7 @@ public class MainForm {
 	}
 
 	private void createTabPerson(JPanel panel) {
-		SpringLayout sl_panelPerson = new SpringLayout();
+		sl_panelPerson = new SpringLayout();
 		panel.setLayout(sl_panelPerson);
 
 		panelQrCode = new JPanel();
@@ -1035,7 +1040,7 @@ public class MainForm {
 		panelQrCode.setMaximumSize(DEMENSION_IMAGE);
 		panel.add(panelQrCode);
 
-		JPanel panelPhoto = new JPanel();
+		panelPhoto = new JPanel();
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, panelPhoto, 0, SpringLayout.NORTH, panelQrCode);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, panelPhoto, 19, SpringLayout.EAST, panelQrCode);
 		panelPhoto.setPreferredSize(DEMENSION_IMAGE);
@@ -1055,7 +1060,7 @@ public class MainForm {
 		panelPhoto.add(labelPersonQrCode);
 
 		JLabel labelPersonFio = new JLabel("ФИО:");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonFio, 13, SpringLayout.SOUTH, panelQrCode);
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonFio, 33, SpringLayout.SOUTH, panelQrCode);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonFio, 0, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonFio);
 
@@ -1224,7 +1229,7 @@ public class MainForm {
 		textFieldRoom.setHorizontalAlignment(SwingConstants.LEFT);
 		JLabel labelRoom = new JLabel(textFieldRoom.getToolTipText() + ':');
 		textFieldRoom.setMinimumSize(new Dimension(50, 0));
-		
+
 		panelFSM.add(labelSurName);
 		panelFSM.add(textFieldLastName);
 		panelFSM.add(labelFirstName);
@@ -1243,7 +1248,7 @@ public class MainForm {
 		panelFSM.add(textFieldPhone);
 		panelFSM.add(labelRoom);
 		panelFSM.add(textFieldRoom);
-		
+
 		// rows, cols, initX, initY
 		SpringUtilities.makeCompactGrid(panelFSM, 9, 2, 6, 6, 20, 6);
 	}
@@ -1253,52 +1258,63 @@ public class MainForm {
 				image.getImage().SCALE_DEFAULT));
 	}
 
-	private void updatePanelView(UserDto user) {
-		String mail = new String(user.getOtherTelephone() + ((0 == user.getOtherTelephone().length()) ? "" : "p*")
-				+ user.getTelephoneNumber());
+	private void updatePanelView() {
+		if (selectedUser instanceof UserDto) {
+			String mail = new String(
+					selectedUser.getOtherTelephone() + ((0 == selectedUser.getOtherTelephone().length()) ? "" : "p*")
+							+ selectedUser.getTelephoneNumber());
 
-		labelPersonWriDescription.setText(user.getDescription());
-		labelPersonWriFio.setText(user.getCn());
-		labelPersonWriCompany.setText(user.getCompany());
-		labelPersonWriDepartment.setText(user.getDepartment());
+			labelPersonWriDescription.setText(selectedUser.getDescription());
+			labelPersonWriFio.setText(selectedUser.getCn());
+			labelPersonWriCompany.setText(selectedUser.getCompany());
+			labelPersonWriDepartment.setText(selectedUser.getDepartment());
 
-		if (!user.getManager().isEmpty()) {
-			labelPersonHead.setVisible(true);
-			labelPersonWriHead.setText(core.getUserManger(user));
-		} else {
-			labelPersonHead.setVisible(false);
-			labelPersonWriHead.setText("");
+			if (!selectedUser.getManager().isEmpty()) {
+				labelPersonHead.setVisible(true);
+				labelPersonWriHead.setText(core.getUserManger(selectedUser));
+			} else {
+				labelPersonHead.setVisible(false);
+				labelPersonWriHead.setText("");
 
+			}
+			// core.getUserDependency(user);
+			showGraph(core.getUserDependency(selectedUser));
+
+			labelPersonWriRoom.setText(selectedUser.getPhysicalDeliveryOfficeName());
+			labelPersonWriPhoneInside.setText(mail);
+			labelPersonWriMail.setText(selectedUser.getMail());
+
+			labelContactWriСountry.setText(selectedUser.getCo());
+			labelContactWriRegion.setText(selectedUser.getSt());
+			labelContactWriTown.setText(selectedUser.getL());
+			labelContactWritPostIndex.setText(selectedUser.getPostalCode());
+			labelContactWriStreet.setText(selectedUser.getStreetAddress());
+			labelContactWriBirth.setText(selectedUser.getInfo());
+			labelContactWriRoom.setText(selectedUser.getPhysicalDeliveryOfficeName());
+			labelContactWriPhoneInside.setText(mail);
+			labelContactWriPhone.setText(selectedUser.getHomePhone());
+			labelContactWriMobilePhone.setText(selectedUser.getMobile());
+			labelContactWriMail.setText(selectedUser.getMail());
+
+			labelRoomPic.setIcon(resizeIcon((null != selectedUser.getPhysicalDeliveryOfficeName())
+					? getResourceImage(PLANS_IMAGE + selectedUser.getPhysicalDeliveryOfficeName() + ".jpg")
+					: getResourceImage(USERS_IMAGE), labelRoomPic));
+
+			labelPersonPic.setIcon(resizeIcon((null != selectedUser.getJpegPhoto())
+					? new ImageIcon(selectedUser.getJpegPhoto()) : getResourceImage(USERS_IMAGE), labelPersonPic));
+
+			setPersonPanelQrCode();
 		}
-		// core.getUserDependency(user);
-		showGraph(core.getUserDependency(user));
+	}
 
-		labelPersonWriRoom.setText(user.getPhysicalDeliveryOfficeName());
-		labelPersonWriPhoneInside.setText(mail);
-		labelPersonWriMail.setText(user.getMail());
-
-		labelContactWriСountry.setText(user.getCo());
-		labelContactWriRegion.setText(user.getSt());
-		labelContactWriTown.setText(user.getL());
-		labelContactWritPostIndex.setText(user.getPostalCode());
-		labelContactWriStreet.setText(user.getStreetAddress());
-		labelContactWriBirth.setText(user.getInfo());
-		labelContactWriRoom.setText(user.getPhysicalDeliveryOfficeName());
-		labelContactWriPhoneInside.setText(mail);
-		labelContactWriPhone.setText(user.getHomePhone());
-		labelContactWriMobilePhone.setText(user.getMobile());
-		labelContactWriMail.setText(user.getMail());
-
-		labelRoomPic.setIcon(resizeIcon((null != user.getPhysicalDeliveryOfficeName())
-				? getResourceImage(PLANS_IMAGE + user.getPhysicalDeliveryOfficeName() + ".jpg")
-				: getResourceImage(USERS_IMAGE), labelRoomPic));
-
-		labelPersonPic.setIcon(resizeIcon(
-				(null != user.getJpegPhoto()) ? new ImageIcon(user.getJpegPhoto()) : getResourceImage(USERS_IMAGE),
-				labelPersonPic));
-
-		labelPersonQrCode.setIcon(core.createQrCodeWithLogo(getResourceFile(LOGO_IMAGE), user.getVCard(),
-				labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
+	private void setPersonPanelQrCode() {
+		if (isTransQrcode) {
+			labelPersonQrCode.setToolTipText(IS_CONTACT_EN);			
+		} else {
+			labelPersonQrCode.setToolTipText(IS_CONTACT_RU);
+		}
+		labelPersonQrCode.setIcon(core.createQrCodeWithLogo(getResourceFile(LOGO_IMAGE),
+				selectedUser.getVCard(isTransQrcode), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
 	}
 
 	private URL getResourceFile(String nameFile) {
@@ -1409,7 +1425,8 @@ public class MainForm {
 							}
 						}
 					}
-					updatePanelView((UserDto) selectedValue);
+					selectedUser = (UserDto) selectedValue;
+					updatePanelView();
 				}
 
 				setMessagesEditorTo();
@@ -1512,7 +1529,7 @@ public class MainForm {
 				search();
 			}
 		});
-		
+
 		comboBoxCompany.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
@@ -1624,6 +1641,20 @@ public class MainForm {
 		buttonMessagesEditorSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sendMessages();
+			}
+		});	
+		labelPersonQrCode.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				isTransQrcode = !isTransQrcode;
+				if (selectedUser instanceof UserDto) {
+					if (isTransQrcode) {
+						core.setStatusString(IS_CONTACT_EN);
+					} else {
+						core.setStatusString(IS_CONTACT_RU);
+					}
+					setPersonPanelQrCode();
+				}
 			}
 		});
 	}

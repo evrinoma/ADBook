@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -56,7 +57,7 @@ public class UserDto implements Serializable {
 	private String lastName = "";
 	private String middleName = "";
 	private String firstName = "";
-	
+
 	private String companyDn = "";
 
 	private void createUser(String displayName) {
@@ -266,6 +267,10 @@ public class UserDto implements Serializable {
 		return cn;
 	}
 
+	public String getCn(boolean isTranslit) {		
+		return (isTranslit)? this.translit(getCn()):getCn();
+	}
+	
 	public String getSn() {
 		return sn;
 	}
@@ -290,6 +295,10 @@ public class UserDto implements Serializable {
 		return description;
 	}
 
+	public String getDescription(boolean isTranslit) {		
+		return (isTranslit)? this.translit(getDescription()):getDescription();
+	}
+	
 	public String getPostalCode() {
 		return postalCode;
 	}
@@ -328,6 +337,10 @@ public class UserDto implements Serializable {
 
 	public String getCompany() {
 		return company;
+	}
+	
+	public String getCompany(boolean isTranslit) {		
+		return (isTranslit)? this.translit(getCompany()):getCompany();
 	}
 
 	public String getStreetAddress() {
@@ -415,6 +428,10 @@ public class UserDto implements Serializable {
 	public String getLastName() {
 		return lastName;
 	}
+	
+	public String getLastName(boolean isTranslit) {		
+		return (isTranslit)? this.translit(getLastName()):getLastName();
+	}
 
 	public String getMiddleName() {
 		return middleName;
@@ -423,7 +440,11 @@ public class UserDto implements Serializable {
 	public String getFirstName() {
 		return firstName;
 	}
-
+	
+	public String getFirstName(boolean isTranslit) {		
+		return (isTranslit)? this.translit(getFirstName()):getFirstName();
+	}
+	
 	public boolean isLastName(String lastName) {
 		return getLastName().toLowerCase().contains(lastName);
 	}
@@ -447,11 +468,11 @@ public class UserDto implements Serializable {
 	public boolean isDepartment(String department) {
 		return getDepartment().toLowerCase().contains(department);
 	}
-	
+
 	public boolean isPhysicalDeliveryOfficeName(String room) {
 		return getPhysicalDeliveryOfficeName().toLowerCase().contains(room);
 	}
-	
+
 	public String getCompanyDn() {
 		return companyDn;
 	}
@@ -459,30 +480,171 @@ public class UserDto implements Serializable {
 	public void setCompanyDn(String companyDn) {
 		this.companyDn = companyDn;
 	}
-	
-	public String getVCard() {
+
+	public String getVCard(boolean isTranslit) {
 		String VCard = new String();
 		VCard += "BEGIN:VCARD\n";
 		VCard += "VERSION:4.0\n";
-		VCard += "N:" + getFirstName() + ";" + getLastName() + "\n";
-		VCard += "FN:" + getCn() + "\n";
-		VCard += "ORG:" + getCompany() + "\n";
-		VCard += "TITLE:" + getDescription() + "\n";
+		VCard += "N:" + getFirstName(isTranslit) + ";" + getLastName(isTranslit) + "\n";
+		VCard += "FN:" + getCn(isTranslit) + "\n";
+		VCard += "ORG:" + getCompany(isTranslit) + "\n";
+		VCard += "TITLE:" + getDescription(isTranslit) + "\n";
 		VCard += "TEL;WORK,VOICE:" + getOtherTelephone() + ((0 == getTelephoneNumber().length()) ? "p*" : "")
 				+ getTelephoneNumber() + "\n";
 		VCard += "TEL;HOME,VOICE:" + getHomePhone() + "\n";
 		VCard += "EMAIL:" + getMail() + "\n";
 		VCard += "URL:http://www.ite-ng.ru\n";
 		VCard += "END:VCARD";
-		/*
-		try {
-			VCard = new String(VCard.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
+
 		return VCard;
+	}
+
+	private String alphabet(char ch) {
+		switch (ch) {
+		case 'А':
+			return "A";
+		case 'Б':
+			return "B";
+		case 'В':
+			return "V";
+		case 'Г':
+			return "G";
+		case 'Д':
+			return "D";
+		case 'Е':
+			return "E";
+		case 'Ё':
+			return "JE";
+		case 'Ж':
+			return "ZH";
+		case 'З':
+			return "Z";
+		case 'И':
+			return "I";
+		case 'Й':
+			return "Y";
+		case 'К':
+			return "K";
+		case 'Л':
+			return "L";
+		case 'М':
+			return "M";
+		case 'Н':
+			return "N";
+		case 'О':
+			return "O";
+		case 'П':
+			return "P";
+		case 'Р':
+			return "R";
+		case 'С':
+			return "S";
+		case 'Т':
+			return "T";
+		case 'У':
+			return "U";
+		case 'Ф':
+			return "F";
+		case 'Х':
+			return "KH";
+		case 'Ц':
+			return "C";
+		case 'Ч':
+			return "CH";
+		case 'Ш':
+			return "SH";
+		case 'Щ':
+			return "JSH";
+		case 'Ъ':
+			return "HH";
+		case 'Ы':
+			return "IH";
+		case 'Ь':
+			return "JH";
+		case 'Э':
+			return "EH";
+		case 'Ю':
+			return "JU";
+		case 'Я':
+			return "JA";
+			
+		case 'а':
+			return "a";
+		case 'б':
+			return "b";
+		case 'в':
+			return "v";
+		case 'г':
+			return "g";
+		case 'д':
+			return "d";
+		case 'е':
+			return "e";
+		case 'ё':
+			return "je";
+		case 'ж':
+			return "zh";
+		case 'з':
+			return "z";
+		case 'и':
+			return "i";
+		case 'й':
+			return "y";
+		case 'к':
+			return "k";
+		case 'л':
+			return "l";
+		case 'м':
+			return "m";
+		case 'н':
+			return "n";
+		case 'о':
+			return "o";
+		case 'п':
+			return "p";
+		case 'р':
+			return "r";
+		case 'с':
+			return "s";
+		case 'т':
+			return "t";
+		case 'у':
+			return "u";
+		case 'ф':
+			return "f";
+		case 'х':
+			return "kh";
+		case 'ц':
+			return "c";
+		case 'ч':
+			return "ch";
+		case 'ш':
+			return "sh";
+		case 'щ':
+			return "jsh";
+		case 'ъ':
+			return "hh";
+		case 'ы':
+			return "ih";
+		case 'ь':
+			return "jh";
+		case 'э':
+			return "eh";
+		case 'ю':
+			return "ju";
+		case 'я':
+			return "ja";
+		default:
+			return String.valueOf(ch);
+		}
+	}
+
+	private String translit(String s) {
+		StringBuilder sb = new StringBuilder(s.length() * 2);
+		for (char ch : s.toCharArray()) {
+			sb.append(alphabet(ch));
+		}
+		return sb.toString();
 	}
 
 	private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException {
@@ -516,7 +678,7 @@ public class UserDto implements Serializable {
 		manager = (ArrayList<String>) aInputStream.readObject();
 		directReports = (ArrayList<String>) aInputStream.readObject();
 		itnumber = aInputStream.readUTF();
-		info = aInputStream.readUTF();		
+		info = aInputStream.readUTF();
 		// InputStream in = new ByteArrayInputStream(aInputStream);
 		/*
 		 * // convert byte array back to BufferedImage InputStream in = new
@@ -532,7 +694,7 @@ public class UserDto implements Serializable {
 		lastName = aInputStream.readUTF();
 		middleName = aInputStream.readUTF();
 		firstName = aInputStream.readUTF();
-		companyDn  = aInputStream.readUTF();
+		companyDn = aInputStream.readUTF();
 		int size = aInputStream.readInt();
 		if (0 != size) {
 			jpegPhoto = ImageIO.read(aInputStream);
@@ -570,12 +732,12 @@ public class UserDto implements Serializable {
 		aOutputStream.writeObject(manager);
 		aOutputStream.writeObject(directReports);
 		aOutputStream.writeUTF(itnumber);
-		aOutputStream.writeUTF(info);		
+		aOutputStream.writeUTF(info);
 		aOutputStream.writeUTF(fname);
 		aOutputStream.writeUTF(lastName);
 		aOutputStream.writeUTF(middleName);
 		aOutputStream.writeUTF(firstName);
-		aOutputStream.writeUTF(companyDn);		
+		aOutputStream.writeUTF(companyDn);
 		if (null != jpegPhoto) {
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			ImageIO.write(jpegPhoto, "jpg", buffer);
@@ -583,6 +745,6 @@ public class UserDto implements Serializable {
 			buffer.writeTo(aOutputStream);
 		} else {
 			aOutputStream.writeInt(0);
-		}	
+		}
 	}
 }
