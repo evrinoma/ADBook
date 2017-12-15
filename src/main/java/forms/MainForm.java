@@ -41,6 +41,7 @@ import com.mxgraph.view.mxGraph;
 import entity.CompanyDto;
 import entity.LevelNode;
 import entity.UserDto;
+import libs.Companys;
 import libs.Core;
 import threads.SaveThread;
 
@@ -83,14 +84,17 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import javax.swing.JPasswordField;
+import javax.swing.JRootPane;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
+import java.awt.Font;
 
 public class MainForm {
 
-	private static final String VERSION = "15.12.17v2";
+	private static final boolean isWEB = true;
+	private static final String VERSION = "15.12.17v5";
 	private static final String NAME = "ADBOOK";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
@@ -199,6 +203,7 @@ public class MainForm {
 	private UserDto selectedUser;
 
 	private boolean isLockRender = false;
+	private JLabel labelPersonWriPhoneSmall;
 
 	/**
 	 * Launch the application.
@@ -209,7 +214,11 @@ public class MainForm {
 				try {
 					MainForm window = new MainForm();
 					window.frmHandbook.setVisible(true);
-					window.frmHandbook.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+					if (!isWEB) {
+						window.frmHandbook.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+					} else {
+						window.frmHandbook.setExtendedState(window.frmHandbook.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -222,11 +231,15 @@ public class MainForm {
 	 */
 	public MainForm() {
 		core = new Core();
-		if (!core.sendServerSocket()) {
-			core.runServerSocket();
-			createForm();
+		if (!isWEB) {
+			if (!core.sendServerSocket()) {
+				core.runServerSocket();
+				createForm();
+			} else {
+				System.exit(0);
+			}
 		} else {
-			System.exit(0);
+			createForm();
 		}
 	}
 
@@ -241,19 +254,21 @@ public class MainForm {
 	}
 
 	private void addWindowListener() {
-		frmHandbook.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				Object[] options = { "Свернуть", "Закрыть" };
-				int n = JOptionPane.showOptionDialog(frmHandbook, "", "", JOptionPane.YES_NO_OPTION,
-						JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+		if (!isWEB) {
+			frmHandbook.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					Object[] options = { "Свернуть", "Закрыть" };
+					int n = JOptionPane.showOptionDialog(frmHandbook, "", "", JOptionPane.YES_NO_OPTION,
+							JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
-				if (n == JOptionPane.YES_OPTION) {
-					createTray();
-				} else {
-					System.exit(0);
+					if (n == JOptionPane.YES_OPTION) {
+						createTray();
+					} else {
+						System.exit(0);
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	public DefaultMutableTreeNode getTopTree() {
@@ -292,6 +307,31 @@ public class MainForm {
 		expandTree(isInit);
 	}
 
+	private UserDto getFirstUser(ArrayList<CompanyDto> companys){
+		UserDto search = null;
+		for (CompanyDto company : companys) {
+			if (!company.getFilials().isEmpty()){				
+				search = getFirstUser(company.getFilials());
+				if (null != search) {
+					return search;
+				}
+			} else {
+				if (!company.getUsers().isEmpty()) {				
+					for (UserDto user : company.getUsersSortedByCn().values()) {
+						return user;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+
+	public void setTreeUser(){			
+						
+	}
+	
+	
 	private void expandTree(boolean fullExpand) {
 		if (fullExpand) {
 			Enumeration<?> topLevelNodes = ((TreeNode) tree.getModel().getRoot()).children();
@@ -752,14 +792,14 @@ public class MainForm {
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactRoom, 0, SpringLayout.WEST, labelContactСountry);
 		panel.add(labelContactRoom);
 
-		JLabel labelContactPhoneInside = new JLabel("Телефон (внутр.):");
+		JLabel labelContactPhoneInside = new JLabel("Телефон:");
 		sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactPhoneInside, 6, SpringLayout.SOUTH,
 				labelContactRoom);
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactPhoneInside, 0, SpringLayout.WEST,
 				labelContactСountry);
 		panel.add(labelContactPhoneInside);
 
-		JLabel labelContactPhone = new JLabel("Телефон:");
+		JLabel labelContactPhone = new JLabel("Телефон (внутр.):");
 		sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactPhone, 6, SpringLayout.SOUTH,
 				labelContactPhoneInside);
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactPhone, 0, SpringLayout.WEST, labelContactСountry);
@@ -1100,15 +1140,18 @@ public class MainForm {
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonMail, 0, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonMail);
 
-		JLabel labelPersonPhoneInside = new JLabel("Телефон (внутр.):");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneInside, 6, SpringLayout.SOUTH,
-				labelPersonMail);
+		JLabel labelPersonPhoneInside = new JLabel("Телефон:");
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneInside, 6, SpringLayout.SOUTH,labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneInside, 0, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPhoneInside);
 
+		JLabel labelPersonPhoneSmall = new JLabel("Телефон (внутр.):");
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneSmall, 6, SpringLayout.SOUTH,labelPersonPhoneInside);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneSmall, 0, SpringLayout.WEST, panelQrCode);
+		panel.add(labelPersonPhoneSmall);
+		
 		JLabel labelPersonRoom = new JLabel("Комната:");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonRoom, 6, SpringLayout.SOUTH,
-				labelPersonPhoneInside);
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonRoom, 6, SpringLayout.SOUTH, labelPersonPhoneSmall);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonRoom, 0, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonRoom);
 
@@ -1154,13 +1197,19 @@ public class MainForm {
 		panel.add(labelPersonWriRoom);
 
 		labelPersonWriPhoneInside = new JLabel();
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneInside, 5, SpringLayout.EAST,
-				labelPersonMail);
-		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneInside, 0, SpringLayout.SOUTH,
-				labelPersonPhoneInside);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneInside, 5, SpringLayout.EAST,	labelPersonMail);
+		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneInside, 0, SpringLayout.SOUTH,labelPersonPhoneInside);
 		sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriPhoneInside, 0, SpringLayout.EAST, panelPerson);
 		panel.add(labelPersonWriPhoneInside);
 
+		labelPersonWriPhoneSmall = new JLabel();
+		labelPersonWriPhoneSmall.setFont(new Font("Roboto", Font.PLAIN, 14));
+		labelPersonWriPhoneSmall.setForeground(Color.BLUE);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneSmall, 5, SpringLayout.EAST, labelPersonMail);
+		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneSmall, 0, SpringLayout.SOUTH, labelPersonPhoneSmall);
+		sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriPhoneSmall, 0, SpringLayout.EAST, panelPerson);
+		panel.add(labelPersonWriPhoneSmall);
+		
 		labelPersonWriMail = new JLabel();
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriMail, 5, SpringLayout.EAST, labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriMail, 0, SpringLayout.SOUTH, labelPersonMail);
@@ -1293,7 +1342,7 @@ public class MainForm {
 			}
 			// core.getUserDependency(user);
 			showGraph(core.getUserDependency(selectedUser));
-
+			labelPersonWriPhoneSmall.setText(selectedUser.getTelephoneNumber());
 			labelPersonWriRoom.setText(selectedUser.getPhysicalDeliveryOfficeName());
 			labelPersonWriPhoneInside.setText(mail);
 			labelPersonWriMail.setText(selectedUser.getMail());
@@ -1366,18 +1415,18 @@ public class MainForm {
 				if (null == eNode)
 					return;
 
-				Object selectedValue = eNode.getUserObject();				
+				Object selectedValue = eNode.getUserObject();
 
 				if (!((selectedValue instanceof CompanyDto) || (selectedValue instanceof UserDto))) {
 					tree.getSelectionModel().removeSelectionPath(eTree);
 					return;
 				}
-				if (!isLockRender){
+				if (!isLockRender) {
 					isLockRender = true;
-					
+
 					ArrayList<TreePath> rmSelection = new ArrayList<TreePath>();
 					ArrayList<TreePath> addSelection = new ArrayList<TreePath>();
-					
+
 					if (selectedValue instanceof CompanyDto) {
 						CompanyDto company = (CompanyDto) selectedValue;
 						String Dn = company.getDn();
@@ -1429,7 +1478,8 @@ public class MainForm {
 						String Dn = user.getCompanyDn();
 						for (int selectedId : tree.getSelectionRows()) {
 							TreePath treePath = tree.getPathForRow(selectedId);
-							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+									.getLastPathComponent();
 							if (null != selectedItem) {
 								Object value = selectedItem.getUserObject();
 								if (value instanceof CompanyDto) {
@@ -1449,18 +1499,18 @@ public class MainForm {
 						selectedUser = user;
 						updatePanelView();
 					}
-					
-					TreeSelectionModel model = tree.getSelectionModel(); 
-					for( TreePath tree : rmSelection ){
+
+					TreeSelectionModel model = tree.getSelectionModel();
+					for (TreePath tree : rmSelection) {
 						model.removeSelectionPath(tree);
 					}
-					
-					if (0<=addSelection.size()){
+
+					if (0 <= addSelection.size()) {
 						model.addSelectionPath(eTree);
 					}
-					
+
 					setMessagesEditorTo();
-					
+
 					isLockRender = false;
 				}
 			}

@@ -283,6 +283,7 @@ public class Core {
 	public void isLocalSearchSuccessful(Companys filteredCompanys) {
 		form.getTopTree().removeAllChildren();
 		form.setTreeNode(filteredCompanys.all(), false);
+		form.setTreeUser();
 	}
 
 	/**
