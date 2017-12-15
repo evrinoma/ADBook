@@ -1,9 +1,6 @@
 package entity;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-
-import javax.swing.JPanel;
 
 import com.mxgraph.view.mxGraph;
 

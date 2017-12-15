@@ -1,6 +1,7 @@
 package threads;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -46,7 +47,8 @@ public class MailThread extends SwingWorker<Object, String> {
 	private static final String HINT_AUTH_ERROR = "incorrect password or account name";
 	private static final String HINT_AUTH = "authorization successful";
 	private static final String HINT_CREATE_MAIL = "Возникли ошибки при создании почтового сообщения";
-
+	private final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+	
 	private UserDto user;
 	private String username;
 	private String password;
@@ -139,13 +141,14 @@ public class MailThread extends SwingWorker<Object, String> {
 			propsSSL.put("mail.smtp.host", MAIL_SERVER);
 			propsSSL.put("mail.smtp.port", MAIL_PORT);
 			propsSSL.put("mail.smtp.socketFactory.port", MAIL_PORT);
+			propsSSL.put("mail.mime.charset","UTF-8");
 		} catch (GeneralSecurityException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}
 
-	private void sendMessages() {
+	private void sendMessages() {		
 		Multipart multipart = createMail();
 		if (null != multipart) {
 			for (String mail : to) {
@@ -158,6 +161,8 @@ public class MailThread extends SwingWorker<Object, String> {
 		}
 	}
 
+
+    
 	private boolean sendMail(String to, Multipart multipart) {
 		boolean status = false;
 		if (this.valid) {
@@ -170,8 +175,8 @@ public class MailThread extends SwingWorker<Object, String> {
 				Message message = new MimeMessage(session);
 				message.setFrom(new InternetAddress(encodeMail(from)));
 				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(encodeMail(to)));
-				message.setSubject(subject);
-				message.setText(body);
+				message.setSubject(mimeDecodeUTF8(subject));
+				message.setText(body);				
 				message.setContent(multipart);
 				Transport.send(message);
 				status = true;
@@ -184,7 +189,15 @@ public class MailThread extends SwingWorker<Object, String> {
 
 	private String encodeMail(String mail) throws UnsupportedEncodingException {
 		String[] splited = mail.split("<");
-		return MimeUtility.encodeText(splited[0], "UTF-8", "Q") + "<" + splited[1];
+		return mimeDecodeUTF8(splited[0]) + "<" + splited[1];
+	}		
+	
+	private String mimeDecodeUTF8 (String data) throws UnsupportedEncodingException {			
+		return MimeUtility.encodeText(data, "UTF-8", "Q");
+	}
+	
+	private String decodeUTF8 (String data) throws UnsupportedEncodingException {			
+		return new String(data.getBytes(), UTF8_CHARSET);
 	}
 
 	public String getUserName() {
@@ -277,7 +290,8 @@ public class MailThread extends SwingWorker<Object, String> {
 					body += "\n";
 				}
 			}
-			textBodyPart.setText(body);
+			textBodyPart.setDisposition(MimeBodyPart.INLINE);
+			textBodyPart.setContent(body.replaceAll("(\r\n|\n)", "<br />"), "text/html; charset=UTF-8");
 			multipart.addBodyPart(textBodyPart);
 			if (0 != attachments.size()) {
 				for (String attachment : attachments.keySet()) {
@@ -291,7 +305,7 @@ public class MailThread extends SwingWorker<Object, String> {
 					}
 				}
 			}
-		} catch (MessagingException e) {
+		} catch (MessagingException  e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -8,11 +8,9 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URL;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
 
@@ -45,7 +43,6 @@ public class Core {
 
 	private static final String HINT_EMPTY = "";
 
-	private File fileLock = null;
 	RandomAccessFile fileLockAccess = null;
 	FileLock lock = null;
 	private Companys companys = null;
@@ -218,6 +215,7 @@ public class Core {
 		form.setTreeNode(getCompanys().all(), true);
 		form.removeTreePreload();
 		form.setStatusBar(HINT_EMPTY);
+		form.setLoginField();
 	}
 
 	/**
@@ -333,10 +331,10 @@ public class Core {
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 	}
-
+	
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
-			mail = new MailThread(this);
+			mail = new MailThread(this);			
 			if (mail.isUserMailValid(username)) {				
 				mail.setUsername(username).setPassword(password);
 				mail.execute();

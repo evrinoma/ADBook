@@ -72,10 +72,20 @@ public class Companys implements Serializable {
 		return companysDn;
 	}
 	
-	public UserDto findUserByMail(String username)
+	public UserDto findUserByMail(String email)
 	{
 		for (UserDto user : users.values()){
-			if (username.equals(user.getMail())) {
+			if (email.equals(user.getMail())) {
+				return user;
+			}
+		}		
+		return null;
+	}
+	
+	public UserDto findUserBysAMAccountName(String sAMAccountName)
+	{
+		for (UserDto user : users.values()){
+			if (sAMAccountName.equals(user.getSAMAccountName())) {
 				return user;
 			}
 		}		

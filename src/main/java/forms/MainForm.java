@@ -33,6 +33,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
@@ -89,7 +90,7 @@ import javax.swing.ListSelectionModel;
 
 public class MainForm {
 
-	private static final String VERSION = "12.12.17v1";
+	private static final String VERSION = "15.12.17v2";
 	private static final String NAME = "ADBOOK";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
@@ -197,6 +198,8 @@ public class MainForm {
 	private JPanel panelPhoto;
 	private UserDto selectedUser;
 
+	private boolean isLockRender = false;
+
 	/**
 	 * Launch the application.
 	 */
@@ -241,7 +244,7 @@ public class MainForm {
 		frmHandbook.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				Object[] options = { "Свернуть", "Закрыть" };
-				int n = JOptionPane.showOptionDialog(frmHandbook, "", "Что-то написано...", JOptionPane.YES_NO_OPTION,
+				int n = JOptionPane.showOptionDialog(frmHandbook, "", "", JOptionPane.YES_NO_OPTION,
 						JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
 				if (n == JOptionPane.YES_OPTION) {
@@ -645,7 +648,7 @@ public class MainForm {
 
 	public void authorizeMessage() {
 		addMessagePreloader();
-		core.authorizeOnMail(textFieldLogin.getText(), passwordField.getText());
+		core.authorizeOnMail(textFieldLogin.getText().toLowerCase(), passwordField.getText());
 	}
 
 	public void removeMessagePreload() {
@@ -864,6 +867,16 @@ public class MainForm {
 
 	}
 
+	public void setLoginField() {
+		if (!this.textFieldLogin.isEnabled()) {
+			UserDto user = core.getCompanys().findUserBysAMAccountName(System.getProperty("user.name"));
+			if (null != user) {
+				this.textFieldLogin.setText(user.getMail());
+			}
+			this.textFieldLogin.setEnabled(true);
+		}
+	}
+
 	private void createTabMessages() {
 		panelMessages.setLayout(new CardLayout(0, 0));
 
@@ -891,6 +904,7 @@ public class MainForm {
 
 		demension = new Dimension(100, 20);
 		textFieldLogin = new JTextField();
+		textFieldLogin.setEnabled(false);
 		sl_panelAuth.putConstraint(SpringLayout.NORTH, textFieldLogin, 10, SpringLayout.NORTH, panelAuth);
 		sl_panelAuth.putConstraint(SpringLayout.WEST, textFieldLogin, 0, SpringLayout.EAST, lblLogin);
 		textFieldLogin.setPreferredSize(demension);
@@ -1309,7 +1323,7 @@ public class MainForm {
 
 	private void setPersonPanelQrCode() {
 		if (isTransQrcode) {
-			labelPersonQrCode.setToolTipText(IS_CONTACT_EN);			
+			labelPersonQrCode.setToolTipText(IS_CONTACT_EN);
 		} else {
 			labelPersonQrCode.setToolTipText(IS_CONTACT_RU);
 		}
@@ -1352,84 +1366,103 @@ public class MainForm {
 				if (null == eNode)
 					return;
 
-				Object selectedValue = eNode.getUserObject();
+				Object selectedValue = eNode.getUserObject();				
 
 				if (!((selectedValue instanceof CompanyDto) || (selectedValue instanceof UserDto))) {
 					tree.getSelectionModel().removeSelectionPath(eTree);
 					return;
 				}
-
-				if (selectedValue instanceof CompanyDto) {
-					String Dn = ((CompanyDto) selectedValue).getDn();
-					String parentDn = ((CompanyDto) selectedValue).getParentDn();
-					if (((CompanyDto) selectedValue).getFilials().size() != 0) {
+				if (!isLockRender){
+					isLockRender = true;
+					
+					ArrayList<TreePath> rmSelection = new ArrayList<TreePath>();
+					ArrayList<TreePath> addSelection = new ArrayList<TreePath>();
+					
+					if (selectedValue instanceof CompanyDto) {
+						CompanyDto company = (CompanyDto) selectedValue;
+						String Dn = company.getDn();
+						String parentDn = company.getParentDn();
+						if (company.getFilials().size() != 0) {
+							for (int selectedId : tree.getSelectionRows()) {
+								TreePath treePath = tree.getPathForRow(selectedId);
+								DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+										.getLastPathComponent();
+								if (null != selectedItem) {
+									Object value = selectedItem.getUserObject();
+									if (value instanceof CompanyDto) {
+										if (((CompanyDto) value).getParentDn().equals(Dn)) {
+											rmSelection.add(treePath);
+										}
+									} else if (value instanceof UserDto) {
+										String userDn = ((UserDto) value).getCompanyDn();
+										for (CompanyDto filial : company.getFilials()) {
+											if (filial.getDn().equals(userDn)) {
+												rmSelection.add(treePath);
+												break;
+											}
+										}
+									}
+								}
+							}
+						} else {
+							for (int selectedId : tree.getSelectionRows()) {
+								TreePath treePath = tree.getPathForRow(selectedId);
+								DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+										.getLastPathComponent();
+								if (null != selectedItem) {
+									Object value = selectedItem.getUserObject();
+									if (value instanceof UserDto) {
+										if (((UserDto) value).getCompanyDn().equals(Dn)) {
+											rmSelection.add(treePath);
+										}
+									} else if (value instanceof CompanyDto) {
+										if (((CompanyDto) value).getDn().equals(parentDn)) {
+											rmSelection.add(treePath);
+										}
+									}
+								}
+							}
+							addSelection.add(eTree);
+						}
+					} else if (selectedValue instanceof UserDto) {
+						UserDto user = (UserDto) selectedValue;
+						String Dn = user.getCompanyDn();
 						for (int selectedId : tree.getSelectionRows()) {
 							TreePath treePath = tree.getPathForRow(selectedId);
-							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
-									.getLastPathComponent();
+							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 							if (null != selectedItem) {
 								Object value = selectedItem.getUserObject();
 								if (value instanceof CompanyDto) {
-									if (((CompanyDto) value).getParentDn().equals(Dn)) {
-										tree.getSelectionModel().removeSelectionPath(treePath);
-									}
-								} else if (value instanceof UserDto) {
-									String userDn = ((UserDto) value).getCompanyDn();
-									for (CompanyDto filial : (((CompanyDto) selectedValue).getFilials())) {
-										if (filial.getDn().equals(userDn)) {
-											tree.getSelectionModel().removeSelectionPath(treePath);
-											break;
+									if ((((CompanyDto) value).getFilials().size() != 0)) {
+										for (CompanyDto filial : (((CompanyDto) value).getFilials())) {
+											if (filial.getDn().equals(Dn)) {
+												rmSelection.add(treePath);
+												break;
+											}
 										}
+									} else if (((CompanyDto) value).getDn().equals(Dn)) {
+										rmSelection.add(treePath);
 									}
 								}
 							}
 						}
-					} else {
-						for (int selectedId : tree.getSelectionRows()) {
-							TreePath treePath = tree.getPathForRow(selectedId);
-							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
-									.getLastPathComponent();
-							if (null != selectedItem) {
-								Object value = selectedItem.getUserObject();
-								if (value instanceof UserDto) {
-									if (((UserDto) value).getCompanyDn().equals(Dn)) {
-										tree.getSelectionModel().removeSelectionPath(treePath);
-									}
-								} else if (value instanceof CompanyDto) {
-									if (((CompanyDto) value).getDn().equals(parentDn)) {
-										tree.getSelectionModel().removeSelectionPath(treePath);
-									}
-								}
-							}
-						}
-						tree.getSelectionModel().addSelectionPath(eTree);
+						selectedUser = user;
+						updatePanelView();
 					}
-				} else if (selectedValue instanceof UserDto) {
-					String Dn = ((UserDto) selectedValue).getCompanyDn();
-					for (int selectedId : tree.getSelectionRows()) {
-						TreePath treePath = tree.getPathForRow(selectedId);
-						DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath.getLastPathComponent();
-						if (null != selectedItem) {
-							Object value = selectedItem.getUserObject();
-							if (value instanceof CompanyDto) {
-								if ((((CompanyDto) value).getFilials().size() != 0)) {
-									for (CompanyDto filial : (((CompanyDto) value).getFilials())) {
-										if (filial.getDn().equals(Dn)) {
-											tree.getSelectionModel().removeSelectionPath(treePath);
-											break;
-										}
-									}
-								} else if (((CompanyDto) value).getDn().equals(Dn)) {
-									tree.getSelectionModel().removeSelectionPath(treePath);
-								}
-							}
-						}
+					
+					TreeSelectionModel model = tree.getSelectionModel(); 
+					for( TreePath tree : rmSelection ){
+						model.removeSelectionPath(tree);
 					}
-					selectedUser = (UserDto) selectedValue;
-					updatePanelView();
+					
+					if (0<=addSelection.size()){
+						model.addSelectionPath(eTree);
+					}
+					
+					setMessagesEditorTo();
+					
+					isLockRender = false;
 				}
-
-				setMessagesEditorTo();
 			}
 		});
 		textFieldLastName.addKeyListener(new KeyAdapter() {
@@ -1642,7 +1675,23 @@ public class MainForm {
 			public void actionPerformed(ActionEvent e) {
 				sendMessages();
 			}
-		});	
+		});
+		textAreaMessagesEditor.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+					sendMessages();
+				}
+			}
+		});
+		textFieldMessagesEditorSubject.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+					sendMessages();
+				}
+			}
+		});
 		labelPersonQrCode.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

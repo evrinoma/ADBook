@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -46,7 +44,7 @@ public class UserDto implements Serializable {
 	private String userAccountControl = "";
 	private String mail = "";
 	private String userPrincipalName = "";
-	private String sAMAccountName = "";
+	private String SAMAccountName = "";
 	private ArrayList<String> manager;
 	private ArrayList<String> directReports;
 	private String itnumber = "";
@@ -215,8 +213,8 @@ public class UserDto implements Serializable {
 		this.userPrincipalName = paramToString(userPrincipalName);
 	}
 
-	protected void setsAMAccountName(String sAMAccountName) {
-		this.sAMAccountName = paramToString(sAMAccountName);
+	protected void setSAMAccountName(String sAMAccountName) {
+		this.SAMAccountName = paramToString(sAMAccountName);
 	}
 
 	protected void addManager(String manager) {
@@ -363,8 +361,8 @@ public class UserDto implements Serializable {
 		return userPrincipalName;
 	}
 
-	public String getsAMAccountName() {
-		return sAMAccountName;
+	public String getSAMAccountName() {
+		return SAMAccountName;
 	}
 
 	public ArrayList<String> getManager() {
@@ -674,7 +672,7 @@ public class UserDto implements Serializable {
 		userAccountControl = aInputStream.readUTF();
 		mail = aInputStream.readUTF();
 		userPrincipalName = aInputStream.readUTF();
-		sAMAccountName = aInputStream.readUTF();
+		SAMAccountName = aInputStream.readUTF();
 		manager = (ArrayList<String>) aInputStream.readObject();
 		directReports = (ArrayList<String>) aInputStream.readObject();
 		itnumber = aInputStream.readUTF();
@@ -728,7 +726,7 @@ public class UserDto implements Serializable {
 		aOutputStream.writeUTF(userAccountControl);
 		aOutputStream.writeUTF(mail);
 		aOutputStream.writeUTF(userPrincipalName);
-		aOutputStream.writeUTF(sAMAccountName);
+		aOutputStream.writeUTF(SAMAccountName);
 		aOutputStream.writeObject(manager);
 		aOutputStream.writeObject(directReports);
 		aOutputStream.writeUTF(itnumber);
