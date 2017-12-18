@@ -38,7 +38,12 @@ public class SaveThread extends SwingWorker<Object, String> {
 		this.companys = core.getCompanys();
 	}
 	
-	
+	private void flush()
+	{
+		core = null;
+		file = null;
+		companys = null;
+	}
 	
 	@Override
 	protected Boolean doInBackground() throws Exception {	
@@ -61,6 +66,7 @@ public class SaveThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
+		flush();		
 	}
 
 	@Override

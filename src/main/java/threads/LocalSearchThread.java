@@ -33,7 +33,15 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 			return doSearching();		
 		}
 	}
-
+	
+	private void flush()
+	{
+		core = null;
+		filteredCompanys = null;
+		companys = null;
+		filterDto = null;
+	}
+	
 	// Can safely update the GUI from this method.
 	protected void done() {
 		resetLock();
@@ -43,6 +51,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 			if ((boolean) get()) {
 				core.isLocalSearchSuccessful(filteredCompanys);
 				core.setStatusString("successful complite");
+				
 			}
 			// System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {
@@ -51,6 +60,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
+		flush();
 	}
 
 	@Override

@@ -37,6 +37,13 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 		companys = new Companys();
 	}
 	
+	private void flush()
+	{
+		core = null;
+		companys = null;
+		ldap = null;
+	}
+	
 	@Override
 	protected Boolean doInBackground() throws Exception {			
 		
@@ -163,6 +170,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
+		flush();
 	}
 
 	@Override

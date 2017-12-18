@@ -41,6 +41,7 @@ import com.mxgraph.view.mxGraph;
 import entity.CompanyDto;
 import entity.LevelNode;
 import entity.UserDto;
+import entity.UserNode;
 import libs.Companys;
 import libs.Core;
 import threads.SaveThread;
@@ -93,8 +94,8 @@ import java.awt.Font;
 
 public class MainForm {
 
-	private static final boolean isWEB = true;
-	private static final String VERSION = "15.12.17v5";
+	private static final boolean isWEB = false;
+	private static final String VERSION = "18.12.17v2" +" [nikolns@ite-ng.ru]";
 	private static final String NAME = "ADBOOK";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
@@ -126,6 +127,7 @@ public class MainForm {
 	private JLabel labelPersonWriRoom;
 	private JLabel labelPersonWriPhoneInside;
 	private JLabel labelPersonWriMail;
+	private JLabel labelPersonWriPhoneSmall;
 
 	private JLabel labelContactWriСountry;
 	private JLabel labelContactWriRegion;
@@ -198,12 +200,10 @@ public class MainForm {
 	TrayIcon trayIcon = null;
 
 	private Core core;
-	private SpringLayout sl_panelPerson;
 	private JPanel panelPhoto;
 	private UserDto selectedUser;
 
 	private boolean isLockRender = false;
-	private JLabel labelPersonWriPhoneSmall;
 
 	/**
 	 * Launch the application.
@@ -217,7 +217,8 @@ public class MainForm {
 					if (!isWEB) {
 						window.frmHandbook.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 					} else {
-						window.frmHandbook.setExtendedState(window.frmHandbook.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+						window.frmHandbook
+								.setExtendedState(window.frmHandbook.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -296,27 +297,42 @@ public class MainForm {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 		root.removeAllChildren();
 		model.reload();
-
+		UserNode userNode = new UserNode();
 		for (CompanyDto company : companys) {
-			DefaultMutableTreeNode nodes = createCompanyTreeNode(company);
+			DefaultMutableTreeNode nodes = createCompanyTreeNode(company, userNode);
 			if (null != nodes) {
-				addToTopCompanyTreeNode(createCompanyTreeNode(company));
+				addToTopCompanyTreeNode(nodes);
 			}
 		}
-
+		if (userNode.isOnly()) {
+			userNode.findUser(tree);
+			setSelectionUser(userNode.getPath());
+			updatePanelView(userNode.getUser());
+		}
+		userNode = null;
+		
 		expandTree(isInit);
-	}
+	}	
+	
+	public void setSelectionUser(TreePath eTree)
+	{
+		this.isLockRender = true;
+		TreeSelectionModel model = tree.getSelectionModel();		
+		model.addSelectionPath(eTree);
+		this.isLockRender = false;
+    }
+	
 
-	private UserDto getFirstUser(ArrayList<CompanyDto> companys){
+	private UserDto getFirstUser(ArrayList<CompanyDto> companys) {
 		UserDto search = null;
 		for (CompanyDto company : companys) {
-			if (!company.getFilials().isEmpty()){				
+			if (!company.getFilials().isEmpty()) {
 				search = getFirstUser(company.getFilials());
 				if (null != search) {
 					return search;
 				}
 			} else {
-				if (!company.getUsers().isEmpty()) {				
+				if (!company.getUsers().isEmpty()) {
 					for (UserDto user : company.getUsersSortedByCn().values()) {
 						return user;
 					}
@@ -325,13 +341,7 @@ public class MainForm {
 		}
 		return null;
 	}
-	
 
-	public void setTreeUser(){			
-						
-	}
-	
-	
 	private void expandTree(boolean fullExpand) {
 		if (fullExpand) {
 			Enumeration<?> topLevelNodes = ((TreeNode) tree.getModel().getRoot()).children();
@@ -350,21 +360,30 @@ public class MainForm {
 		tree.repaint();
 	}
 
-	private void addToCompanyUserTreeNode(DefaultMutableTreeNode top, CompanyDto company) {
+	private UserDto addToCompanyUserTreeNode(DefaultMutableTreeNode top, CompanyDto company) {
+		UserDto findUser = null; 
 		for (UserDto user : company.getUsersSortedByCn().values()) {
+			if (null == findUser) {
+				findUser = user;
+			}
 			top.add(new DefaultMutableTreeNode(user));
 		}
+		return findUser;
 	}
 
-	private DefaultMutableTreeNode createCompanyTreeNode(CompanyDto company) {
+	private DefaultMutableTreeNode createCompanyTreeNode(CompanyDto company, UserNode userNode) {
 		DefaultMutableTreeNode companyTreeNode = null;
 		if (!company.getUsers().isEmpty()) {
 			companyTreeNode = new DefaultMutableTreeNode(company);
-			addToCompanyUserTreeNode(companyTreeNode, company);
+			UserDto user = addToCompanyUserTreeNode(companyTreeNode, company);
+			if (null == userNode.getUser()) {
+				userNode.setUser(user);
+			}
+			userNode.incCountUser(company.getUsers().size());			
 		} else if (!company.getFilials().isEmpty()) {
 			companyTreeNode = new DefaultMutableTreeNode(company);
 			for (CompanyDto filial : company.getFilials()) {
-				DefaultMutableTreeNode filialTreeNode = createCompanyTreeNode(filial);
+				DefaultMutableTreeNode filialTreeNode = createCompanyTreeNode(filial, userNode);
 				if (null != filialTreeNode) {
 					companyTreeNode.add(filialTreeNode);
 				}
@@ -510,7 +529,7 @@ public class MainForm {
 		panelMessages = new JPanel();
 		panelMessages.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelMessages.setMinimumSize(new Dimension(10, 250));
-		tabbedPane.addTab("Рассылка", panelMessages);
+		tabbedPane.addTab("Создать рассылку", panelMessages);
 		createTabMessages();
 
 		createPanelStatus();
@@ -1083,7 +1102,7 @@ public class MainForm {
 	}
 
 	private void createTabPerson(JPanel panel) {
-		sl_panelPerson = new SpringLayout();
+		SpringLayout sl_panelPerson = new SpringLayout();
 		panel.setLayout(sl_panelPerson);
 
 		panelQrCode = new JPanel();
@@ -1141,15 +1160,17 @@ public class MainForm {
 		panel.add(labelPersonMail);
 
 		JLabel labelPersonPhoneInside = new JLabel("Телефон:");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneInside, 6, SpringLayout.SOUTH,labelPersonMail);
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneInside, 6, SpringLayout.SOUTH,
+				labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneInside, 0, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPhoneInside);
 
 		JLabel labelPersonPhoneSmall = new JLabel("Телефон (внутр.):");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneSmall, 6, SpringLayout.SOUTH,labelPersonPhoneInside);
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneSmall, 6, SpringLayout.SOUTH,
+				labelPersonPhoneInside);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneSmall, 0, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPhoneSmall);
-		
+
 		JLabel labelPersonRoom = new JLabel("Комната:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonRoom, 6, SpringLayout.SOUTH, labelPersonPhoneSmall);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonRoom, 0, SpringLayout.WEST, panelQrCode);
@@ -1197,19 +1218,23 @@ public class MainForm {
 		panel.add(labelPersonWriRoom);
 
 		labelPersonWriPhoneInside = new JLabel();
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneInside, 5, SpringLayout.EAST,	labelPersonMail);
-		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneInside, 0, SpringLayout.SOUTH,labelPersonPhoneInside);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneInside, 5, SpringLayout.EAST,
+				labelPersonMail);
+		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneInside, 0, SpringLayout.SOUTH,
+				labelPersonPhoneInside);
 		sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriPhoneInside, 0, SpringLayout.EAST, panelPerson);
 		panel.add(labelPersonWriPhoneInside);
 
 		labelPersonWriPhoneSmall = new JLabel();
 		labelPersonWriPhoneSmall.setFont(new Font("Roboto", Font.PLAIN, 14));
 		labelPersonWriPhoneSmall.setForeground(Color.BLUE);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneSmall, 5, SpringLayout.EAST, labelPersonMail);
-		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneSmall, 0, SpringLayout.SOUTH, labelPersonPhoneSmall);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriPhoneSmall, 5, SpringLayout.EAST,
+				labelPersonMail);
+		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriPhoneSmall, 0, SpringLayout.SOUTH,
+				labelPersonPhoneSmall);
 		sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriPhoneSmall, 0, SpringLayout.EAST, panelPerson);
 		panel.add(labelPersonWriPhoneSmall);
-		
+
 		labelPersonWriMail = new JLabel();
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriMail, 5, SpringLayout.EAST, labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriMail, 0, SpringLayout.SOUTH, labelPersonMail);
@@ -1321,7 +1346,8 @@ public class MainForm {
 				image.getImage().SCALE_DEFAULT));
 	}
 
-	private void updatePanelView() {
+	private void updatePanelView(UserDto user) {
+		selectedUser = user;
 		if (selectedUser instanceof UserDto) {
 			String mail = new String(
 					selectedUser.getOtherTelephone() + ((0 == selectedUser.getOtherTelephone().length()) ? "" : "p*")
@@ -1400,6 +1426,100 @@ public class MainForm {
 		return (null == url) ? new ImageIcon(getResourceFile(EMPTY_IMAGE)) : new ImageIcon(url);
 	}
 
+	private void setSelectionTree(TreePath eTree, Object selectedValue)
+	{
+			isLockRender = true;
+
+			ArrayList<TreePath> rmSelection = new ArrayList<TreePath>();
+			ArrayList<TreePath> addSelection = new ArrayList<TreePath>();
+
+			if (selectedValue instanceof CompanyDto) {
+				CompanyDto company = (CompanyDto) selectedValue;
+				String Dn = company.getDn();
+				String parentDn = company.getParentDn();
+				if (company.getFilials().size() != 0) {
+					for (int selectedId : tree.getSelectionRows()) {
+						TreePath treePath = tree.getPathForRow(selectedId);
+						DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+								.getLastPathComponent();
+						if (null != selectedItem) {
+							Object value = selectedItem.getUserObject();
+							if (value instanceof CompanyDto) {
+								if (((CompanyDto) value).getParentDn().equals(Dn)) {
+									rmSelection.add(treePath);
+								}
+							} else if (value instanceof UserDto) {
+								String userDn = ((UserDto) value).getCompanyDn();
+								for (CompanyDto filial : company.getFilials()) {
+									if (filial.getDn().equals(userDn)) {
+										rmSelection.add(treePath);
+										break;
+									}
+								}
+							}
+						}
+					}
+				} else {
+					for (int selectedId : tree.getSelectionRows()) {
+						TreePath treePath = tree.getPathForRow(selectedId);
+						DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+								.getLastPathComponent();
+						if (null != selectedItem) {
+							Object value = selectedItem.getUserObject();
+							if (value instanceof UserDto) {
+								if (((UserDto) value).getCompanyDn().equals(Dn)) {
+									rmSelection.add(treePath);
+								}
+							} else if (value instanceof CompanyDto) {
+								if (((CompanyDto) value).getDn().equals(parentDn)) {
+									rmSelection.add(treePath);
+								}
+							}
+						}
+					}
+					addSelection.add(eTree);
+				}
+			} else if (selectedValue instanceof UserDto) {
+				UserDto user = (UserDto) selectedValue;
+				String Dn = user.getCompanyDn();
+				for (int selectedId : tree.getSelectionRows()) {
+					TreePath treePath = tree.getPathForRow(selectedId);
+					DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
+							.getLastPathComponent();
+					if (null != selectedItem) {
+						Object value = selectedItem.getUserObject();
+						if (value instanceof CompanyDto) {
+							if ((((CompanyDto) value).getFilials().size() != 0)) {
+								for (CompanyDto filial : (((CompanyDto) value).getFilials())) {
+									if (filial.getDn().equals(Dn)) {
+										rmSelection.add(treePath);
+										break;
+									}
+								}
+							} else if (((CompanyDto) value).getDn().equals(Dn)) {
+								rmSelection.add(treePath);
+							}
+						}
+					}
+				}						
+				updatePanelView(user);
+			}
+
+			TreeSelectionModel model = tree.getSelectionModel();
+			for (TreePath tree : rmSelection) {
+				model.removeSelectionPath(tree);
+			}
+
+			if (0 <= addSelection.size()) {
+				model.addSelectionPath(eTree);
+			}
+
+			setMessagesEditorTo();
+
+			isLockRender = false;		
+	}
+	
+	
 	private void addListners() {
 		// TODO Auto-generated method stub
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
@@ -1421,97 +1541,9 @@ public class MainForm {
 					tree.getSelectionModel().removeSelectionPath(eTree);
 					return;
 				}
+				
 				if (!isLockRender) {
-					isLockRender = true;
-
-					ArrayList<TreePath> rmSelection = new ArrayList<TreePath>();
-					ArrayList<TreePath> addSelection = new ArrayList<TreePath>();
-
-					if (selectedValue instanceof CompanyDto) {
-						CompanyDto company = (CompanyDto) selectedValue;
-						String Dn = company.getDn();
-						String parentDn = company.getParentDn();
-						if (company.getFilials().size() != 0) {
-							for (int selectedId : tree.getSelectionRows()) {
-								TreePath treePath = tree.getPathForRow(selectedId);
-								DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
-										.getLastPathComponent();
-								if (null != selectedItem) {
-									Object value = selectedItem.getUserObject();
-									if (value instanceof CompanyDto) {
-										if (((CompanyDto) value).getParentDn().equals(Dn)) {
-											rmSelection.add(treePath);
-										}
-									} else if (value instanceof UserDto) {
-										String userDn = ((UserDto) value).getCompanyDn();
-										for (CompanyDto filial : company.getFilials()) {
-											if (filial.getDn().equals(userDn)) {
-												rmSelection.add(treePath);
-												break;
-											}
-										}
-									}
-								}
-							}
-						} else {
-							for (int selectedId : tree.getSelectionRows()) {
-								TreePath treePath = tree.getPathForRow(selectedId);
-								DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
-										.getLastPathComponent();
-								if (null != selectedItem) {
-									Object value = selectedItem.getUserObject();
-									if (value instanceof UserDto) {
-										if (((UserDto) value).getCompanyDn().equals(Dn)) {
-											rmSelection.add(treePath);
-										}
-									} else if (value instanceof CompanyDto) {
-										if (((CompanyDto) value).getDn().equals(parentDn)) {
-											rmSelection.add(treePath);
-										}
-									}
-								}
-							}
-							addSelection.add(eTree);
-						}
-					} else if (selectedValue instanceof UserDto) {
-						UserDto user = (UserDto) selectedValue;
-						String Dn = user.getCompanyDn();
-						for (int selectedId : tree.getSelectionRows()) {
-							TreePath treePath = tree.getPathForRow(selectedId);
-							DefaultMutableTreeNode selectedItem = (DefaultMutableTreeNode) treePath
-									.getLastPathComponent();
-							if (null != selectedItem) {
-								Object value = selectedItem.getUserObject();
-								if (value instanceof CompanyDto) {
-									if ((((CompanyDto) value).getFilials().size() != 0)) {
-										for (CompanyDto filial : (((CompanyDto) value).getFilials())) {
-											if (filial.getDn().equals(Dn)) {
-												rmSelection.add(treePath);
-												break;
-											}
-										}
-									} else if (((CompanyDto) value).getDn().equals(Dn)) {
-										rmSelection.add(treePath);
-									}
-								}
-							}
-						}
-						selectedUser = user;
-						updatePanelView();
-					}
-
-					TreeSelectionModel model = tree.getSelectionModel();
-					for (TreePath tree : rmSelection) {
-						model.removeSelectionPath(tree);
-					}
-
-					if (0 <= addSelection.size()) {
-						model.addSelectionPath(eTree);
-					}
-
-					setMessagesEditorTo();
-
-					isLockRender = false;
+					setSelectionTree(eTree, selectedValue);	
 				}
 			}
 		});
