@@ -108,8 +108,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 			for (CompanyDto company : companys.all()) {
 				if (company.getFilials().size() > 0) {
 					for (CompanyDto filial : company.getFilials()) {
-						addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));
-						companys.copyUser(filial.getUsers());
+						addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));						
 					}
 				} else {
 					addUser(company, ldap.getLdapUsers(company.getDn()));

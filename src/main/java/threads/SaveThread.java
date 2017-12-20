@@ -40,9 +40,9 @@ public class SaveThread extends SwingWorker<Object, String> {
 	
 	private void flush()
 	{
-		core = null;
-		file = null;
-		companys = null;
+		this.core = null;
+		this.file = null;
+		this.companys = null;
 	}
 	
 	@Override

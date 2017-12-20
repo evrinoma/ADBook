@@ -46,6 +46,7 @@ public class Core {
 	RandomAccessFile fileLockAccess = null;
 	FileLock lock = null;
 	private Companys companys = null;
+	private UserDto user = null;
 	private LocalSearchThread localSearch = null;
 	private LdapSearchThread ldapSearch = null;
 	private LoadThread Load = null;
@@ -69,11 +70,19 @@ public class Core {
 
 	public Core() {
 		companys = new Companys();
-		attachment = new HashMap<String, String>();
+		clearMailAttachmet();
 	}
 
 	public Companys getCompanys() {
 		return companys;
+	}
+
+	public UserDto getUser() {
+		return user;
+	}
+
+	public void setUser(UserDto user) {
+		this.user = user;
 	}
 
 	/**
@@ -85,7 +94,7 @@ public class Core {
 	 * @return
 	 */
 	public ImageIcon createQrCodeWithLogo(URL url, String vcard, int width, int height) {
-		Hashtable hintMap = new Hashtable();
+		Hashtable<EncodeHintType, String> hintMap = new Hashtable<EncodeHintType, String>();
 		hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
 		QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -186,10 +195,17 @@ public class Core {
 	 */
 	public void isLocalCacheSuccessful(Companys loadCompanys) {
 		dataLoad(loadCompanys);
+		flush();
 	}
 
 	public void isLocalCacheFail() {
 		ldapSearch();
+		flush();
+	}
+	
+	private void flush()
+	{
+		this.Load = null;
 	}
 
 	/**
@@ -272,7 +288,6 @@ public class Core {
 			localSearch.setCompanys(companys);
 			localSearch.restartSearch();
 		}
-
 	}
 
 	/**
@@ -293,8 +308,8 @@ public class Core {
 	 */
 	public String getUserManger(UserDto user) {
 		String managerToString = "";
-		for (String dn : user.getManager()) {
-			UserDto manager = companys.getUsers().get(dn);
+		for (String distinguishedName : user.getManager()) {
+			UserDto manager = companys.findUserByDistinguishedName(distinguishedName);
 			if (null != manager) {
 				managerToString += manager.getCn() + "\n";
 			}
@@ -310,7 +325,7 @@ public class Core {
 	 * @return
 	 */
 	public HashMap<Integer, ArrayList<LevelNode>> getUserDependency(UserDto user) {
-		Nodes nodesManager = new Nodes(companys.getUsers());
+		Nodes nodesManager = new Nodes(this);
 		return nodesManager.getLevels(user);
 	}
 
@@ -320,9 +335,9 @@ public class Core {
 			UserDto user = entity.getValue();
 			mails += user.getMail();
 			mails += ",";
-		}
-		
-		return mails;
+		}		
+				
+		return mails.substring(0, mails.length()-1);
 	}
 	
 	public void putStringToClipboard(String data)
@@ -374,6 +389,9 @@ public class Core {
 	 * @return
 	 */
 	public HashMap<String, String> addMailAttachmet(String fileName, String pathToAttachment){		
+		if (null == attachment) {
+			this.attachment = new HashMap<String, String>();
+		}
 		if (null == attachment.get(fileName)) {
 			attachment.put(fileName, pathToAttachment);
 		}
@@ -385,7 +403,7 @@ public class Core {
 	 */
 	public void clearMailAttachmet()
 	{
-		this.attachment = new HashMap<String, String>();
+		this.attachment = null;
 	}
 	
 	/**
@@ -402,7 +420,7 @@ public class Core {
 	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username, String password){
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);		
-				mail.setAction(mail.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment).setSignature(signature(companys.findUserByMail(username)));
+				mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment).setSignature(signature(companys.findUserByMail(username)));
 				mail.execute();			
 		} else {
 			mail.execute();

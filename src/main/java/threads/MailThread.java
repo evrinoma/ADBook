@@ -30,7 +30,6 @@ import javax.swing.SwingWorker;
 
 import com.sun.mail.util.MailSSLSocketFactory;
 
-import entity.CompanyDto;
 import entity.UserDto;
 import libs.Core;
 
@@ -49,7 +48,6 @@ public class MailThread extends SwingWorker<Object, String> {
 	private static final String HINT_CREATE_MAIL = "Возникли ошибки при создании почтового сообщения";
 	private final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 	
-	private UserDto user;
 	private String username;
 	private String password;
 	private Session session = null;
@@ -73,7 +71,6 @@ public class MailThread extends SwingWorker<Object, String> {
 		publish(HINT_TRY_AUTH);
 		if (authorize()) {
 			publish(HINT_TRY_FIND_USER);
-			findUser();
 			if (action == ACTION_SEND_MAIL) {
 				publish(HINT_TRY_SEND);
 				sendMessages();
@@ -84,6 +81,17 @@ public class MailThread extends SwingWorker<Object, String> {
 		return status;
 	}
 
+	private void flush()
+	{
+		core = null;
+		to = null;
+		toError = null;
+		signature = null;
+		attachments = null;
+		propsSSL = null;
+		session = null;
+	}
+	
 	// Can safely update the GUI from this method.
 	protected void done() {
 		try {
@@ -106,6 +114,7 @@ public class MailThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
+		flush();
 	}
 
 	@Override
@@ -160,8 +169,6 @@ public class MailThread extends SwingWorker<Object, String> {
 			publish(HINT_CREATE_MAIL);
 		}
 	}
-
-
     
 	private boolean sendMail(String to, Multipart multipart) {
 		boolean status = false;
@@ -200,7 +207,8 @@ public class MailThread extends SwingWorker<Object, String> {
 		return new String(data.getBytes(), UTF8_CHARSET);
 	}
 
-	public String getUserName() {
+	private String getUserName() {
+		UserDto user = core.getCompanys().findUserByMail(username);
 		if (null != user) {
 			return user.getCn() + " <" + user.getMail() + ">";
 		} else
@@ -274,10 +282,6 @@ public class MailThread extends SwingWorker<Object, String> {
 		return this.valid;
 	}
 
-	private void findUser() {
-		user = core.getCompanys().findUserByMail(username);
-	}
-
 	private Multipart createMail() {
 		Multipart multipart = null;
 		try {
@@ -293,7 +297,7 @@ public class MailThread extends SwingWorker<Object, String> {
 			textBodyPart.setDisposition(MimeBodyPart.INLINE);
 			textBodyPart.setContent(body.replaceAll("(\r\n|\n)", "<br />"), "text/html; charset=UTF-8");
 			multipart.addBodyPart(textBodyPart);
-			if (0 != attachments.size()) {
+			if (null != attachments && 0 != attachments.size()) {
 				for (String attachment : attachments.keySet()) {
 					String filePath = attachments.get(attachment);
 					if (Files.isRegularFile(Paths.get(filePath))) {

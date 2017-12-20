@@ -8,19 +8,12 @@ import entity.UserDto;
 
 public class Nodes {
 
-	private int maxDeep = 0;
-	private int maxColumn = 0;
-	private int maxColumnLevel = 0;
-	private int maxWidth = 0;
-	private int maxHeight = 0;
-
-	private HashMap<String, UserDto> users;
-
+	private Core core = null;
 	private HashMap<Integer, ArrayList<LevelNode>> nodes;
 
-	public Nodes(HashMap<String, UserDto> users) {
+	public Nodes(Core core) {
 		nodes = new HashMap<Integer, ArrayList<LevelNode>>();
-		this.users = users;
+		this.core = core;
 	}
 
 	private void getUserDependency(LevelNode parentUser, int level) {
@@ -29,8 +22,8 @@ public class Nodes {
 		if (null == levelNodesUsers) {
 			levelNodesUsers = new ArrayList<LevelNode>();
 		}
-		for (String dn : parentUser.getUser().getDirectReports()) {
-			UserDto manager = this.users.get(dn);
+		for (String distinguishedName : parentUser.getUser().getDirectReports()) {
+			UserDto manager = core.getCompanys().findUserByDistinguishedName(distinguishedName);
 			if (null != manager) {
 				LevelNode managerNode = new LevelNode(manager, parentUser, level);
 				managerNode.calcX(levelNodesUsers.size());
@@ -53,29 +46,4 @@ public class Nodes {
 
 		return nodes;
 	}
-
-	/*
-	 * public LevelNodes getUserDependency(UserDto user, int level) { LevelNodes
-	 * users = new LevelNodes(user); users.setLevel(level); level++; if (maxDeep
-	 * < level) { maxDeep = level; } for (String dn : user.getDirectReports()) {
-	 * UserDto manager = this.users.get(dn); if (null != manager) {
-	 * users.addLink(getUserDependency(manager, level)); } }
-	 * 
-	 * return users; }
-	 * 
-	 * public void calc(LevelNodes root, int column) { for (LevelNodes child :
-	 * root.getUserLinks()) {
-	 * 
-	 * } }
-	 * 
-	 * public void calc(LevelNodes root) { calc(root, maxColumn); }
-	 * 
-	 * public LevelNodes getUserDependency(UserDto user, HashMap<String,
-	 * UserDto> users) { this.users = users; LevelNodes root =
-	 * getUserDependency(user, 0); root.setDeep(maxDeep);
-	 * root.setMaxColumn(maxColumn); root.setMaxColumnLevel(maxColumnLevel);
-	 * calc(root);
-	 * 
-	 * return root; }
-	 */
 }

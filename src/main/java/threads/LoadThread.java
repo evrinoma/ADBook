@@ -40,10 +40,17 @@ public class LoadThread extends SwingWorker<Object, String> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//System.out.println("["+currentPath+"]");
 		this.core = core;
 	}
-
+	
+	private void flush()
+	{
+		core = null;
+		currentPath = null;
+		writeStream = null;
+		readStream = null;
+	}
+	
 	public LoadThread setDirection(boolean direction) {
 		this.direction = direction;
 		return this;
@@ -61,7 +68,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 	}
 
 	private boolean isEmptyRead() {
-		return (readStream.getCompanys().isEmpty() & readStream.getUsers().isEmpty()); 
+		return readStream.getCompanys().isEmpty(); 
 	}
 	
 	// Can safely update the GUI from this method.
@@ -90,6 +97,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
+		flush();
 	}
 
 	@Override

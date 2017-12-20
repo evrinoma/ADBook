@@ -2,14 +2,15 @@ package libs;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import entity.CompanyDto;
 import entity.UserDto;
 
 public class Companys implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
 	private ArrayList<CompanyDto> companys;
-	private HashMap<String, UserDto> users;
 
 	public void addNewCompany(String description, String ou, String dn) {
 		companys.add(new CompanyDto(description, ou, dn));
@@ -20,8 +21,7 @@ public class Companys implements Serializable {
 	}
 
 	public Companys() {
-		companys = new ArrayList<CompanyDto>();
-		users = new HashMap<String, UserDto>();
+		companys = new ArrayList<CompanyDto>();		
 	}
 
 	public ArrayList<CompanyDto> all() {
@@ -30,14 +30,6 @@ public class Companys implements Serializable {
 
 	public ArrayList<CompanyDto> getCompanys() {
 		return companys;
-	}
-	
-	public HashMap<String, UserDto> getUsers() {
-		return users;
-	}
-
-	public void copyUser(HashMap<String, UserDto> users) {
-		this.users.putAll(users);
 	}
 
 	public CompanyDto getLastInsertCompany() {
@@ -71,24 +63,82 @@ public class Companys implements Serializable {
 		}
 		return companysDn;
 	}
-	
-	public UserDto findUserByMail(String email)
-	{
-		for (UserDto user : users.values()){
-			if (email.equals(user.getMail())) {
-				return user;
-			}
-		}		
-		return null;
+
+	public UserDto findUserByMail(String email) {
+		UserDto search = null;
+		return findEmail(companys, search, email);
+	}
+
+	public UserDto findUserBysAMAccountName(String sAMAccountName) {
+		UserDto search = null;
+		return findsAMAccountName(companys, search, sAMAccountName);
 	}
 	
-	public UserDto findUserBysAMAccountName(String sAMAccountName)
+	public UserDto findUserByDistinguishedName(String DistinguishedName) {
+		UserDto search = null;
+		return findDistinguishedName(companys, search, DistinguishedName);
+	}
+	
+	private UserDto findEmail(ArrayList<CompanyDto> companys, UserDto search, String email)
 	{
-		for (UserDto user : users.values()){
-			if (sAMAccountName.equals(user.getSAMAccountName())) {
-				return user;
-			}
-		}		
-		return null;
+			for (CompanyDto company : companys) {
+				if (0 == company.getFilials().size()) {
+					if (0 != company.getUsers().size()) {
+						for (UserDto user : company.getUsers().values()) {
+							if (email.equals(user.getMail())) {
+								return user;
+							}							
+						}
+					}
+				} else {
+					search = findEmail(company.getFilials(), search, email);		
+					if (null != search){
+						return search;
+					}
+				}
+			}			
+			return null;		
+	}
+	
+	private UserDto findsAMAccountName(ArrayList<CompanyDto> companys, UserDto search, String sAMAccountName)
+	{
+			for (CompanyDto company : companys) {
+				if (0 == company.getFilials().size()) {
+					if (0 != company.getUsers().size()) {
+						for (UserDto user : company.getUsers().values()) {
+							if (sAMAccountName.equals(user.getSAMAccountName())) {
+								return user;
+							}							
+						}
+					}
+				} else {
+					search = findsAMAccountName(company.getFilials(), search, sAMAccountName);		
+					if (null != search){
+						return search;
+					}
+				}
+			}			
+			return null;		
+	}
+	
+	private UserDto findDistinguishedName(ArrayList<CompanyDto> companys, UserDto search, String distinguishedName)
+	{
+			for (CompanyDto company : companys) {
+				if (0 == company.getFilials().size()) {
+					if (0 != company.getUsers().size()) {
+						for (UserDto user : company.getUsers().values()) {
+							if (distinguishedName.equals(user.getDistinguishedName())) {
+								return user;
+							}							
+						}
+					}
+				} else {
+					search = findDistinguishedName(company.getFilials(), search, distinguishedName);		
+					if (null != search){
+						return search;
+					}
+				}
+			}			
+			return null;		
 	}
 }

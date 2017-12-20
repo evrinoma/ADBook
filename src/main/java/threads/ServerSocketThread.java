@@ -26,13 +26,13 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 
 	private Core core;
 	private InetSocketAddress listenAddress;
-	private HashMap<SocketChannel, List> dataMapper;
+	private HashMap<SocketChannel, ArrayList> dataMapper = null;
 	private Selector selector;
 
 	public ServerSocketThread(Core core) {
 		this.core = core;
 		listenAddress = new InetSocketAddress(SERVER, PORT);
-		dataMapper = new HashMap<SocketChannel, List>();
+		dataMapper = new HashMap<SocketChannel, ArrayList>();
 	}
 
 	@Override

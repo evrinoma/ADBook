@@ -27,7 +27,6 @@ public class Ldap {
 	public static final String LDAP_AUTH_METHOD = "simple";
 
 	private boolean connect = false;
-	private Hashtable<String, String> env = null;
 	public LdapContext ctx = null;
 
 	private String sort = "cn";
@@ -41,7 +40,7 @@ public class Ldap {
 	}
 
 	private Hashtable<String, String> getSettingsHashtable(String ldapHost) {
-		Hashtable<String, String> env = new Hashtable();
+		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, ldapHost + ":" + LDAP_PORT);
 		env.put(Context.SECURITY_AUTHENTICATION, LDAP_AUTH_METHOD);
@@ -88,8 +87,8 @@ public class Ldap {
 		getConnect();
 	}
 
-	private NamingEnumeration getSearch(SearchControls ctls, String dn, String filter, String[] selector) {
-		NamingEnumeration answer = null;
+	private NamingEnumeration<?> getSearch(SearchControls ctls, String dn, String filter, String[] selector) {
+		NamingEnumeration<?> answer = null;
 		try {
 			ctx.setRequestControls(new Control[] { new SortControl(sort, Control.CRITICAL) });
 			answer = ctx.search(dn, filter, ctls);
