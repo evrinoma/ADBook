@@ -299,7 +299,7 @@ public class Core {
 		form.getTopTree().removeAllChildren();
 		form.setTreeNode(filteredCompanys.all(), false);
 	}
-
+	
 	/**
 	 * метод возвращает список руководителей пользователя
 	 * 
@@ -377,11 +377,10 @@ public class Core {
 	{
 		form.removeMessagePreload();
 		form.showMessageEditorPanel(authUser);
-		form.clearMessages();
+		form.clearMessagesByNotify();
 		form.repaint();
 	}
-	
-	
+		
 	/**
 	 * добавление вложений к письму
 	 * @param fileName
@@ -417,10 +416,13 @@ public class Core {
 		return mail.isUserMailValid(username);
 	}
 	
-	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username, String password){
+	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username, String password, boolean withSignature){
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);		
-				mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment).setSignature(signature(companys.findUserByMail(username)));
+				mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment);
+				if (withSignature) {
+					mail.setSignature(signature(companys.findUserByMail(username)));
+				}
 				mail.execute();			
 		} else {
 			mail.execute();
@@ -434,12 +436,18 @@ public class Core {
 		if (null != user) {
 			signature.add("--------------------------------------");
 			signature.add("С уважением, "+user.getCn());
+			signature.add("<br><br>");
 			signature.add(user.getDescription());
+			signature.add("<br>");
 			signature.add(user.getDepartment());
+			signature.add("<br>");
 			signature.add(user.getCompany());
-			if (0 != user.getTelephoneNumber().length()) {
-				signature.add("телефон:"+user.getTelephoneNumber());	
-			}			
+			signature.add("<br>");
+			signature.add("телефон:"+user.getFullTelephone(false));
+			signature.add("<br>");
+			signature.add("моб.:"+user.getMobile());
+			signature.add("<br>");
+			signature.add("<i>email:"+user.getMail()+"</i>");
 		}
 		
 		return signature;

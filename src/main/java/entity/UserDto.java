@@ -265,10 +265,10 @@ public class UserDto implements Serializable {
 		return cn;
 	}
 
-	public String getCn(boolean isTranslit) {		
-		return (isTranslit)? this.translit(getCn()):getCn();
+	public String getCn(boolean isTranslit) {
+		return (isTranslit) ? this.translit(getCn()) : getCn();
 	}
-	
+
 	public String getSn() {
 		return sn;
 	}
@@ -293,10 +293,10 @@ public class UserDto implements Serializable {
 		return description;
 	}
 
-	public String getDescription(boolean isTranslit) {		
-		return (isTranslit)? this.translit(getDescription()):getDescription();
+	public String getDescription(boolean isTranslit) {
+		return (isTranslit) ? this.translit(getDescription()) : getDescription();
 	}
-	
+
 	public String getPostalCode() {
 		return postalCode;
 	}
@@ -336,9 +336,9 @@ public class UserDto implements Serializable {
 	public String getCompany() {
 		return company;
 	}
-	
-	public String getCompany(boolean isTranslit) {		
-		return (isTranslit)? this.translit(getCompany()):getCompany();
+
+	public String getCompany(boolean isTranslit) {
+		return (isTranslit) ? this.translit(getCompany()) : getCompany();
 	}
 
 	public String getStreetAddress() {
@@ -426,9 +426,9 @@ public class UserDto implements Serializable {
 	public String getLastName() {
 		return lastName;
 	}
-	
-	public String getLastName(boolean isTranslit) {		
-		return (isTranslit)? this.translit(getLastName()):getLastName();
+
+	public String getLastName(boolean isTranslit) {
+		return (isTranslit) ? this.translit(getLastName()) : getLastName();
 	}
 
 	public String getMiddleName() {
@@ -438,11 +438,11 @@ public class UserDto implements Serializable {
 	public String getFirstName() {
 		return firstName;
 	}
-	
-	public String getFirstName(boolean isTranslit) {		
-		return (isTranslit)? this.translit(getFirstName()):getFirstName();
+
+	public String getFirstName(boolean isTranslit) {
+		return (isTranslit) ? this.translit(getFirstName()) : getFirstName();
 	}
-	
+
 	public boolean isLastName(String lastName) {
 		return getLastName().toLowerCase().contains(lastName);
 	}
@@ -477,6 +477,20 @@ public class UserDto implements Serializable {
 
 	public void setCompanyDn(String companyDn) {
 		this.companyDn = companyDn;
+	}
+
+	public String getHtmlFormatMail() {
+		return new String("<html><a href=\"mailto:" + this.getMail() + "\">" + this.getMail() + "</a></html>");
+	}
+
+	public String getFullTelephone() {
+		return getFullTelephone(true);
+	}
+
+	public String getFullTelephone(boolean maker) {
+		return new String(
+				this.getOtherTelephone() + ((0 == this.getOtherTelephone().length()) ? "" : ((maker) ? "p*" : "доб."))
+						+ this.getTelephoneNumber());
 	}
 
 	public String getVCard(boolean isTranslit) {
@@ -565,7 +579,7 @@ public class UserDto implements Serializable {
 			return "JU";
 		case 'Я':
 			return "JA";
-			
+
 		case 'а':
 			return "a";
 		case 'б':
