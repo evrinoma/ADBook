@@ -33,6 +33,6 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/opt/DISK/Develop/Java/Eclipse/EEProjects/browser/lib/plugin.jar"/>
+	<classpathentry kind="lib" path="lib/plugin.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

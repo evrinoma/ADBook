@@ -72,16 +72,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-//import javax.swing.event.CaretListener;
-//import javax.swing.event.CaretEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -99,17 +94,16 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import java.awt.Font;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import javax.swing.JCheckBox;
 
 public class MainForm {
 
-	private static final String VERSION = "22.12.17v05";
+	private static final String VERSION = "22.12.17v31";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
-	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);
+	private static final Dimension DEMENSION_MENU = new Dimension(20, 30);
+	private static final Dimension DEMENSION_ICON_MENU = new Dimension(20, 20);	
 	private static final LineBorder BORDER_ICON_MENU = new LineBorder(new Color(214, 217, 223));
 	private static final boolean IS_LOADER_CLASS_PATH = false;
 	private static final String IS_CONTACT_RU = "Контакт в кириллице";
@@ -125,7 +119,6 @@ public class MainForm {
 	private static final String PLANS_IMAGE = "/plans/";
 	private static final String COPY_IMAGE = "/iphone/appadvice.png";
 	private static final String PLUS_IMAGE = "/iphone/plus.png";
-	
 
 	private JFrame frmHandbook;
 
@@ -148,8 +141,8 @@ public class MainForm {
 	private JLabel labelContactWriStreet;
 	private JLabel labelContactWriBirth;
 	private JLabel labelContactWriRoom;
-	private JLabel labelContactWriPhoneInside;
 	private JLabel labelContactWriPhone;
+	private JLabel labelContactWriPhoneInside;
 	private JLabel labelContactWriMobilePhone;
 	private JLabel labelContactWriMail;
 
@@ -188,7 +181,7 @@ public class MainForm {
 	private JLabel labelCopyMails;
 	private JLabel labelSaveXls;
 	private JLabel labelCollapsTree;
-	
+
 	private JList listMessagesEditorTo;
 	private JTextField textFieldMessagesEditorSubject;
 	private JLabel labelMessagesEditorWriFrom;
@@ -215,7 +208,8 @@ public class MainForm {
 	private JPanel panelPerson;
 	private JLabel labelExpandTree;
 	private AbstractButton checkBoxSignature;
-	
+	private JCheckBox checkBoxNotifyDelivery;
+	private AbstractButton checkBoxNotifyRead;
 
 	/**
 	 * Launch the application.
@@ -225,7 +219,8 @@ public class MainForm {
 			isWeb = true;
 		}
 
-		if (null != System.getProperty("nimbus")) {
+		if (null != System.getProperty("nimbus")) 
+		{
 			try {
 				// Set System L&F
 				UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -235,18 +230,14 @@ public class MainForm {
 				e.printStackTrace();
 			}
 		}
-	/*	
-		if (!isWeb & (null != System.getProperty("gtk"))) {
-			try {
-				// Set System L&F
-				UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-			} catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException
-					| IllegalAccessException e) {
-				// handle exception
-				e.printStackTrace();
-			}
-		}	
-*/
+		/*
+		 * if (!isWeb & (null != System.getProperty("gtk"))) { try { // Set
+		 * System L&F
+		 * UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"
+		 * ); } catch (UnsupportedLookAndFeelException | ClassNotFoundException
+		 * | InstantiationException | IllegalAccessException e) { // handle
+		 * exception e.printStackTrace(); } }
+		 */
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -297,7 +288,7 @@ public class MainForm {
 			frmHandbook.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {
 					Object[] options = { "Свернуть", "Закрыть" };
-					int n = JOptionPane.showOptionDialog(frmHandbook, "", "", JOptionPane.YES_NO_OPTION,
+					int n = JOptionPane.showOptionDialog(frmHandbook, "", "Выберите действие", JOptionPane.YES_NO_OPTION,
 							JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
 					if (n == JOptionPane.YES_OPTION) {
@@ -378,38 +369,37 @@ public class MainForm {
 		}
 		tree.repaint();
 	}
-	
-	private void collapseTree() {		
-			Enumeration<?> topLevelNodes = ((TreeNode) tree.getModel().getRoot()).children();
-			while (topLevelNodes.hasMoreElements()) {
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) topLevelNodes.nextElement();
-				CompanyDto company = (CompanyDto) node.getUserObject();
-				if (company.getUsers().isEmpty()) {
-					tree.collapsePath(new TreePath(node.getPath()));
-				}
+
+	private void collapseTree() {
+		Enumeration<?> topLevelNodes = ((TreeNode) tree.getModel().getRoot()).children();
+		while (topLevelNodes.hasMoreElements()) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) topLevelNodes.nextElement();
+			CompanyDto company = (CompanyDto) node.getUserObject();
+			if (company.getUsers().isEmpty()) {
+				tree.collapsePath(new TreePath(node.getPath()));
 			}
+		}
 		tree.repaint();
 	}
-	
-	private void collapseAll(){		  
-			    TreeNode root = (TreeNode) tree.getModel().getRoot();
-			    collapseAll(tree, new TreePath(root));	
-			    expandTree(true);
+
+	private void collapseAll() {
+		TreeNode root = (TreeNode) tree.getModel().getRoot();
+		collapseAll(tree, new TreePath(root));
+		expandTree(true);
 	}
 
-	 private void collapseAll(JTree tree, TreePath parent) {
-		    TreeNode node = (TreeNode) parent.getLastPathComponent();
-		    if (node.getChildCount() >= 0) {
-		      for (Enumeration e = node.children(); e.hasMoreElements();) {
-		        TreeNode n = (TreeNode) e.nextElement();
-		        TreePath path = parent.pathByAddingChild(n);
-		        collapseAll(tree, path);
-		      }
-		    }
-		    tree.collapsePath(parent);
-		 }
-	 
-	 
+	private void collapseAll(JTree tree, TreePath parent) {
+		TreeNode node = (TreeNode) parent.getLastPathComponent();
+		if (node.getChildCount() >= 0) {
+			for (Enumeration e = node.children(); e.hasMoreElements();) {
+				TreeNode n = (TreeNode) e.nextElement();
+				TreePath path = parent.pathByAddingChild(n);
+				collapseAll(tree, path);
+			}
+		}
+		tree.collapsePath(parent);
+	}
+
 	private UserDto addToCompanyUserTreeNode(DefaultMutableTreeNode top, CompanyDto company) {
 		UserDto findUser = null;
 		for (UserDto user : company.getUsersSortedByCn().values()) {
@@ -523,7 +513,7 @@ public class MainForm {
 		panelPerson.setMinimumSize(new Dimension(10, 250));
 		tabbedPane.addTab("Персональная информация", panelPerson);
 		createTabPerson(panelPerson);
-		
+
 		JPanel panelContact = new JPanel();
 		panelContact.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panelContact.setMinimumSize(new Dimension(10, 250));
@@ -627,9 +617,9 @@ public class MainForm {
 		panelTree.add(treeView, "treeView");
 
 		JPanel tools = new JPanel();
-		tools.setPreferredSize(new Dimension(20, 30));
-		tools.setMinimumSize(new Dimension(20, 30));
-		tools.setMaximumSize(new Dimension(20, 30));
+		tools.setPreferredSize(DEMENSION_MENU);
+		tools.setMinimumSize(DEMENSION_MENU);
+		tools.setMaximumSize(DEMENSION_MENU);
 		treeView.setColumnHeaderView(tools);
 		SpringLayout sl_tools = new SpringLayout();
 		tools.setLayout(sl_tools);
@@ -663,7 +653,7 @@ public class MainForm {
 		labelSaveXls.setToolTipText("Сохранить в XLS");
 		labelSaveXls.setIcon(resizeIcon(this.getResourceImage(SAVE_XLS_IMAGE), labelSaveXls));
 		tools.add(labelSaveXls);
-		
+
 		labelCollapsTree = new JLabel("");
 		sl_tools.putConstraint(SpringLayout.NORTH, labelCollapsTree, 2, SpringLayout.NORTH, tools);
 		sl_tools.putConstraint(SpringLayout.WEST, labelCollapsTree, 80, SpringLayout.WEST, tools);
@@ -672,7 +662,7 @@ public class MainForm {
 		labelCollapsTree.setSize(DEMENSION_ICON_MENU);
 		labelCollapsTree.setToolTipText("Свернуть список компаний");
 		labelCollapsTree.setIcon(resizeIcon(this.getResourceImage(PLUS_IMAGE), labelCollapsTree));
-		tools.add(labelCollapsTree);		
+		tools.add(labelCollapsTree);
 	}
 
 	private void lockPanelFSM(boolean lock) {
@@ -787,23 +777,23 @@ public class MainForm {
 		unLockPanelFSM();
 	}
 
-	public void clearMessages() {		
-			this.textFieldMessagesEditorSubject.setText("");
-			this.clearMessagesTo();
-			this.textAreaMessagesEditor.setText("");
-			this.checkBoxSignature.setSelected(true);
-			clearMessagesAttachment();
+	public void clearMessages() {
+		this.textFieldMessagesEditorSubject.setText("");
+		this.clearMessagesTo();
+		this.textAreaMessagesEditor.setText("");
+		this.checkBoxSignature.setSelected(true);
+		clearMessagesAttachment();
 	}
 
-	public void clearMessagesByNotify(){		
-		Object[] options = { "Очистить","Редактировать" };
-		int n = JOptionPane.showOptionDialog(frmHandbook, "<html>Рассылка осуществлена</html>", "", JOptionPane.YES_NO_OPTION,
-				JOptionPane.PLAIN_MESSAGE, null, options, options[1]);
+	public void clearMessagesByNotify() {
+		Object[] options = { "Очистить", "Редактировать" };
+		int n = JOptionPane.showOptionDialog(frmHandbook, "<html>Рассылка осуществлена</html>", "",
+				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[1]);
 		if (n == JOptionPane.YES_OPTION) {
 			clearMessages();
 		}
 	}
-		
+
 	public void repaint() {
 		frmHandbook.repaint();
 	}
@@ -954,21 +944,23 @@ public class MainForm {
 		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriRoom, 0, SpringLayout.EAST, panel);
 		panel.add(labelContactWriRoom);
 
-		labelContactWriPhoneInside = new JLabel();
-		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriPhoneInside, 5, SpringLayout.EAST,
-				labelContactMobilePhone);
-		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriPhoneInside, 0, SpringLayout.SOUTH,
-				labelContactPhoneInside);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriPhoneInside, 0, SpringLayout.EAST, panel);
-		panel.add(labelContactWriPhoneInside);
-
 		labelContactWriPhone = new JLabel();
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriPhone, 5, SpringLayout.EAST,
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriPhone, 0, SpringLayout.SOUTH,
-				labelContactPhone);
+				labelContactPhoneInside);
 		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriPhone, 0, SpringLayout.EAST, panel);
 		panel.add(labelContactWriPhone);
+		
+		labelContactWriPhoneInside = new JLabel();
+		labelContactWriPhoneInside.setFont(new Font("Roboto", Font.PLAIN, 14));
+		labelContactWriPhoneInside.setForeground(Color.BLUE);
+		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriPhoneInside, 5, SpringLayout.EAST,
+				labelContactMobilePhone);
+		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriPhoneInside, 0, SpringLayout.SOUTH,
+				labelContactPhone);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriPhoneInside, 0, SpringLayout.EAST, panel);
+		panel.add(labelContactWriPhoneInside);
 
 		labelContactWriMobilePhone = new JLabel();
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriMobilePhone, 5, SpringLayout.EAST,
@@ -983,7 +975,10 @@ public class MainForm {
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriMail, 5, SpringLayout.EAST,
 				labelContactMobilePhone);
 		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriMail, 0, SpringLayout.SOUTH, labelContactMail);
-		/*sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriMail, 0, SpringLayout.EAST, panel);*/
+		/*
+		 * sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriMail,
+		 * 0, SpringLayout.EAST, panel);
+		 */
 		panel.add(labelContactWriMail);
 
 	}
@@ -1123,66 +1118,89 @@ public class MainForm {
 		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, scrollPaneMessagesEditorTo, -10, SpringLayout.EAST,
 				panelMessagesEditor);
 		panelMessagesEditor.add(scrollPaneMessagesEditorTo);
-
+		
+		Dimension dimensionEditor = new Dimension(262, 280);
+		
 		textAreaMessagesEditor = new JTextArea();
 		textAreaMessagesEditor.setWrapStyleWord(true);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, textAreaMessagesEditor, 30, SpringLayout.NORTH,
+		JScrollPane scrollPaneMessagesEditor = new JScrollPane(textAreaMessagesEditor);
+		scrollPaneMessagesEditor.setPreferredSize(dimensionEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, scrollPaneMessagesEditor, 30, SpringLayout.NORTH,
 				labelMessagesEditorSubject);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, textAreaMessagesEditor, 10, SpringLayout.WEST,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, scrollPaneMessagesEditor, 10, SpringLayout.WEST,
 				panelMessagesEditor);
 		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, textAreaMessagesEditor, -144, SpringLayout.SOUTH,
 				panelMessagesEditor);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, textAreaMessagesEditor, -10, SpringLayout.EAST,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, scrollPaneMessagesEditor, -10, SpringLayout.EAST,
 				panelMessagesEditor);
-		panelMessagesEditor.add(textAreaMessagesEditor);
+		panelMessagesEditor.add(scrollPaneMessagesEditor);
 
 		buttonMessagesEditorAttachment = new JButton("Добавить вложение");
 		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorAttachment, 10, SpringLayout.SOUTH,
-				textAreaMessagesEditor);
+				scrollPaneMessagesEditor);
 		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, buttonMessagesEditorAttachment, 10, SpringLayout.WEST,
 				panelMessagesEditor);
 		panelMessagesEditor.add(buttonMessagesEditorAttachment);
 		//
 		JScrollPane paneMessagesEditorAttachment = new JScrollPane();
 		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, paneMessagesEditorAttachment, 10, SpringLayout.SOUTH,
-				textAreaMessagesEditor);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, paneMessagesEditorAttachment, 10, SpringLayout.EAST,
+				scrollPaneMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, paneMessagesEditorAttachment, 20, SpringLayout.EAST,
 				buttonMessagesEditorAttachment);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, paneMessagesEditorAttachment, -10, SpringLayout.SOUTH,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.SOUTH, paneMessagesEditorAttachment, -5, SpringLayout.SOUTH,
 				panelMessagesEditor);
 		sl_panelMessagesEditor.putConstraint(SpringLayout.EAST, paneMessagesEditorAttachment, -10, SpringLayout.EAST,
 				panelMessagesEditor);
 		panelMessagesEditor.add(paneMessagesEditorAttachment);
-
+		
 		listMessagesEditorAttachment = new JList();
 		paneMessagesEditorAttachment.setViewportView(listMessagesEditorAttachment);
 
 		buttonMessagesEditorAttachmentClear = new JButton("Очистить вложения");
-		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorAttachmentClear, 10,
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, buttonMessagesEditorAttachmentClear, 5,
 				SpringLayout.SOUTH, buttonMessagesEditorAttachment);
 		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, buttonMessagesEditorAttachmentClear, 0,
 				SpringLayout.WEST, labelMessagesEditorFrom);
 		panelMessagesEditor.add(buttonMessagesEditorAttachmentClear);
-		
+
 		checkBoxSignature = new JCheckBox("создать подпись");
 		checkBoxSignature.setSelected(true);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, checkBoxSignature, 6, SpringLayout.SOUTH, buttonMessagesEditorAttachmentClear);
-		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, checkBoxSignature, 10, SpringLayout.WEST, panelMessagesEditor);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, checkBoxSignature, 5, SpringLayout.SOUTH,
+				buttonMessagesEditorAttachmentClear);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, checkBoxSignature, 10, SpringLayout.WEST,
+				panelMessagesEditor);
 		panelMessagesEditor.add(checkBoxSignature);
-
+		
+		checkBoxNotifyDelivery = new JCheckBox("Уведомить о доставке");
+		checkBoxNotifyDelivery.setSelected(false);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, checkBoxNotifyDelivery, 0, SpringLayout.SOUTH,
+				checkBoxSignature);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, checkBoxNotifyDelivery, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(checkBoxNotifyDelivery);
+		
+		checkBoxNotifyRead = new JCheckBox("Уведомить о прочтении");
+		checkBoxNotifyRead.setSelected(false);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.NORTH, checkBoxNotifyRead, 0, SpringLayout.SOUTH,
+				checkBoxNotifyDelivery);
+		sl_panelMessagesEditor.putConstraint(SpringLayout.WEST, checkBoxNotifyRead, 10, SpringLayout.WEST,
+				panelMessagesEditor);
+		panelMessagesEditor.add(checkBoxNotifyRead);
+		
 		demensionLoginPass = null;
 		dimensionTo = null;
+		dimensionEditor = null;
 		demensionLoginPassField = null;
 	}
 
-	private void createCopyLabel(JLabel label){			
+	private void createCopyLabel(JLabel label) {
 		label.setMaximumSize(DEMENSION_ICON_MENU);
 		label.setMinimumSize(DEMENSION_ICON_MENU);
 		label.setSize(DEMENSION_ICON_MENU);
 		label.setToolTipText("копировать");
 		label.setIcon(resizeIcon(this.getResourceImage(COPY_IMAGE), label));
 	}
-	
+
 	private void createTabPerson(JPanel panel) {
 		sl_panelPerson = new SpringLayout();
 		panel.setLayout(sl_panelPerson);
@@ -1217,64 +1235,64 @@ public class MainForm {
 		int tab = 20;
 		labelPersonFio = new JLabel("ФИО:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonFio, 33, SpringLayout.SOUTH, panelQrCode);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonFio, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonFio, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonFio);
-		
-		labelCopyPersonFio = new JLabel("");		
+
+		labelCopyPersonFio = new JLabel("");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelCopyPersonFio, 0, SpringLayout.NORTH, labelPersonFio);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelCopyPersonFio, 5, SpringLayout.WEST, panelPerson);
 		createCopyLabel(labelCopyPersonFio);
 		panel.add(labelCopyPersonFio);
-		
+
 		JLabel labelPersonCompany = new JLabel("Компания:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonCompany, 6, SpringLayout.SOUTH, labelPersonFio);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonCompany, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonCompany, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonCompany);
 
 		JLabel labelPersonDepartment = new JLabel("Отдел:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonDepartment, 6, SpringLayout.SOUTH,
 				labelPersonCompany);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonDepartment, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonDepartment, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonDepartment);
 
 		JLabel labelPersonPosition = new JLabel("Должность:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPosition, 6, SpringLayout.SOUTH,
 				labelPersonDepartment);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPosition, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPosition, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPosition);
 
 		JLabel labelPersonMail = new JLabel("Электронная почта:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonMail, 6, SpringLayout.SOUTH, labelPersonPosition);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonMail, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonMail, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonMail);
-		
+
 		labelCopyPersonMail = new JLabel("");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelCopyPersonMail, 0, SpringLayout.NORTH, labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelCopyPersonMail, 5, SpringLayout.WEST, panelPerson);
 		createCopyLabel(labelCopyPersonMail);
 		panel.add(labelCopyPersonMail);
-		
+
 		JLabel labelPersonPhoneInside = new JLabel("Телефон:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneInside, 6, SpringLayout.SOUTH,
 				labelPersonMail);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneInside, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneInside, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPhoneInside);
 
 		JLabel labelPersonPhoneSmall = new JLabel("Телефон (внутр.):");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneSmall, 6, SpringLayout.SOUTH,
 				labelPersonPhoneInside);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneSmall, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneSmall, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPhoneSmall);
 
 		JLabel labelPersonRoom = new JLabel("Комната:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonRoom, 6, SpringLayout.SOUTH, labelPersonPhoneSmall);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonRoom, tab, SpringLayout.WEST, panelQrCode);		
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonRoom, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonRoom);
 
 		labelPersonHead = new JLabel("Руководитель:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonHead, 6, SpringLayout.SOUTH, labelPersonRoom);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonHead, tab, SpringLayout.WEST, panelQrCode);
-		panelQrCode.setLayout(new BorderLayout(0, 0));		
+		panelQrCode.setLayout(new BorderLayout(0, 0));
 		panel.add(labelPersonHead);
 
 		labelPersonWriDescription = new JLabel();
@@ -1334,7 +1352,6 @@ public class MainForm {
 		labelPersonWriMail.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriMail, 5, SpringLayout.EAST, labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriMail, 0, SpringLayout.SOUTH, labelPersonMail);
-	/*	sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriMail, 0, SpringLayout.EAST, panel);*/
 		panel.add(labelPersonWriMail);
 
 		labelPersonWriHead = new JLabel();
@@ -1353,33 +1370,36 @@ public class MainForm {
 	private void createPanelFSM(JPanel panelSearch) {
 		SpringLayout layoutFSM = new SpringLayout();
 		panelFSM = new JPanel(layoutFSM);
-		panelFSM.setPreferredSize(new Dimension(0, 310));
+		panelFSM.setPreferredSize(new Dimension(0, 290));
 		TitledBorder borderFSM = new TitledBorder("Поиск по адресной книге");
 		borderFSM.setTitlePosition(TitledBorder.TOP);
 		panelFSM.setBorder(borderFSM);
 		panelSearch.add(panelFSM);
 
-		textFieldLastName = new JTextField("");		
+		textFieldLastName = new JTextField("");
 		textFieldLastName.setToolTipText("Фамилия");
 		textFieldLastName.setHorizontalAlignment(SwingConstants.LEFT);
+		textFieldLastName.setTransferHandler(null);
 		JLabel labelSurName = new JLabel(textFieldLastName.getToolTipText() + ':');
 		labelSurName.setMinimumSize(new Dimension(50, 0));
-		
-		textFieldFirstName = new JTextField();		
+
+		textFieldFirstName = new JTextField();
 		textFieldFirstName.setToolTipText("Имя");
-		textFieldFirstName.setHorizontalAlignment(SwingConstants.LEFT);		
+		textFieldFirstName.setHorizontalAlignment(SwingConstants.LEFT);
+		textFieldFirstName.setTransferHandler(null);
 		JLabel labelFirstName = new JLabel(textFieldFirstName.getToolTipText() + ':');
 		labelFirstName.setMinimumSize(new Dimension(50, 0));
 
 		textFieldMiddleName = new JTextField();
-		
-		textFieldMiddleName.setToolTipText("Отчество");		
-		textFieldMiddleName.setHorizontalAlignment(SwingConstants.LEFT);		
+
+		textFieldMiddleName.setToolTipText("Отчество");
+		textFieldMiddleName.setHorizontalAlignment(SwingConstants.LEFT);
+		textFieldMiddleName.setTransferHandler(null);
 		JLabel labelMiddleName = new JLabel(textFieldMiddleName.getToolTipText() + ':');
 		labelMiddleName.setMinimumSize(new Dimension(50, 0));
-		
+
 		comboBoxCompany = new JComboBox<CompanyDto>();
-		
+
 		comboBoxCompany.addItem(new CompanyDto());
 		comboBoxCompany.setToolTipText("Комания");
 		JLabel labelCompany = new JLabel(comboBoxCompany.getToolTipText() + ':');
@@ -1388,7 +1408,7 @@ public class MainForm {
 		comboBoxFilial = new JComboBox<CompanyDto>();
 		comboBoxFilial.addItem(new CompanyDto());
 		comboBoxFilial.setToolTipText("Представительство");
-		JLabel labelFilials = new JLabel(comboBoxFilial.getToolTipText() + ':');	
+		JLabel labelFilials = new JLabel(comboBoxFilial.getToolTipText() + ':');
 		labelFilials.setMinimumSize(new Dimension(50, 0));
 		comboBoxFilial.disable();
 		comboBoxFilial.setName("comboBoxFilial");
@@ -1396,77 +1416,77 @@ public class MainForm {
 		textFieldDepartment = new JTextField();
 		textFieldDepartment.setToolTipText("Отдел");
 		textFieldDepartment.setHorizontalAlignment(SwingConstants.LEFT);
-		JLabel labelDepartment = new JLabel(textFieldDepartment.getToolTipText() + ':');		
-		labelDepartment.setMinimumSize(new Dimension(50, 0));
-
-		textFieldPhone = new JTextField();
-		textFieldPhone.setToolTipText("Номер телефона");
-		textFieldPhone.setHorizontalAlignment(SwingConstants.LEFT);
-		JLabel labelPhone = new JLabel(textFieldPhone.getToolTipText() + ':');
-		labelPhone.setMinimumSize(new Dimension(50, 0));
+		textFieldDepartment.setTransferHandler(null);
+		JLabel labelDepartment = new JLabel(textFieldDepartment.getToolTipText() + ':');
+		labelDepartment.setMinimumSize(new Dimension(50, 0));		
 
 		textFieldPesonPosition = new JTextField();
 		textFieldPesonPosition.setToolTipText("Должность");
 		textFieldPesonPosition.setHorizontalAlignment(SwingConstants.LEFT);
+		textFieldPesonPosition.setTransferHandler(null);
 		JLabel labelPesonPosition = new JLabel(textFieldPesonPosition.getToolTipText() + ':');
 		labelPesonPosition.setMinimumSize(new Dimension(50, 0));
-
+		
+		textFieldPhone = new JTextField();
+		textFieldPhone.setToolTipText("Номер телефона");
+		textFieldPhone.setHorizontalAlignment(SwingConstants.LEFT);
+		textFieldPhone.setTransferHandler(null);
+		JLabel labelPhone = new JLabel(textFieldPhone.getToolTipText() + ':');
+		labelPhone.setMinimumSize(new Dimension(50, 0));
+		
 		textFieldRoom = new JTextField();
 		textFieldRoom.setToolTipText("Комната");
 		textFieldRoom.setHorizontalAlignment(SwingConstants.LEFT);
-		JLabel labelRoom = new JLabel(textFieldRoom.getToolTipText() + ':');		
 		textFieldRoom.setMinimumSize(new Dimension(50, 0));
+		textFieldRoom.setTransferHandler(null);
+		JLabel labelRoom = new JLabel(textFieldRoom.getToolTipText() + ':');
+		labelRoom.setMinimumSize(new Dimension(50, 0));
 		
 		layoutFSM.putConstraint(SpringLayout.NORTH, labelSurName, 5, SpringLayout.NORTH, panelFSM);
 		layoutFSM.putConstraint(SpringLayout.WEST, textFieldLastName, 5, SpringLayout.EAST, labelFilials);
 		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldLastName, 0, SpringLayout.NORTH, panelFSM);
-		layoutFSM.putConstraint(SpringLayout.EAST, textFieldLastName, 0, SpringLayout.EAST, panelFSM);	
-		
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelFirstName, 33, SpringLayout.NORTH, labelSurName);
-		layoutFSM.putConstraint(SpringLayout.WEST, textFieldFirstName, 5, SpringLayout.EAST, labelFilials);			
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldFirstName, 33, SpringLayout.NORTH, textFieldLastName);	
-		layoutFSM.putConstraint(SpringLayout.EAST, textFieldFirstName, 0, SpringLayout.EAST, textFieldLastName);	
-		
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelMiddleName, 33, SpringLayout.NORTH, labelFirstName);
+		layoutFSM.putConstraint(SpringLayout.EAST, textFieldLastName, 0, SpringLayout.EAST, panelFSM);
+
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelFirstName, 28, SpringLayout.NORTH, labelSurName);
+		layoutFSM.putConstraint(SpringLayout.WEST, textFieldFirstName, 5, SpringLayout.EAST, labelFilials);
+		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldFirstName, 28, SpringLayout.NORTH, textFieldLastName);
+		layoutFSM.putConstraint(SpringLayout.EAST, textFieldFirstName, 0, SpringLayout.EAST, textFieldLastName);
+
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelMiddleName, 28, SpringLayout.NORTH, labelFirstName);
 		layoutFSM.putConstraint(SpringLayout.WEST, textFieldMiddleName, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldMiddleName, 33, SpringLayout.NORTH, textFieldFirstName);
+		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldMiddleName, 28, SpringLayout.NORTH, textFieldFirstName);
 		layoutFSM.putConstraint(SpringLayout.EAST, textFieldMiddleName, 0, SpringLayout.EAST, textFieldFirstName);
 
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelCompany, 33, SpringLayout.NORTH, labelMiddleName);
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelCompany, 28, SpringLayout.NORTH, labelMiddleName);
 		layoutFSM.putConstraint(SpringLayout.WEST, comboBoxCompany, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, comboBoxCompany, 33, SpringLayout.NORTH, textFieldMiddleName);
-		layoutFSM.putConstraint(SpringLayout.EAST, comboBoxCompany, 0, SpringLayout.EAST, textFieldMiddleName);		
+		layoutFSM.putConstraint(SpringLayout.NORTH, comboBoxCompany, 28, SpringLayout.NORTH, textFieldMiddleName);
+		layoutFSM.putConstraint(SpringLayout.EAST, comboBoxCompany, 0, SpringLayout.EAST, textFieldMiddleName);
 
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelFilials, 33, SpringLayout.NORTH, labelCompany);
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelFilials, 28, SpringLayout.NORTH, labelCompany);
 		layoutFSM.putConstraint(SpringLayout.WEST, comboBoxFilial, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, comboBoxFilial, 33, SpringLayout.NORTH, comboBoxCompany);
+		layoutFSM.putConstraint(SpringLayout.NORTH, comboBoxFilial, 28, SpringLayout.NORTH, comboBoxCompany);
 		layoutFSM.putConstraint(SpringLayout.EAST, comboBoxFilial, 0, SpringLayout.EAST, comboBoxCompany);
-				
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelDepartment, 33, SpringLayout.NORTH, labelFilials);
+
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelDepartment, 28, SpringLayout.NORTH, labelFilials);
 		layoutFSM.putConstraint(SpringLayout.WEST, textFieldDepartment, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldDepartment, 33, SpringLayout.NORTH, comboBoxFilial);
+		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldDepartment, 28, SpringLayout.NORTH, comboBoxFilial);
 		layoutFSM.putConstraint(SpringLayout.EAST, textFieldDepartment, 0, SpringLayout.EAST, comboBoxFilial);
 		
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelDepartment, 33, SpringLayout.NORTH, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.WEST, textFieldDepartment, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldDepartment, 33, SpringLayout.NORTH, comboBoxFilial);
-		layoutFSM.putConstraint(SpringLayout.EAST, textFieldDepartment, 0, SpringLayout.EAST, comboBoxFilial);
-		
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelPhone, 33, SpringLayout.NORTH, labelPesonPosition);
-		layoutFSM.putConstraint(SpringLayout.WEST, textFieldPhone, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldPhone, 33, SpringLayout.NORTH, textFieldDepartment);
-		layoutFSM.putConstraint(SpringLayout.EAST, textFieldPhone, 0, SpringLayout.EAST, textFieldDepartment);		
-		
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelPesonPosition, 33, SpringLayout.NORTH, labelDepartment);
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelPesonPosition, 28, SpringLayout.NORTH, labelDepartment);
 		layoutFSM.putConstraint(SpringLayout.WEST, textFieldPesonPosition, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldPesonPosition, 33, SpringLayout.NORTH, textFieldPhone);
-		layoutFSM.putConstraint(SpringLayout.EAST, textFieldPesonPosition, 0, SpringLayout.EAST, textFieldPhone);
+		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldPesonPosition, 28, SpringLayout.NORTH, textFieldDepartment);
+		layoutFSM.putConstraint(SpringLayout.EAST, textFieldPesonPosition, 0, SpringLayout.EAST, textFieldDepartment);
 		
-		layoutFSM.putConstraint(SpringLayout.NORTH, labelRoom, 33, SpringLayout.NORTH, labelPhone);
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelPhone, 28, SpringLayout.NORTH, labelPesonPosition);
+		layoutFSM.putConstraint(SpringLayout.WEST, textFieldPhone, 5, SpringLayout.EAST, labelFilials);
+		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldPhone, 28, SpringLayout.NORTH, textFieldPesonPosition);
+		layoutFSM.putConstraint(SpringLayout.EAST, textFieldPhone, 0, SpringLayout.EAST, textFieldPesonPosition);
+		
+		layoutFSM.putConstraint(SpringLayout.NORTH, labelRoom, 28, SpringLayout.NORTH, labelPhone);
 		layoutFSM.putConstraint(SpringLayout.WEST, textFieldRoom, 5, SpringLayout.EAST, labelFilials);
-		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldRoom, 33, SpringLayout.NORTH, textFieldPesonPosition);
-		layoutFSM.putConstraint(SpringLayout.EAST, textFieldRoom, 0, SpringLayout.EAST, textFieldPesonPosition);
-		
+		layoutFSM.putConstraint(SpringLayout.NORTH, textFieldRoom, 28, SpringLayout.NORTH, textFieldPhone);
+		layoutFSM.putConstraint(SpringLayout.EAST, textFieldRoom, 0, SpringLayout.EAST, textFieldPhone);
+
 		panelFSM.add(labelSurName);
 		panelFSM.add(textFieldLastName);
 		panelFSM.add(labelFirstName);
@@ -1488,18 +1508,17 @@ public class MainForm {
 	}
 
 	private ImageIcon resizeIcon(ImageIcon image, JLabel label) {
-		return resizeIcon(image,label.getWidth(), label.getHeight());
+		return resizeIcon(image, label.getWidth(), label.getHeight());
 	}
 
 	private ImageIcon resizeIcon(ImageIcon image, JButton button) {
-		return resizeIcon(image,button.getWidth(), button.getHeight());
+		return resizeIcon(image, button.getWidth(), button.getHeight());
 	}
-	
-	private ImageIcon resizeIcon(ImageIcon image, int width, int height)
-	{
+
+	private ImageIcon resizeIcon(ImageIcon image, int width, int height) {
 		return new ImageIcon(image.getImage().getScaledInstance(width, height, image.getImage().SCALE_DEFAULT));
 	}
-	
+
 	private void updatePanelView() {
 		if (core.getUser() instanceof UserDto) {
 			String mail = core.getUser().getHtmlFormatMail();
@@ -1518,7 +1537,6 @@ public class MainForm {
 				labelPersonWriHead.setText("");
 
 			}
-			// core.getUserDependency(user);
 			showGraph(core.getUserDependency(core.getUser()));
 			labelPersonWriPhoneSmall.setText(core.getUser().getTelephoneNumber());
 			labelPersonWriRoom.setText(core.getUser().getPhysicalDeliveryOfficeName());
@@ -1533,8 +1551,8 @@ public class MainForm {
 			labelContactWriStreet.setText(core.getUser().getStreetAddress());
 			labelContactWriBirth.setText(core.getUser().getInfo());
 			labelContactWriRoom.setText(core.getUser().getPhysicalDeliveryOfficeName());
-			labelContactWriPhoneInside.setText(phone);
-			labelContactWriPhone.setText(core.getUser().getTelephoneNumber());
+			labelContactWriPhone.setText(phone);
+			labelContactWriPhoneInside.setText(core.getUser().getTelephoneNumber());
 			labelContactWriMobilePhone.setText(core.getUser().getMobile());
 			labelContactWriMail.setText(mail);
 			labelContactWriMail.setToolTipText(core.getUser().getMail());
@@ -1714,91 +1732,107 @@ public class MainForm {
 				}
 			}
 		});
-		
-		textFieldLastName.addKeyListener(new KeyAdapter() {			
+
+		textFieldLastName.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)) {					
-					e.consume();					
-				} 
-				search();
+				if (filterOnlyAlphabetic(e) & filterOnlyErase(e)) {
+					e.consume();
+				}
 			}
 			@Override
-	        public void keyPressed(KeyEvent e) {
-				if (filterCtrlC(e)){
-					e.consume();	
+			public void keyReleased(KeyEvent e) {
+				if (!(filterOnlyAlphabetic(e) & filterOnlyErase(e))) {
+					search();
 				}
-	        }
+			}
 		});
 		textFieldMiddleName.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)) {
+				if (filterOnlyAlphabetic(e) & filterOnlyErase(e)) {
 					e.consume();
 				}
-				search();
 			}
 			@Override
-	        public void keyPressed(KeyEvent e) {
-				if (filterCtrlC(e)){
-					e.consume();	
+			public void keyReleased(KeyEvent e) {
+				if (!(filterOnlyAlphabetic(e) & filterOnlyErase(e))) {
+					search();
 				}
-	        }
+			}
 		});
 		textFieldFirstName.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e)) {
+				if (filterOnlyAlphabetic(e) & filterOnlyErase(e)) {
 					e.consume();
 				}
-				search();
 			}
 			@Override
-	        public void keyPressed(KeyEvent e) {
-				if (filterCtrlC(e)){
-					e.consume();	
+			public void keyReleased(KeyEvent e) {
+				if (!(filterOnlyAlphabetic(e) & filterOnlyErase(e))) {
+					search();
 				}
-	        }
-		});
-		textFieldPhone.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				if (filterOnlyDigit(e)) {
-					e.consume();
-				}
-				search();
 			}
 		});
 		textFieldDepartment.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e) & filterOnlySpace(e)) {
+				if (filterOnlyAlphabetic(e) & filterOnlySpace(e) & filterOnlyErase(e)) {
 					e.consume();
 				}
-				search();
 			}
 			@Override
-	        public void keyPressed(KeyEvent e) {
-				if (filterCtrlC(e)){
-					e.consume();	
+			public void keyReleased(KeyEvent e) {
+				if (!(filterOnlyAlphabetic(e) & filterOnlySpace(e) & filterOnlyErase(e))) {
+					search();
 				}
-	        }
+			}
 		});
 
 		textFieldPesonPosition.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (filterOnlyAlphabetic(e) & filterOnlySpace(e)) {
+				if (filterOnlyAlphabetic(e) & filterOnlySpace(e) & filterOnlyErase(e)) {
 					e.consume();
 				}
-				search();
 			}
 			@Override
-	        public void keyPressed(KeyEvent e) {
-				if (filterCtrlC(e)){
-					e.consume();	
+			public void keyReleased(KeyEvent e) {
+				if (!(filterOnlyAlphabetic(e) & filterOnlySpace(e) & filterOnlyErase(e))) {
+					search();
 				}
-	        }
+			}
+		});
+
+		textFieldPhone.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (filterOnlyDigit(e) & filterOnlyErase(e)) {
+					e.consume();
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (!(filterOnlyDigit(e) & filterOnlyErase(e))) {
+					search();
+				}
+			}
+		});
+		
+		textFieldRoom.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {				
+				if (filterOnlyDigit(e) & filterOnlyErase(e) & !filterCtrlV(e)) {
+					e.consume();
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {		
+				if (!(filterOnlyDigit(e) & filterOnlyErase(e))) {
+					search();
+				}
+			}
 		});
 
 		comboBoxCompany.addItemListener(new ItemListener() {
@@ -1830,6 +1864,7 @@ public class MainForm {
 			public void mousePressed(MouseEvent e) {
 				labelUpdate.setBorder(BORDER_ICON_MENU);
 			}
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				labelUpdate.setBorder(null);
@@ -1852,6 +1887,7 @@ public class MainForm {
 			public void mousePressed(MouseEvent e) {
 				labelCopyMails.setBorder(BORDER_ICON_MENU);
 			}
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				labelCopyMails.setBorder(null);
@@ -1869,15 +1905,16 @@ public class MainForm {
 			public void mousePressed(MouseEvent e) {
 				labelSaveXls.setBorder(BORDER_ICON_MENU);
 			}
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				labelSaveXls.setBorder(null);
 			}
 		});
-		
+
 		labelCollapsTree.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {				
+			public void mouseClicked(MouseEvent e) {
 				labelCollapsTree.setBorder(null);
 				collapseAll();
 			}
@@ -1886,6 +1923,7 @@ public class MainForm {
 			public void mousePressed(MouseEvent e) {
 				labelCollapsTree.setBorder(BORDER_ICON_MENU);
 			}
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				labelCollapsTree.setBorder(null);
@@ -1896,28 +1934,28 @@ public class MainForm {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				labelCopyPersonFio.setBorder(null);
-				core.putStringToClipboard(labelPersonWriFio.getText());
+				runLinkCopy(labelPersonWriFio.getText());
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				labelCopyPersonFio.setBorder(BORDER_ICON_MENU);
 			}
 		});
-		
+
 		labelCopyPersonMail.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				labelCopyPersonMail.setBorder(null);
-				core.putStringToClipboard(labelPersonWriMail.getToolTipText());
+				runLinkCopy(labelPersonWriMail.getToolTipText());
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				labelCopyPersonMail.setBorder(BORDER_ICON_MENU);
 			}
 		});
-		
+
 		labelStatusBar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
@@ -2014,18 +2052,61 @@ public class MainForm {
 		});
 	}
 
+	private void runLinkCopy(String clipboard) {			
+		/*if (isWeb) {
+			String java = new String();
+			try {
+				RandomAccessFile fileIn = null;
+				FileChannel channel = null;
+				FileLock lock = null;
+				try {
+					fileIn = new RandomAccessFile(new java.io.File(".").getCanonicalPath() + "/" + "copy.java", "rw");
+					channel = fileIn.getChannel();
+					lock = channel.lock();
+
+					if (lock != null) {
+						FileDescriptor descriptorIn = fileIn.getFD();
+						FileInputStream fileInputStream = new FileInputStream(descriptorIn);			
+						int content;
+						while ((content = fileInputStream.read()) != -1) {											
+							java += (char) content;
+						}
+					} else {
+						System.out.println("Another instance is already running loadCache");
+					}
+				} finally {
+					if (lock != null && lock.isValid())
+						lock.release();
+					if (fileIn != null)
+						fileIn.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			core.putStringToClipboard(java);
+			JSObject global = JSObject.getWindow(null);			
+			global.eval(java);//"(function() { alert(\"call\");console.log(document); var mode = document.designMode; document.designMode = \"on\"; document.execCommand(\"copy\"); document.designMode = mode;alert(\"end call\");})()");
+			global = null;
+		} else {
+			core.putStringToClipboard(clipboard);
+		}*/
+		core.putStringToClipboard(clipboard);
+	}
+	
 	private void runLinkMail(String email) {
-		
+
 		try {
 			if (isWeb) {
-				JSObject global = JSObject.getWindow(null); 						
-				global.eval("(function() { setTimeout(function() {  location.href = 'mailto:"+email+"';  }, 0);   return \"done!\";	})()"); 
+				JSObject global = JSObject.getWindow(null);
+				global.eval("(function() { setTimeout(function() {  location.href = 'mailto:" + email
+						+ "';  }, 0);   return \"done!\";	})()");
 				global = null;
 			} else {
 				Desktop desktop = Desktop.getDesktop();
 				desktop.mail(new URI("mailto:" + email));
 				desktop = null;
-			}			
+			}
 		} catch (IOException | URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2064,25 +2145,26 @@ public class MainForm {
 				DefaultListModel listModel = new DefaultListModel();
 				listModel.clear();
 				String toolTip = new String("");
-				int column=0;
+				int column = 0;
 				for (UserDto user : users.values()) {
 					if (core.isMailValid(user.getMail())) {
-						listModel.addElement(user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName() + " <" + user.getMail() + ">");
+						listModel.addElement(user.getFirstName() + " " + user.getMiddleName() + " " + user.getLastName()
+								+ " <" + user.getMail() + ">");
 						toolTip += user.getFirstName() + " " + user.getLastName() + " [" + user.getMail() + "]";
-						if (4==column) {
+						if (4 == column) {
 							column = 0;
 							toolTip += "<br>";
-						} else {							
+						} else {
 							toolTip += " ";
 						}
 						column++;
 					}
 				}
 				this.listMessagesEditorTo.setModel(listModel);
-				this.listMessagesEditorTo.setToolTipText("<html>"+toolTip+"</html>");
+				this.listMessagesEditorTo.setToolTipText("<html>" + toolTip + "</html>");
 				toolTip = null;
 				listModel = null;
-				}
+			}
 		}
 	}
 
@@ -2133,7 +2215,8 @@ public class MainForm {
 			}
 			addMessagePreloader();
 			core.sendMessage(labelMessagesEditorWriFrom.getText(), to, textFieldMessagesEditorSubject.getText(),
-					textAreaMessagesEditor.getText(), textFieldLogin.getText(), passwordField.getText(),this.checkBoxSignature.isSelected());
+					textAreaMessagesEditor.getText(), textFieldLogin.getText(), passwordField.getText(),
+					this.checkBoxSignature.isSelected(),this.checkBoxNotifyDelivery.isSelected(),this.checkBoxNotifyRead.isSelected());
 		} else {
 			JOptionPane.showMessageDialog(null, "Не все поля сообщения заполены", "ADBook", JOptionPane.ERROR_MESSAGE);
 		}
@@ -2156,7 +2239,7 @@ public class MainForm {
 	}
 
 	/**
-	 * фильтрация только цыфр
+	 * фильтрация только цифр
 	 * 
 	 * @param e
 	 * @return
@@ -2194,21 +2277,36 @@ public class MainForm {
 		return true;
 	}
 
-	private boolean filterCtrlC(KeyEvent e)	{
-		boolean ctrlPressed = false;
-        boolean cPressed = false;
-		switch(e.getKeyCode()) {
-        case KeyEvent.VK_C:
-            cPressed=true;
-
-            break;
-        case KeyEvent.VK_CONTROL:
-            ctrlPressed=true;
-            break;
-        }
-
-        return (ctrlPressed && cPressed);
+	/**
+	 * фильтрация только удаление
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private boolean filterOnlyErase(KeyEvent e) {
+		if (127 == e.getKeyCode() || 8 == e.getKeyCode()) {
+			return false;
+		}
+		return true;
 	}
+
+	private boolean filterCtrlV(KeyEvent e) {
+		boolean ctrlPressed = false;
+		boolean cPressed = false;
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_V:
+			System.out.println("cPressed");
+			cPressed = true;
+			break;
+		case KeyEvent.VK_CONTROL:
+			ctrlPressed = true;
+			System.out.println("ctrlPressed");
+			break;
+		}
+
+		return (ctrlPressed && cPressed);
+	}
+
 	/**
 	 * запуск поиска по фильтрам
 	 */

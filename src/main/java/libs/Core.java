@@ -346,7 +346,7 @@ public class Core {
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 	}
-	
+
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);			
@@ -416,10 +416,12 @@ public class Core {
 		return mail.isUserMailValid(username);
 	}
 	
-	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username, String password, boolean withSignature){
+	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username,
+			String password, boolean withSignature, boolean notifyDelivery, boolean notifyRead){
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);		
-				mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from).setTo(to).setSubject(subject).setBody(body).setAttachments(attachment);
+				mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from)
+				.setTo(to).setSubject(subject).setBody(body).setAttachments(attachment).setNotifyDelivery(notifyDelivery).setNotifyRead(notifyRead);
 				if (withSignature) {
 					mail.setSignature(signature(companys.findUserByMail(username)));
 				}

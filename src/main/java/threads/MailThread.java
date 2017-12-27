@@ -62,7 +62,11 @@ public class MailThread extends SwingWorker<Object, String> {
 	private ArrayList<String> to = null;
 	private ArrayList<String> toError = null;
 	private String from = "";
-	private ArrayList<String> signature = null; 
+	private String encodeFrom = "";
+	private ArrayList<String> signature = null;
+	private boolean notifyRead = false;
+	private boolean notifyDelivery = false;
+	private boolean notifyError = true; 
 
 	@Override
 	protected Boolean doInBackground() throws Exception {
@@ -180,11 +184,12 @@ public class MailThread extends SwingWorker<Object, String> {
 					}
 				});
 				Message message = new MimeMessage(session);
-				message.setFrom(new InternetAddress(encodeMail(from)));
+				message.setFrom(new InternetAddress(encodeFrom));
 				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(encodeMail(to)));
 				message.setSubject(mimeDecodeUTF8(subject));
 				message.setText(body);				
 				message.setContent(multipart);
+				addNotify(message);
 				Transport.send(message);
 				status = true;
 			} catch (MessagingException | UnsupportedEncodingException e) {
@@ -194,6 +199,13 @@ public class MailThread extends SwingWorker<Object, String> {
 		return status;
 	}
 
+	private void addNotify(Message message) throws MessagingException
+	{
+		if (notifyDelivery) message.addHeader("Return-Receipt-To", "DSN=1");
+		if (notifyRead) message.addHeader("Disposition-Notification-To",encodeFrom);
+		if (notifyError) message.addHeader("Errors-To",encodeFrom);
+	}
+	
 	private String encodeMail(String mail) throws UnsupportedEncodingException {
 		String[] splited = mail.split("<");
 		return mimeDecodeUTF8(splited[0]) + "<" + splited[1];
@@ -242,9 +254,18 @@ public class MailThread extends SwingWorker<Object, String> {
 
 	public MailThread setFrom(String from) {
 		this.from = from;
+		setEncodeFrom();
 		return this;
 	}
 
+	private void setEncodeFrom() {
+		try {
+			this.encodeFrom = encodeMail(this.from);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}		
+	}
+	
 	public MailThread setAction(boolean action) {
 		this.action = action;
 		return this;
@@ -260,8 +281,19 @@ public class MailThread extends SwingWorker<Object, String> {
 		return this;
 	}
 	
+	
 	public boolean isAuthorize() {
 		return this.valid;
+	}
+
+	public MailThread setNotifyRead(boolean notifyRead) {
+		this.notifyRead = notifyRead;
+		return this;
+	}
+
+	public MailThread setNotifyDelivery(boolean notifyDelivery) {
+		this.notifyDelivery = notifyDelivery;
+		return this;
 	}
 
 	private boolean authorize() {
@@ -303,13 +335,13 @@ public class MailThread extends SwingWorker<Object, String> {
 					if (Files.isRegularFile(Paths.get(filePath))) {
 						MimeBodyPart attachmentBodyPart = new MimeBodyPart();
 						DataSource source = new FileDataSource(filePath);
-						attachmentBodyPart.setDataHandler(new DataHandler(source));
-						attachmentBodyPart.setFileName(attachment);
+						attachmentBodyPart.setDataHandler(new DataHandler(source));						
+						attachmentBodyPart.setFileName(mimeDecodeUTF8(attachment));						
 						multipart.addBodyPart(attachmentBodyPart);
 					}
 				}
 			}
-		} catch (MessagingException  e) {
+		} catch (MessagingException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
