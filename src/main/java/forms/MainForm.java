@@ -98,7 +98,7 @@ import javax.swing.JCheckBox;
 
 public class MainForm {
 
-	private static final String VERSION = "22.12.17v31";
+	private static final String VERSION = "09.01.18v01";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
@@ -210,6 +210,9 @@ public class MainForm {
 	private AbstractButton checkBoxSignature;
 	private JCheckBox checkBoxNotifyDelivery;
 	private AbstractButton checkBoxNotifyRead;
+	private JLabel labelCopyPersonPhoneInside;
+	private JLabel labelCopyPersonDescription;
+	private JLabel labelCopyPersonCompany;
 
 	/**
 	 * Launch the application.
@@ -1249,20 +1252,32 @@ public class MainForm {
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonCompany, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonCompany);
 
+		labelCopyPersonCompany = new JLabel("");
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelCopyPersonCompany, 0, SpringLayout.NORTH, labelPersonCompany);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelCopyPersonCompany, 5, SpringLayout.WEST, panelPerson);
+		createCopyLabel(labelCopyPersonCompany);
+		panel.add(labelCopyPersonCompany);
+		
 		JLabel labelPersonDepartment = new JLabel("Отдел:");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonDepartment, 6, SpringLayout.SOUTH,
 				labelPersonCompany);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonDepartment, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonDepartment);
 
-		JLabel labelPersonPosition = new JLabel("Должность:");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPosition, 6, SpringLayout.SOUTH,
+		JLabel labelPersonDescription = new JLabel("Должность:");
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonDescription, 6, SpringLayout.SOUTH,
 				labelPersonDepartment);
-		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPosition, tab, SpringLayout.WEST, panelQrCode);
-		panel.add(labelPersonPosition);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonDescription, tab, SpringLayout.WEST, panelQrCode);
+		panel.add(labelPersonDescription);
 
+		labelCopyPersonDescription = new JLabel("");
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelCopyPersonDescription, 0, SpringLayout.NORTH, labelPersonDescription);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelCopyPersonDescription, 5, SpringLayout.WEST, panelPerson);
+		createCopyLabel(labelCopyPersonDescription);
+		panel.add(labelCopyPersonDescription);
+		
 		JLabel labelPersonMail = new JLabel("Электронная почта:");
-		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonMail, 6, SpringLayout.SOUTH, labelPersonPosition);
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonMail, 6, SpringLayout.SOUTH, labelPersonDescription);
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonMail, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonMail);
 
@@ -1278,6 +1293,12 @@ public class MainForm {
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonPhoneInside, tab, SpringLayout.WEST, panelQrCode);
 		panel.add(labelPersonPhoneInside);
 
+		labelCopyPersonPhoneInside = new JLabel("");
+		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelCopyPersonPhoneInside, 0, SpringLayout.NORTH, labelPersonPhoneInside);
+		sl_panelPerson.putConstraint(SpringLayout.WEST, labelCopyPersonPhoneInside, 5, SpringLayout.WEST, panelPerson);
+		createCopyLabel(labelCopyPersonPhoneInside);
+		panel.add(labelCopyPersonPhoneInside);
+		
 		JLabel labelPersonPhoneSmall = new JLabel("Телефон (внутр.):");
 		sl_panelPerson.putConstraint(SpringLayout.NORTH, labelPersonPhoneSmall, 6, SpringLayout.SOUTH,
 				labelPersonPhoneInside);
@@ -1299,7 +1320,7 @@ public class MainForm {
 		sl_panelPerson.putConstraint(SpringLayout.WEST, labelPersonWriDescription, 5, SpringLayout.EAST,
 				labelPersonMail);
 		sl_panelPerson.putConstraint(SpringLayout.SOUTH, labelPersonWriDescription, 0, SpringLayout.SOUTH,
-				labelPersonPosition);
+				labelPersonDescription);
 		sl_panelPerson.putConstraint(SpringLayout.EAST, labelPersonWriDescription, 0, SpringLayout.EAST, panel);
 		panel.add(labelPersonWriDescription);
 
@@ -1941,8 +1962,49 @@ public class MainForm {
 			public void mousePressed(MouseEvent e) {
 				labelCopyPersonFio.setBorder(BORDER_ICON_MENU);
 			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				labelCopyPersonFio.setBorder(null);
+			}
 		});
 
+		labelCopyPersonCompany.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				labelCopyPersonCompany.setBorder(null);
+				runLinkCopy(labelPersonWriCompany.getText());
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				labelCopyPersonCompany.setBorder(BORDER_ICON_MENU);
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				labelCopyPersonCompany.setBorder(null);
+			}
+		});
+		
+		labelCopyPersonDescription.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				labelCopyPersonDescription.setBorder(null);
+				runLinkCopy(labelPersonWriDescription.getText());
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				labelCopyPersonDescription.setBorder(BORDER_ICON_MENU);
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				labelCopyPersonDescription.setBorder(null);
+			}
+		});
+		
 		labelCopyPersonMail.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -1953,6 +2015,29 @@ public class MainForm {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				labelCopyPersonMail.setBorder(BORDER_ICON_MENU);
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				labelCopyPersonMail.setBorder(null);
+			}
+		});
+		
+		labelCopyPersonPhoneInside.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				labelCopyPersonPhoneInside.setBorder(null);
+				runLinkCopy(labelPersonWriPhoneInside.getText());
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				labelCopyPersonPhoneInside.setBorder(BORDER_ICON_MENU);
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				labelCopyPersonPhoneInside.setBorder(null);
 			}
 		});
 
