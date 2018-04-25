@@ -25,6 +25,14 @@ public class SystemEnv {
 	 */
 	private int timeUpdate = 3;	
 
+	private String ldapHost = "ite-ng.ru";
+	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";
+	private String[] ldapHosts = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
+	private String ldapPort = "389";
+	private String ldapUser = "ldap@ite-ng.ru";
+	private String ldapPass = "ldap";
+	
+	
 	public SystemEnv() {
 		if (null != System.getProperty("isWeb")) {
 			this.setWeb(true);
@@ -39,7 +47,31 @@ public class SystemEnv {
 				int property = Integer.parseInt(System.getProperty("updateTime"));
 				this.setTimeUpdate(property);
 			}
+		}
+		if (null != System.getProperty("ldapHost")) {
+			String property = System.getProperty("ldapHost");
+			this.setLdapHost(property);
+		}	
+		if (null != System.getProperty("ldapBaseDN")) {
+			String property = System.getProperty("ldapBaseDN");
+			this.setLdapBaseDN(property);
+		}
+		if (null != System.getProperty("ldapHosts")) {
+			String property = System.getProperty("ldapHosts");
+			this.setLdapHosts(property.split(","));
 		}		
+		if (null != System.getProperty("ldapPort")) {
+			String property = System.getProperty("ldapPort");
+			this.setLdapPort(property);
+		}
+		if (null != System.getProperty("ldapUser")) {
+			String property = System.getProperty("ldapUser");
+			this.setLdapUser(property);
+		}		
+		if (null != System.getProperty("ldapPass")) {
+			String property = System.getProperty("ldapPass");
+			this.setLdapPass(property);
+		}	
 	}
 
 	public boolean isWeb() {
@@ -93,5 +125,53 @@ public class SystemEnv {
 
 	private void setUpdate(boolean isUpdate) {
 		this.isUpdate = isUpdate;
-	}	
+	}
+
+	public String getLdapHost() {
+		return ldapHost;
+	}
+
+	private void setLdapHost(String ldapHost) {
+		this.ldapHost = ldapHost;
+	}
+
+	public String getLdapBaseDN() {
+		return ldapBaseDN;
+	}
+
+	private void setLdapBaseDN(String ldapBaseDN) {
+		this.ldapBaseDN = ldapBaseDN;
+	}
+
+	public String[] getLdapHosts() {
+		return ldapHosts;
+	}
+
+	private void setLdapHosts(String[] ldapHosts) {
+		this.ldapHosts = ldapHosts;
+	}
+
+	public String getLdapPort() {
+		return ldapPort;
+	}
+
+	private void setLdapPort(String ldapPort) {
+		this.ldapPort = ldapPort;
+	}
+
+	public String getLdapUser() {
+		return ldapUser;
+	}
+
+	private void setLdapUser(String ldapUser) {
+		this.ldapUser = ldapUser;
+	}
+
+	public String getLdapPass() {
+		return ldapPass;
+	}
+
+	private void setLdapPass(String ldapPass) {
+		this.ldapPass = ldapPass;
+	}		
 }

@@ -16,18 +16,17 @@ import javax.naming.ldap.Control;
  * @author nikolns
  */
 public class Ldap {
-	public static final String LDAP_HOST = "ite-ng.ru";
-	public static final String LDAP_BASE_DN = "OU=MSK,DC=ite-ng,DC=ru";
-	public static final String[] LDAP_HOSTS = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
-	public static final String LDAP_PORT = "389";
-	public static final String LDAP_USER = "ldap@ite-ng.ru";
-	public static final String LDAP_PASS = "ldap";
+	private String ldapHost = null;
+	private String ldapBaseDN = null;
+	private String[] ldapHosts = null;
+	private String ldapPort = null;
+	private String ldapUser = null;
+	private String ldapPass = null;
 	public static final String LDAP_VERSION = "3";
 	public static final String LDAP_AUTH_METHOD = "simple";
 
 	private boolean connect = false;
 	public LdapContext ctx = null;
-
 	private String sort = "cn";
 
 	public String getSort() {
@@ -41,10 +40,10 @@ public class Ldap {
 	private Hashtable<String, String> getSettingsHashtable(String ldapHost) {
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		env.put(Context.PROVIDER_URL, ldapHost + ":" + LDAP_PORT);
+		env.put(Context.PROVIDER_URL, ldapHost + ":" + ldapPort);
 		env.put(Context.SECURITY_AUTHENTICATION, LDAP_AUTH_METHOD);
-		env.put(Context.SECURITY_PRINCIPAL, LDAP_USER);
-		env.put(Context.SECURITY_CREDENTIALS, LDAP_PASS);
+		env.put(Context.SECURITY_PRINCIPAL, ldapUser);
+		env.put(Context.SECURITY_CREDENTIALS, ldapPass);
 		env.put("java.naming.ldap.version", LDAP_VERSION);
 
 		return env;
@@ -62,7 +61,7 @@ public class Ldap {
 
 	private void getConnect() {
 		if (!isConnect()) {
-			for (String ldapHost : LDAP_HOSTS) {
+			for (String ldapHost : ldapHosts) {
 				this.connectToLdap(ldapHost);
 				if (isConnect())
 					break;
@@ -82,7 +81,24 @@ public class Ldap {
 		return this.connect;
 	}
 
-	public Ldap() {
+	/**
+     * Please refer to the method for more details.
+     *
+     * @param String ldapHost
+     * @param String ldapBaseDN 
+     * @param String[] ldapHosts
+     * @param String ldapPort
+     * @param String ldapUser
+     * @param String ldapPass    
+     */
+	public Ldap(String ldapHost, String ldapBaseDN, String[] ldapHosts, String ldapPort, String ldapUser,
+			String ldapPass) {
+		this.ldapHost = ldapHost;
+		this.ldapBaseDN = ldapBaseDN;
+		this.ldapHosts = ldapHosts;
+		this.ldapPort = ldapPort;
+		this.ldapUser = ldapUser;
+		this.ldapPass = ldapPass;
 		getConnect();
 	}
 
@@ -104,7 +120,7 @@ public class Ldap {
 				"distinguishedname", "displayname", "othertelephone", "co", "department", "company", "streetaddress",
 				"wwwhomepage", "useraccountcontrol", "mail", "userprincipalname", "samaccountname", "manager",
 				"directreports", "itnumber", "info", "jpegphoto", "fname", };
-		
+
 		return selectFields;
 	}
 
@@ -117,7 +133,7 @@ public class Ldap {
 	}
 
 	private NamingEnumeration<?> getLdapList(String filter, String[] selector) {
-		return getLdapList(LDAP_BASE_DN, filter, selector);
+		return getLdapList(ldapBaseDN, filter, selector);
 	}
 
 	private NamingEnumeration<?> getLdapSearch(String dn, String filter, String[] selector) {
@@ -130,7 +146,7 @@ public class Ldap {
 	}
 
 	private NamingEnumeration<?> getLdapSearch(String filter, String[] selector) {
-		return getLdapSearch(LDAP_BASE_DN, filter, selector);
+		return getLdapSearch(ldapBaseDN, filter, selector);
 	}
 
 	public NamingEnumeration<?> getLdapCompanys() {
@@ -139,18 +155,18 @@ public class Ldap {
 
 		return getLdapList(companyFilter, companySelector);
 	}
-	
+
 	public NamingEnumeration<?> getLdapFilials(String dn) {
 		String filialFilter = "(&(objectclass=organizationalUnit))";
 		String[] filialSelector = { "ou", "description", "dn" };
 
 		return getLdapList(dn, filialFilter, filialSelector);
 	}
-	
-	public NamingEnumeration<?> getLdapUsers(String companyDn) {
-		String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null)))";		
 
-		return getLdapSearch(companyDn,userFilter, getDefaultSelectFields());
+	public NamingEnumeration<?> getLdapUsers(String companyDn) {
+		String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null)))";
+
+		return getLdapSearch(companyDn, userFilter, getDefaultSelectFields());
 	}
-	
+
 }

@@ -16,69 +16,66 @@ import libs.Companys;
 import libs.Core;
 import libs.Ldap;
 
-
-public class  LdapSearchThread extends SwingWorker<Object, String> {
+public class LdapSearchThread extends SwingWorker<Object, String> {
 
 	private Companys companys = null;
-	
+
 	private Ldap ldap = null;
-	
+
 	private static final String HINT_LDAP_OPEN = "Connecting to LDAP Server";
 	private static final String HINT_LDAP_CLOSE = "Close connections";
 	private static final String HINT_LDAP_USERS = "Try to get all Users from LDAP Server";
 	private static final String HINT_LDAP_COMPANYS = "Try to get all Companys from LDAP Server";
-	
+
 	private Core core;
-	
-	
-	public LdapSearchThread(Core core)
-	{
+
+	public LdapSearchThread(Core core) {
 		this.core = core;
 		companys = new Companys();
 	}
-	
-	private void flush()
-	{
+
+	private void flush() {
 		core = null;
 		companys = null;
 		ldap = null;
 	}
-	
+
 	@Override
-	protected Boolean doInBackground() throws Exception {			
-		
-		publish(HINT_LDAP_OPEN);		
+	protected Boolean doInBackground() throws Exception {
+		publish(HINT_LDAP_OPEN);
 		openLdapConnection();
-		publish(HINT_LDAP_COMPANYS);	
+		publish(HINT_LDAP_COMPANYS);
 		getLdapCompanys();
-		publish(HINT_LDAP_USERS);	
-		getLdapUsers();	
-		publish(HINT_LDAP_CLOSE);			
+		publish(HINT_LDAP_USERS);
+		getLdapUsers();
+		publish(HINT_LDAP_CLOSE);
 		closeLdapConnection();
-		
+
 		return true;
-	}	
-		
+	}
+
 	private void openLdapConnection() {
-		ldap = new Ldap();
+		ldap = new Ldap(core.getSystemEnv().getLdapHost(), core.getSystemEnv().getLdapBaseDN(),
+				core.getSystemEnv().getLdapHosts(), core.getSystemEnv().getLdapPort(),
+				core.getSystemEnv().getLdapUser(), core.getSystemEnv().getLdapPass());
 	}
 
 	private void getLdapCompanys() {
 		if (ldap.isConnect()) {
 			addCompany(ldap.getLdapCompanys());
 		}
-	}	
-	
+	}
+
 	private void getLdapUsers() {
 		getLdapUsers(new String("cn"));
 	}
-	
+
 	private void closeLdapConnection() {
 		if (null != ldap) {
 			ldap.closeConnect();
 		}
 	}
-	
+
 	private void addUser(CompanyDto company, NamingEnumeration<?> users) {
 		Attributes attrs;
 		if (null != users) {
@@ -88,7 +85,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 					sr = (SearchResult) users.next();
 					attrs = sr.getAttributes();
 					UserDto user = new UserDto();
-					user.deployEntry(attrs, ldap.getDefaultSelectFields());					
+					user.deployEntry(attrs, ldap.getDefaultSelectFields());
 					company.addNewUser(user);
 					/*
 					 * for (String manager : user.getManager()) {
@@ -108,15 +105,14 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 			for (CompanyDto company : companys.all()) {
 				if (company.getFilials().size() > 0) {
 					for (CompanyDto filial : company.getFilials()) {
-						addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));						
+						addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));
 					}
 				} else {
 					addUser(company, ldap.getLdapUsers(company.getDn()));
 				}
 			}
-		}		
+		}
 	}
-
 
 	private void addCompany(NamingEnumeration<?> companys, boolean isFilial) {
 		Attributes attrs;
@@ -131,7 +127,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 						if (null != description) {
 							Attribute ou = attrs.get("ou");
 							CompanyDto companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
-									(String) sr.getName() + "," + Ldap.LDAP_BASE_DN);
+									(String) sr.getName() + "," + core.getSystemEnv().getLdapBaseDN());
 							if (!isFilial) {
 								this.companys.addNewCompany(companyDto);
 								addCompany(ldap.getLdapFilials(companyDto.getDn()), true);
@@ -151,8 +147,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 	private void addCompany(NamingEnumeration<?> companys) {
 		addCompany(companys, false);
 	}
-	
-	
+
 	// Can safely update the GUI from this method.
 	protected void done() {
 		boolean status;
@@ -162,7 +157,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 			if (status) {
 				core.isLdapSearchSuccessful(companys);
 			}
-			//System.out.println("Completed with status: " + status);
+			// System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {
 			// This is thrown if the thread's interrupted.
 		} catch (ExecutionException e) {
@@ -177,7 +172,7 @@ public class  LdapSearchThread extends SwingWorker<Object, String> {
 	protected void process(List<String> chunks) {
 		// Here we receive the values that we publish().
 		// They may come grouped in chunks.
-		for (final String massage : chunks) {			
+		for (final String massage : chunks) {
 			core.setStatusString(massage);
 		}
 	}
