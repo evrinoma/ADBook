@@ -100,7 +100,7 @@ import javax.swing.JCheckBox;
 
 public class MainForm {
 
-	private static final String VERSION = "25.04.18v01";
+	private static final String VERSION = "25.04.18v06";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
