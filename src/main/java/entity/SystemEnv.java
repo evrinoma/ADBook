@@ -74,6 +74,10 @@ public class SystemEnv {
 			String property = System.getProperty("ldapPass");
 			this.setLdapPass(property);
 		}
+		if (null != System.getProperty("pathToCache")) {
+			String property = System.getProperty("pathToCache");
+			this.setPathToCache(property);
+		}
 	}
 
 	public boolean isWeb() {
