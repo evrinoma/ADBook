@@ -1,9 +1,12 @@
 package entity;
 
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-public class SystemEnv {	
+public class SystemEnv {
 	/**
 	 * сборка под под webSwing
 	 */
@@ -23,7 +26,7 @@ public class SystemEnv {
 	/**
 	 * интервал автообновления в секундах
 	 */
-	private int timeUpdate = 3;	
+	private int timeUpdate = 3;
 
 	private String ldapHost = "ite-ng.ru";
 	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";
@@ -31,8 +34,7 @@ public class SystemEnv {
 	private String ldapPort = "389";
 	private String ldapUser = "ldap@ite-ng.ru";
 	private String ldapPass = "ldap";
-	
-	
+
 	public SystemEnv() {
 		if (null != System.getProperty("isWeb")) {
 			this.setWeb(true);
@@ -51,7 +53,7 @@ public class SystemEnv {
 		if (null != System.getProperty("ldapHost")) {
 			String property = System.getProperty("ldapHost");
 			this.setLdapHost(property);
-		}	
+		}
 		if (null != System.getProperty("ldapBaseDN")) {
 			String property = System.getProperty("ldapBaseDN");
 			this.setLdapBaseDN(property);
@@ -59,7 +61,7 @@ public class SystemEnv {
 		if (null != System.getProperty("ldapHosts")) {
 			String property = System.getProperty("ldapHosts");
 			this.setLdapHosts(property.split(","));
-		}		
+		}
 		if (null != System.getProperty("ldapPort")) {
 			String property = System.getProperty("ldapPort");
 			this.setLdapPort(property);
@@ -67,11 +69,11 @@ public class SystemEnv {
 		if (null != System.getProperty("ldapUser")) {
 			String property = System.getProperty("ldapUser");
 			this.setLdapUser(property);
-		}		
+		}
 		if (null != System.getProperty("ldapPass")) {
 			String property = System.getProperty("ldapPass");
 			this.setLdapPass(property);
-		}	
+		}
 	}
 
 	public boolean isWeb() {
@@ -85,11 +87,11 @@ public class SystemEnv {
 	public String getSkinName() {
 		return this.skinName;
 	}
-	
+
 	public boolean isSkin(String skinName) {
 		return (skinName == this.skinName);
 	}
-	
+
 	private void setSkinName(String skinName) {
 		List<String> skins = Arrays.asList("nimbus", "gtk");
 		if (skins.contains(skinName)) {
@@ -102,17 +104,19 @@ public class SystemEnv {
 	public boolean hasPathToCache() {
 		return (pathToCache != null);
 	}
-	
+
 	public String getPathToCache() {
 		return pathToCache;
 	}
 
 	private void setPathToCache(String pathToCache) {
-		this.pathToCache = pathToCache;
+		if (Files.isDirectory(Paths.get(pathToCache))) {
+			this.pathToCache = pathToCache;
+		}
 	}
 
 	public int getTimeUpdate() {
-		return timeUpdate*1000;
+		return timeUpdate * 1000;
 	}
 
 	private void setTimeUpdate(int timeUpdate) {
@@ -173,5 +177,5 @@ public class SystemEnv {
 
 	private void setLdapPass(String ldapPass) {
 		this.ldapPass = ldapPass;
-	}		
+	}
 }
