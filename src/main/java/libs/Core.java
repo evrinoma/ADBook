@@ -74,6 +74,7 @@ public class Core {
 	public Core() {
 		companys = new Companys();
 		this.environment = new SystemEnv();
+		this.environment.printHelp();
 		clearMailAttachmet();
 	}
 

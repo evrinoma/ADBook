@@ -50,6 +50,10 @@ public class SystemEnv {
 				this.setTimeUpdate(property);
 			}
 		}
+		if (null != System.getProperty("pathToCache")) {
+			String property = System.getProperty("pathToCache");
+			this.setPathToCache(property);
+		}
 		if (null != System.getProperty("ldapHost")) {
 			String property = System.getProperty("ldapHost");
 			this.setLdapHost(property);
@@ -74,10 +78,19 @@ public class SystemEnv {
 			String property = System.getProperty("ldapPass");
 			this.setLdapPass(property);
 		}
-		if (null != System.getProperty("pathToCache")) {
-			String property = System.getProperty("pathToCache");
-			this.setPathToCache(property);
-		}
+	}
+
+	public void printHelp() {
+		System.out.println("Console -D paramteres");
+		System.out.println("isWeb - run in webswing");
+		System.out.println("skin - skin name 'nimbus','gtk'...etc");
+		System.out.println("isUpdate updateTime - (int value ins seconds) auto update");
+		System.out.println("ldapHost - ldap host name");
+		System.out.println("ldapBaseDN - ldap base DN");
+		System.out.println("ldapHosts - ldap://server0/ ,ldap://server1/");
+		System.out.println("ldapPort - ldap port value");
+		System.out.println("ldapUser - ldap user name");
+		System.out.println("ldapPass - ldap user pass");
 	}
 
 	public boolean isWeb() {
