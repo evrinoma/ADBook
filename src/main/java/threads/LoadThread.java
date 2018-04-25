@@ -30,13 +30,13 @@ public class LoadThread extends SwingWorker<Object, String> {
 	private boolean direction = READ;
 	private String currentPath = "/"+FILE_CAСHE;
 	
-	private LocalDateTime currentTime = null;
+	private LocalDateTime timeStamp = null;
 	
 	private FileLock fileLock;
 
 	public LoadThread(Core core) {	
 		try {		
-			currentTime = LocalDateTime.now();
+			timeStamp = LocalDateTime.now();
 			currentPath = ((core.getSystemEnv().hasPathToCache()) ? core.getSystemEnv().getPathToCache()+currentPath: new java.io.File( "." ).getCanonicalPath()+currentPath);			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -51,7 +51,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		currentPath = null;
 		writeStream = null;
 		readStream = null;
-		currentTime = null;
+		timeStamp = null;
 	}
 	
 	public LoadThread setDirection(boolean direction) {
@@ -66,7 +66,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 
 	@Override
 	protected Object doInBackground() throws Exception {
-
 		return direction ? loadCache() : saveCache();
 	}
 
@@ -88,7 +87,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 						core.setStatusString("read is empty");
 					}
 				} else {
-					core.setStatusString("successful save");
+					core.setStatusString("successful save... version:"+readStream.getTimeStamp().getTime());
 				}
 			} else {
 				core.isLocalCacheFail();
@@ -179,6 +178,11 @@ public class LoadThread extends SwingWorker<Object, String> {
 		}
 	}
 
+	/**
+	 * пишим в файл cache
+	 * @param fileDescriptor
+	 * @throws IOException
+	 */
 	private void write(FileDescriptor fileDescriptor) throws IOException {
 		FileOutputStream fileOutputStream = new FileOutputStream(fileDescriptor);
 
@@ -187,6 +191,11 @@ public class LoadThread extends SwingWorker<Object, String> {
 		objectOutputStream.close();
 	}
 
+	/**
+	 * читаем из файл cache
+	 * @param fileDescriptor
+	 * @throws IOException
+	 */
 	private void read(FileDescriptor fileDescriptor) throws IOException {
 		FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
 		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);

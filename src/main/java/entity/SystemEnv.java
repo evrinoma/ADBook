@@ -3,24 +3,43 @@ package entity;
 import java.util.Arrays;
 import java.util.List;
 
-public class SystemEnv {
+public class SystemEnv {	
+	/**
+	 * сборка под под webSwing
+	 */
 	private boolean isWeb = false;
+	/**
+	 * задает тип окошек
+	 */
 	private String skinName = null;
+	/**
+	 * путь для файла cache
+	 */
 	private String pathToCache = null;
-	private int timeUpdate = 300;
+	/**
+	 * автообновление приложение включено
+	 */
+	private boolean isUpdate = true;
+	/**
+	 * интервал автообновления в секундах
+	 */
+	private int timeUpdate = 3;
 
 	public SystemEnv() {
 		if (null != System.getProperty("isWeb")) {
-			this.setWeb(isWeb);
+			this.setWeb(true);
 		}
 		if (null != System.getProperty("skin")) {
 			String property = System.getProperty("skin");
 			this.setSkinName(property);
 		}
-		if (null != System.getProperty("updateTime")) {
-			int property = Integer.parseInt(System.getProperty("updateTime"));
-			this.setTimeUpdate(property);
-		}
+		if (null != System.getProperty("isUpdate")) {
+			this.setUpdate(true);
+			if (null != System.getProperty("updateTime")) {
+				int property = Integer.parseInt(System.getProperty("updateTime"));
+				this.setTimeUpdate(property);
+			}
+		}		
 	}
 
 	public boolean isWeb() {
@@ -61,10 +80,18 @@ public class SystemEnv {
 	}
 
 	public int getTimeUpdate() {
-		return timeUpdate;
+		return timeUpdate*1000;
 	}
 
 	private void setTimeUpdate(int timeUpdate) {
 		this.timeUpdate = timeUpdate;
 	}
+
+	public boolean isUpdate() {
+		return isUpdate;
+	}
+
+	private void setUpdate(boolean isUpdate) {
+		this.isUpdate = isUpdate;
+	}	
 }

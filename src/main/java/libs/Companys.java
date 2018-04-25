@@ -1,15 +1,22 @@
 package libs;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 import entity.CompanyDto;
 import entity.UserDto;
 
 public class Companys implements Serializable {
-
+	/*
+	 * как часто обновлять
+	 */
+	private static final long OUT_DATE_DELAY = 1000 * 60 * 60 * 24;	
 	private static final long serialVersionUID = 1L;
-	
+
+	private Date timeStamp = null;
+
 	private ArrayList<CompanyDto> companys;
 
 	public void addNewCompany(String description, String ou, String dn) {
@@ -21,7 +28,8 @@ public class Companys implements Serializable {
 	}
 
 	public Companys() {
-		companys = new ArrayList<CompanyDto>();		
+		timeStamp = new Date();
+		companys = new ArrayList<CompanyDto>();
 	}
 
 	public ArrayList<CompanyDto> all() {
@@ -73,72 +81,80 @@ public class Companys implements Serializable {
 		UserDto search = null;
 		return findsAMAccountName(companys, search, sAMAccountName);
 	}
-	
+
 	public UserDto findUserByDistinguishedName(String DistinguishedName) {
 		UserDto search = null;
 		return findDistinguishedName(companys, search, DistinguishedName);
 	}
-	
-	private UserDto findEmail(ArrayList<CompanyDto> companys, UserDto search, String email)
-	{
-			for (CompanyDto company : companys) {
-				if (0 == company.getFilials().size()) {
-					if (0 != company.getUsers().size()) {
-						for (UserDto user : company.getUsers().values()) {
-							if (email.equals(user.getMail())) {
-								return user;
-							}							
+
+	private UserDto findEmail(ArrayList<CompanyDto> companys, UserDto search, String email) {
+		for (CompanyDto company : companys) {
+			if (0 == company.getFilials().size()) {
+				if (0 != company.getUsers().size()) {
+					for (UserDto user : company.getUsers().values()) {
+						if (email.equals(user.getMail())) {
+							return user;
 						}
 					}
-				} else {
-					search = findEmail(company.getFilials(), search, email);		
-					if (null != search){
-						return search;
-					}
 				}
-			}			
-			return null;		
+			} else {
+				search = findEmail(company.getFilials(), search, email);
+				if (null != search) {
+					return search;
+				}
+			}
+		}
+		return null;
 	}
-	
-	private UserDto findsAMAccountName(ArrayList<CompanyDto> companys, UserDto search, String sAMAccountName)
-	{
-			for (CompanyDto company : companys) {
-				if (0 == company.getFilials().size()) {
-					if (0 != company.getUsers().size()) {
-						for (UserDto user : company.getUsers().values()) {
-							if (sAMAccountName.equals(user.getSAMAccountName())) {
-								return user;
-							}							
+
+	private UserDto findsAMAccountName(ArrayList<CompanyDto> companys, UserDto search, String sAMAccountName) {
+		for (CompanyDto company : companys) {
+			if (0 == company.getFilials().size()) {
+				if (0 != company.getUsers().size()) {
+					for (UserDto user : company.getUsers().values()) {
+						if (sAMAccountName.equals(user.getSAMAccountName())) {
+							return user;
 						}
 					}
-				} else {
-					search = findsAMAccountName(company.getFilials(), search, sAMAccountName);		
-					if (null != search){
-						return search;
-					}
 				}
-			}			
-			return null;		
+			} else {
+				search = findsAMAccountName(company.getFilials(), search, sAMAccountName);
+				if (null != search) {
+					return search;
+				}
+			}
+		}
+		return null;
 	}
-	
-	private UserDto findDistinguishedName(ArrayList<CompanyDto> companys, UserDto search, String distinguishedName)
-	{
-			for (CompanyDto company : companys) {
-				if (0 == company.getFilials().size()) {
-					if (0 != company.getUsers().size()) {
-						for (UserDto user : company.getUsers().values()) {
-							if (distinguishedName.equals(user.getDistinguishedName())) {
-								return user;
-							}							
+
+	private UserDto findDistinguishedName(ArrayList<CompanyDto> companys, UserDto search, String distinguishedName) {
+		for (CompanyDto company : companys) {
+			if (0 == company.getFilials().size()) {
+				if (0 != company.getUsers().size()) {
+					for (UserDto user : company.getUsers().values()) {
+						if (distinguishedName.equals(user.getDistinguishedName())) {
+							return user;
 						}
 					}
-				} else {
-					search = findDistinguishedName(company.getFilials(), search, distinguishedName);		
-					if (null != search){
-						return search;
-					}
 				}
-			}			
-			return null;		
+			} else {
+				search = findDistinguishedName(company.getFilials(), search, distinguishedName);
+				if (null != search) {
+					return search;
+				}
+			}
+		}
+		return null;
+	}
+
+	public Date getTimeStamp() {
+		return timeStamp;
+	}
+
+	public boolean isOutDate() {
+		Date currStamp = new Date();
+		long timeOne = timeStamp.getTime();
+		long timeTwo = currStamp.getTime();
+		return (((timeTwo - timeOne) / OUT_DATE_DELAY) > 1) ? true : false;
 	}
 }

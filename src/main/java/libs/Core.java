@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -60,9 +61,9 @@ public class Core {
 	private boolean close = false;
 
 	private ServerSocketThread serverSocket;
-	
+
 	private SystemEnv environment = null;
-	
+
 	public String[] toStringArray(List<String> list) {
 		return list.toArray(new String[list.size()]);
 	}
@@ -74,7 +75,7 @@ public class Core {
 	public Core() {
 		companys = new Companys();
 		this.environment = new SystemEnv();
-		clearMailAttachmet();		
+		clearMailAttachmet();
 	}
 
 	public Companys getCompanys() {
@@ -89,13 +90,10 @@ public class Core {
 		this.user = user;
 	}
 
-	
-	public SystemEnv getSystemEnv()
-	{
+	public SystemEnv getSystemEnv() {
 		return this.environment;
 	}
-	
-	
+
 	/**
 	 * метод создает картинку qr-code с данными
 	 * 
@@ -180,12 +178,11 @@ public class Core {
 		}
 	}
 
-	private void garbageCollector()
-	{
+	private void garbageCollector() {
 		Runtime r = Runtime.getRuntime();
 		r.freeMemory();
 	}
-	
+
 	/**
 	 * загрузка локального кеша
 	 */
@@ -220,9 +217,8 @@ public class Core {
 		ldapSearch();
 		flush();
 	}
-	
-	private void flush()
-	{
+
+	private void flush() {
 		this.Load = null;
 	}
 
@@ -265,6 +261,7 @@ public class Core {
 
 	/**
 	 * сохранение в xls
+	 * 
 	 * @param file
 	 */
 	public void saveToFile(String file) {
@@ -301,13 +298,15 @@ public class Core {
 
 			localSearch = new LocalSearchThread(this);
 
-			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition, room);
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition,
+					room);
 			localSearch.setCompanys(companys);
 
 			localSearch.setLock();
-			localSearch.execute();			
+			localSearch.execute();
 		} else {
-			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition, room);
+			localSearch.setFilter(lastName, firstName, middleName, company, filial, department, phone, pesonPosition,
+					room);
 			localSearch.setCompanys(companys);
 			localSearch.restartSearch();
 		}
@@ -322,7 +321,7 @@ public class Core {
 		form.getTopTree().removeAllChildren();
 		form.setTreeNode(filteredCompanys.all(), false);
 	}
-	
+
 	/**
 	 * метод возвращает список руководителей пользователя
 	 * 
@@ -358,13 +357,12 @@ public class Core {
 			UserDto user = entity.getValue();
 			mails += user.getMail();
 			mails += ",";
-		}		
-				
-		return mails.substring(0, mails.length()-1);
+		}
+
+		return mails.substring(0, mails.length() - 1);
 	}
-	
-	public void putStringToClipboard(String data)
-	{
+
+	public void putStringToClipboard(String data) {
 		StringSelection stringSelection = new StringSelection(data);
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
@@ -372,8 +370,8 @@ public class Core {
 
 	public void authorizeOnMail(String username, String password) {
 		if (null == mail || mail.isDone()) {
-			mail = new MailThread(this);			
-			if (mail.isUserMailValid(username)) {				
+			mail = new MailThread(this);
+			if (mail.isUserMailValid(username)) {
 				mail.setUsername(username).setPassword(password);
 				mail.execute();
 			} else {
@@ -396,21 +394,21 @@ public class Core {
 		form.repaint();
 	}
 
-	public void isMailSendedSuccessful(String authUser, ArrayList<String> emails)
-	{
+	public void isMailSendedSuccessful(String authUser, ArrayList<String> emails) {
 		form.removeMessagePreload();
 		form.showMessageEditorPanel(authUser);
 		form.clearMessagesByNotify();
 		form.repaint();
 	}
-		
+
 	/**
 	 * добавление вложений к письму
+	 * 
 	 * @param fileName
 	 * @param pathToAttachment
 	 * @return
 	 */
-	public HashMap<String, String> addMailAttachmet(String fileName, String pathToAttachment){		
+	public HashMap<String, String> addMailAttachmet(String fileName, String pathToAttachment) {
 		if (null == attachment) {
 			this.attachment = new HashMap<String, String>();
 		}
@@ -419,48 +417,48 @@ public class Core {
 		}
 		return attachment;
 	}
-	
+
 	/**
 	 * очистка вложений
 	 */
-	public void clearMailAttachmet()
-	{
+	public void clearMailAttachmet() {
 		this.attachment = null;
 	}
-	
+
 	/**
 	 * проверка правильности почтового ящика
+	 * 
 	 * @param username
 	 * @return
 	 */
-	public boolean isMailValid(String username)	{
+	public boolean isMailValid(String username) {
 		MailThread mail = new MailThread(this);
-		
+
 		return mail.isUserMailValid(username);
 	}
-	
+
 	public void sendMessage(String from, ArrayList<String> to, String subject, String body, String username,
-			String password, boolean withSignature, boolean notifyDelivery, boolean notifyRead){
+			String password, boolean withSignature, boolean notifyDelivery, boolean notifyRead) {
 		if (null == mail || mail.isDone()) {
-			mail = new MailThread(this);		
-				mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from)
-				.setTo(to).setSubject(subject).setBody(body).setAttachments(attachment).setNotifyDelivery(notifyDelivery).setNotifyRead(notifyRead);
-				if (withSignature) {
-					mail.setSignature(signature(companys.findUserByMail(username)));
-				}
-				mail.execute();			
+			mail = new MailThread(this);
+			mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from)
+					.setTo(to).setSubject(subject).setBody(body).setAttachments(attachment)
+					.setNotifyDelivery(notifyDelivery).setNotifyRead(notifyRead);
+			if (withSignature) {
+				mail.setSignature(signature(companys.findUserByMail(username)));
+			}
+			mail.execute();
 		} else {
 			mail.execute();
-		}		
+		}
 	}
-	
-	public ArrayList<String> signature(UserDto user)
-	{
-		ArrayList<String> signature = new ArrayList<String>(); 
-		
+
+	public ArrayList<String> signature(UserDto user) {
+		ArrayList<String> signature = new ArrayList<String>();
+
 		if (null != user) {
 			signature.add("--------------------------------------");
-			signature.add("С уважением, "+user.getCn());
+			signature.add("С уважением, " + user.getCn());
 			signature.add("<br><br>");
 			signature.add(user.getDescription());
 			signature.add("<br>");
@@ -468,42 +466,54 @@ public class Core {
 			signature.add("<br>");
 			signature.add(user.getCompany());
 			signature.add("<br>");
-			signature.add("телефон:"+user.getFullTelephone(false));
+			signature.add("телефон:" + user.getFullTelephone(false));
 			signature.add("<br>");
-			signature.add("моб.:"+user.getMobile());
+			signature.add("моб.:" + user.getMobile());
 			signature.add("<br>");
-			signature.add("<i>email:"+user.getMail()+"</i>");
+			signature.add("<i>email:" + user.getMail() + "</i>");
 		}
-		
+
 		return signature;
 	}
-	
-	public void close()
-	{
+
+	public void close() {
 		close = true;
 	}
-	
-	public boolean isClose()
-	{
-		return close ;
+
+	public boolean isClose() {
+		return close;
 	}
 
 	public void runServerSocket() {
 		if (null == serverSocket || serverSocket.isDone()) {
 			serverSocket = new ServerSocketThread(this);
 			serverSocket.execute();
-		} 
+		}
 	}
-	
+
 	public boolean sendServerSocket() {
 		serverSocket = new ServerSocketThread(this);
 		boolean status = serverSocket.startClient();
 		serverSocket = null;
-		
+
 		return status;
 	}
-	
+
 	public void expandWindow() {
 		form.removeTray();
+	}
+
+	public void callByTimer() {
+		isOutdated();
+	}
+
+	/**
+	 * проверка на актуальность списка компаний
+	 */
+	private void isOutdated() {
+		if (this.companys.isOutDate()) {
+			form.addTreePreloader();
+			loadData(false);
+		}
 	}
 }

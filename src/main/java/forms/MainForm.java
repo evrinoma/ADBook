@@ -25,6 +25,7 @@ import javax.swing.ListModel;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
@@ -77,7 +78,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
-
+import java.util.Random;
 import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -216,11 +217,10 @@ public class MainForm {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {		
+	public static void main(String[] args) {
 		core = new Core();
 
-		if (core.getSystemEnv().isSkin("nimbus")) 
-		{
+		if (core.getSystemEnv().isSkin("nimbus")) {
 			try {
 				// Set System L&F
 				UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -229,11 +229,11 @@ public class MainForm {
 				// handle exception
 				e.printStackTrace();
 			}
-		}		
-		 
+		}
+
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {					
+				try {
 					MainForm window = new MainForm();
 					window.frmHandbook.setVisible(true);
 					if (!core.getSystemEnv().isWeb()) {
@@ -273,6 +273,21 @@ public class MainForm {
 		addWindowListener();
 		core.setMainForm(this);
 		core.loadData();
+		if (core.getSystemEnv().isUpdate()) {
+			addTimer(core.getSystemEnv().getTimeUpdate());
+		}
+	}
+
+	private void addTimer(int dalay) {
+		ActionListener listener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				core.callByTimer();
+			}
+		};
+
+		Timer timer = new Timer(dalay, listener);
+		timer.start();
 	}
 
 	private void addWindowListener() {
