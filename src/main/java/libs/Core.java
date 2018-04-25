@@ -31,6 +31,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import entity.CompanyDto;
 import entity.UserDto;
 import entity.LevelNode;
+import entity.SystemEnv;
 import threads.LdapSearchThread;
 import threads.LoadThread;
 import threads.LocalSearchThread;
@@ -60,6 +61,8 @@ public class Core {
 
 	private ServerSocketThread serverSocket;
 	
+	private SystemEnv environment = null;
+	
 	public String[] toStringArray(List<String> list) {
 		return list.toArray(new String[list.size()]);
 	}
@@ -70,7 +73,8 @@ public class Core {
 
 	public Core() {
 		companys = new Companys();
-		clearMailAttachmet();
+		this.environment = new SystemEnv();
+		clearMailAttachmet();		
 	}
 
 	public Companys getCompanys() {
@@ -85,6 +89,13 @@ public class Core {
 		this.user = user;
 	}
 
+	
+	public SystemEnv getSystemEnv()
+	{
+		return this.environment;
+	}
+	
+	
 	/**
 	 * метод создает картинку qr-code с данными
 	 * 
@@ -169,10 +180,17 @@ public class Core {
 		}
 	}
 
+	private void garbageCollector()
+	{
+		Runtime r = Runtime.getRuntime();
+		r.freeMemory();
+	}
+	
 	/**
 	 * загрузка локального кеша
 	 */
 	public void localCache(boolean operation) {
+		garbageCollector();
 		if (null == Load || Load.isDone()) {
 			Load = new LoadThread(this);
 			Load.setWriteStream(this.companys).setDirection(operation).execute();
@@ -212,6 +230,7 @@ public class Core {
 	 * выгрузка данных из ldap
 	 */
 	public void ldapSearch() {
+		garbageCollector();
 		if (null == ldapSearch || ldapSearch.isDone()) {
 			ldapSearch = new LdapSearchThread(this);
 			ldapSearch.execute();
@@ -244,6 +263,10 @@ public class Core {
 		localWriteCache();
 	}
 
+	/**
+	 * сохранение в xls
+	 * @param file
+	 */
 	public void saveToFile(String file) {
 		if (null == saveSearch || saveSearch.isDone()) {
 			saveSearch = new SaveThread(this);

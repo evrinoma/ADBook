@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -29,11 +30,14 @@ public class LoadThread extends SwingWorker<Object, String> {
 	private boolean direction = READ;
 	private String currentPath = "/"+FILE_CAСHE;
 	
+	private LocalDateTime currentTime = null;
+	
 	private FileLock fileLock;
 
 	public LoadThread(Core core) {	
-		try {
-			currentPath = new java.io.File( "." ).getCanonicalPath()+currentPath;
+		try {		
+			currentTime = LocalDateTime.now();
+			currentPath = ((core.getSystemEnv().hasPathToCache()) ? core.getSystemEnv().getPathToCache()+currentPath: new java.io.File( "." ).getCanonicalPath()+currentPath);			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,6 +51,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		currentPath = null;
 		writeStream = null;
 		readStream = null;
+		currentTime = null;
 	}
 	
 	public LoadThread setDirection(boolean direction) {
@@ -88,7 +93,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 			} else {
 				core.isLocalCacheFail();
 			}
-			// System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {
 			// This is thrown if the thread's interrupted.
 		} catch (ExecutionException e) {
