@@ -14,7 +14,6 @@ import javax.naming.ldap.Control;
 
 /**
  * @author nikolns
- *
  */
 public class Ldap {
 	public static final String LDAP_HOST = "ite-ng.ru";

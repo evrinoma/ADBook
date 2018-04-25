@@ -23,7 +23,7 @@ public class SystemEnv {
 	/**
 	 * интервал автообновления в секундах
 	 */
-	private int timeUpdate = 3;
+	private int timeUpdate = 3;	
 
 	public SystemEnv() {
 		if (null != System.getProperty("isWeb")) {
