@@ -30,7 +30,7 @@ public class SystemEnv {
 	/**
 	 * интервал автообновления в секундах
 	 */
-	private int timeUpdate = 60;
+	private int timeUpdate = 20;
 
 	private String ldapHost = "ite-ng.ru";
 	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";

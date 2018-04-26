@@ -43,6 +43,11 @@ import threads.ServerSocketThread;
 public class Core {
 
 	private static final String HINT_EMPTY = "";
+	public static final int TREAD_LOCAL_SEARCH = 0;
+	public static final int TREAD_LDAP_SEARCH = 1;
+	public static final int TREAD_LOAD = 2;
+	public static final int TREAD_SAVE_SEARCH = 3;
+	public static final int TREAD_MAIL = 4;
 
 	RandomAccessFile fileLockAccess = null;
 	FileLock lock = null;
@@ -170,7 +175,7 @@ public class Core {
 		loadData(true);
 	}
 
-	public void loadData(boolean fromCache) {
+	public void loadData(boolean fromCache) {		
 		if (fromCache) {
 			localReadCache();
 		} else {
@@ -179,25 +184,40 @@ public class Core {
 	}
 
 	private void garbageCollector() {
-		Runtime r = Runtime.getRuntime();
-		r.freeMemory();
+		int mb = 1024 * 1024;
+
+		// Getting the runtime reference from system
+		Runtime runtime = Runtime.getRuntime();
+
+		System.out.println("##### Heap utilization statistics [MB] #####");
+
+		// Print used memory
+		System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+
+		// Print free memory
+		System.out.println("Free Memory:" + runtime.freeMemory() / mb);
+
+		// Print total available memory
+		System.out.println("Total Memory:" + runtime.totalMemory() / mb);
+
+		// Print Maximum available memory
+		System.out.println("Max Memory:" + runtime.maxMemory() / mb);
 	}
 
 	/**
 	 * загрузка локального кеша
 	 */
 	public void localCache(boolean operation) {
-		garbageCollector();
 		if (null == Load || Load.isDone()) {
 			Load = new LoadThread(this);
-			Load.setWriteStream(this.companys).setDirection(operation).execute();
+			Load.setDirection(operation).execute();
 		} else {
 			Load.execute();
 		}
 	}
 
 	private void localWriteCache() {
-		localCache(LoadThread.WRITE);
+		localCache(!LoadThread.READ);
 	}
 
 	private void localReadCache() {
@@ -210,24 +230,40 @@ public class Core {
 	 */
 	public void isLocalCacheSuccessful(Companys loadCompanys) {
 		dataLoad(loadCompanys);
-		flush();
 	}
 
-	public void isLocalCacheReadFail() {		
+	public void isLocalCacheReadFail() {
 		ldapSearch();
-		flush();
 	}
 
-	private void flush() {
-		this.Load = null;
+	public void flushing(int key) {
+		garbageCollector();
+		switch (key) {
+		case TREAD_LOCAL_SEARCH:
+			localSearch = null;
+			break;
+		case TREAD_LDAP_SEARCH:
+			ldapSearch = null;
+			break;
+		case TREAD_LOAD:
+			Load = null;
+			break;
+		case TREAD_SAVE_SEARCH:
+			saveSearch = null;
+			break;
+		case TREAD_MAIL:
+			mail = null;
+			break;
+		}
+		System.gc();
 	}
 
 	/**
 	 * выгрузка данных из ldap
 	 */
 	private void ldapSearch() {
-		garbageCollector();
 		if (null == ldapSearch || ldapSearch.isDone()) {
+			ldapSearch = null;
 			ldapSearch = new LdapSearchThread(this);
 			ldapSearch.execute();
 		} else {
@@ -441,7 +477,7 @@ public class Core {
 			String password, boolean withSignature, boolean notifyDelivery, boolean notifyRead) {
 		if (null == mail || mail.isDone()) {
 			mail = new MailThread(this);
-			mail.setAction(MailThread.ACTION_SEND_MAIL).setUsername(username).setPassword(password).setFrom(from)
+			mail.setAction(!MailThread.ACTION_AUTHORIZE).setUsername(username).setPassword(password).setFrom(from)
 					.setTo(to).setSubject(subject).setBody(body).setAttachments(attachment)
 					.setNotifyDelivery(notifyDelivery).setNotifyRead(notifyRead);
 			if (withSignature) {
@@ -511,7 +547,7 @@ public class Core {
 	 * проверка на актуальность списка компаний
 	 */
 	private void isOutdated() {
-		if (this.companys.isOutDate()) {
+		if (null != this.companys & this.companys.isOutDate()) {
 			form.addTreePreloader();
 			loadData(false);
 		}

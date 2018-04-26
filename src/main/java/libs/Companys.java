@@ -12,8 +12,8 @@ public class Companys implements Serializable {
 	/*
 	 * как часто обновлять
 	 */
-	private static final long OUT_DATE_DELAY = 1000 * 60 * 60 * 6;	
-	//private static final long OUT_DATE_DELAY = 1000 * 120;	
+	private static final long OUT_DATE_DELAY = 1000 * 60 * 60 * 6;
+	// private static final long OUT_DATE_DELAY = 1000 * 120;
 	private static final long serialVersionUID = 1L;
 
 	private Date timeStamp = null;
@@ -45,8 +45,18 @@ public class Companys implements Serializable {
 		return (CompanyDto) companys.get(companys.size() - 1);
 	}
 
-	public void setCompanys(ArrayList<CompanyDto> companys) {
+	private void setCompanys(ArrayList<CompanyDto> companys) {
 		this.companys = companys;
+	}
+
+	public Companys clearCompanys() {
+		if (companys.size() > 0) {
+			for (CompanyDto company : companys) {
+				company.clearCompany();
+			}
+			companys.clear();
+		}
+		return this;
 	}
 
 	public ArrayList<String> toArrayDescriptionCompanys() {

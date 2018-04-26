@@ -21,12 +21,10 @@ import libs.Core;
 public class LoadThread extends SwingWorker<Object, String> {
 
 	public static final boolean READ = true;
-	public static final boolean WRITE = !READ;
 	private static final String FILE_CAСHE = "cache";
 
 	private Core core = null;
-	private Companys writeStream = null;
-	private Companys readStream = null;
+	private Companys companys = null;
 	private boolean direction = READ;
 	private String currentPath = "/" + FILE_CAСHE;
 
@@ -44,23 +42,14 @@ public class LoadThread extends SwingWorker<Object, String> {
 			e.printStackTrace();
 		}
 		this.core = core;
-	}
-
-	private void flush() {
-		core = null;
-		currentPath = null;
-		writeStream = null;
-		readStream = null;
-		timeStamp = null;
+		this.companys = this.core.getCompanys();
 	}
 
 	public LoadThread setDirection(boolean direction) {
 		this.direction = direction;
-		return this;
-	}
-
-	public LoadThread setWriteStream(Companys writeStream) {
-		this.writeStream = writeStream;
+		if (this.direction) {
+			companys.clearCompanys();
+		}
 		return this;
 	}
 
@@ -70,7 +59,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 	}
 
 	private boolean isEmptyRead() {
-		return readStream.getCompanys().isEmpty();
+		return companys.getCompanys().isEmpty();
 	}
 
 	// Can safely update the GUI from this method.
@@ -80,14 +69,14 @@ public class LoadThread extends SwingWorker<Object, String> {
 			if ((boolean) get()) {
 				if (direction) {
 					if (!isEmptyRead()) {
-						core.isLocalCacheSuccessful(readStream);
+						core.isLocalCacheSuccessful(companys);
 						core.setStatusString("successful read");
 					} else {
 						core.isLocalCacheReadFail();
 						core.setStatusString("read is empty");
 					}
 				} else {
-					core.setStatusString("successful save... version:" + readStream.getTimeStamp().getTime());
+					core.setStatusString("successful save... version:" + companys.getTimeStamp().getTime());
 				}
 			} else {
 				if (this.direction) {
@@ -102,7 +91,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
-		flush();
+		core.flushing(core.TREAD_LOAD);
 	}
 
 	@Override
@@ -123,7 +112,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 		RandomAccessFile fileOut = null;
 		FileChannel channel = null;
 		FileLock lock = null;
-		readStream = new Companys();
 
 		try {
 			fileOut = new RandomAccessFile(currentPath, "rw");
@@ -158,7 +146,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 		RandomAccessFile fileIn = null;
 		FileChannel channel = null;
 		FileLock lock = null;
-		readStream = new Companys();
 
 		try {
 			fileIn = new RandomAccessFile(currentPath, "rw");
@@ -192,7 +179,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileOutputStream fileOutputStream = new FileOutputStream(fileDescriptor);
 
 		ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-		objectOutputStream.writeObject(writeStream);
+		objectOutputStream.writeObject(companys);
 		objectOutputStream.close();
 	}
 
@@ -206,7 +193,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
 		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 		try {
-			readStream = (Companys) objectInputStream.readObject();
+			companys = (Companys) objectInputStream.readObject();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}

@@ -36,7 +36,6 @@ import libs.Core;
 public class MailThread extends SwingWorker<Object, String> {
 
 	public static final boolean ACTION_AUTHORIZE = true;
-	public static final boolean ACTION_SEND_MAIL = !ACTION_AUTHORIZE;
 	private static final String MAIL_SERVER = "mail.ite-ng.ru";
 	private static final String MAIL_PORT = "465";
 	private static final String HINT_TRY_AUTH = "Пытаемся авторизоваться на сервере:" + MAIL_SERVER;
@@ -56,14 +55,14 @@ public class MailThread extends SwingWorker<Object, String> {
 	private Properties propsSSL = null;
 	private Core core;
 	private HashMap<String, String> attachments = null;
-		
+	private ArrayList<String> to = null;
+	private ArrayList<String> toError = null;	
+	private ArrayList<String> signature = null;
+	
 	private String body = "";
 	private String subject = "";
-	private ArrayList<String> to = null;
-	private ArrayList<String> toError = null;
 	private String from = "";
 	private String encodeFrom = "";
-	private ArrayList<String> signature = null;
 	private boolean notifyRead = false;
 	private boolean notifyDelivery = false;
 	private boolean notifyError = true; 
@@ -75,7 +74,7 @@ public class MailThread extends SwingWorker<Object, String> {
 		publish(HINT_TRY_AUTH);
 		if (authorize()) {
 			publish(HINT_TRY_FIND_USER);
-			if (action == ACTION_SEND_MAIL) {
+			if (action == !ACTION_AUTHORIZE) {
 				publish(HINT_TRY_SEND);
 				sendMessages();
 			}
@@ -83,17 +82,6 @@ public class MailThread extends SwingWorker<Object, String> {
 		}
 
 		return status;
-	}
-
-	private void flush()
-	{
-		core = null;
-		to = null;
-		toError = null;
-		signature = null;
-		attachments = null;
-		propsSSL = null;
-		session = null;
 	}
 	
 	// Can safely update the GUI from this method.
@@ -118,7 +106,7 @@ public class MailThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
-		flush();
+		core.flushing(core.TREAD_MAIL);
 	}
 
 	@Override

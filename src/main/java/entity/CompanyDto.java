@@ -37,7 +37,18 @@ public class CompanyDto implements Serializable {
 	public CompanyDto(CompanyDto company) {
 		createCompanyDto(company.getDescription(), company.getOu(), company.getDn());
 	}
-
+	
+	public CompanyDto clearCompany(){
+		for(CompanyDto filial: getFilials())
+		{
+			filial.clearCompany();
+		}
+		filials.clear();
+		getUsers().clear();	
+		
+		return this;
+	}
+	
 	public CompanyDto() {
 		createCompanyDto("Все", isAll, isAll);
 	}

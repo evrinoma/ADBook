@@ -282,7 +282,7 @@ public class MainForm {
 		}
 	}
 
-	private void addTimer(int dalay) {
+	private void addTimer(int delay) {
 		ActionListener listener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -290,7 +290,7 @@ public class MainForm {
 			}
 		};
 
-		Timer timer = new Timer(dalay, listener);
+		Timer timer = new Timer(delay, listener);
 		timer.start();
 	}
 

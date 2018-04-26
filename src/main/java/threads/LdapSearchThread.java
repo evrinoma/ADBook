@@ -16,30 +16,29 @@ import libs.Companys;
 import libs.Core;
 import libs.Ldap;
 
+/**
+ * 
+ * @author nikolns
+ *
+ */
 public class LdapSearchThread extends SwingWorker<Object, String> {
-
-	private Companys companys = null;
-
-	private Ldap ldap = null;
-
+	
 	private static final String HINT_LDAP_OPEN = "Connecting to LDAP Server";
 	private static final String HINT_LDAP_CLOSE = "Close connections";
 	private static final String HINT_LDAP_USERS = "Try to get all Users from LDAP Server";
 	private static final String HINT_LDAP_COMPANYS = "Try to get all Companys from LDAP Server";
+	
+	private Companys companys = null;
 
-	private Core core;
+	private Ldap ldap = null;	
+
+	private Core core = null;
 
 	public LdapSearchThread(Core core) {
 		this.core = core;
-		companys = new Companys();
+		this.companys = this.core.getCompanys().clearCompanys();
 	}
-
-	private void flush() {
-		core = null;
-		companys = null;
-		ldap = null;
-	}
-
+	
 	@Override
 	protected Boolean doInBackground() throws Exception {
 		publish(HINT_LDAP_OPEN);
@@ -164,7 +163,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
-		flush();
+		core.flushing(core.TREAD_LDAP_SEARCH);
 	}
 
 	@Override
