@@ -21,7 +21,6 @@ import libs.Core;
 
 public class ServerSocketThread extends SwingWorker<Object, String> {
 
-	public static final int PORT = 8749;
 	public static final String SERVER = "localhost";
 
 	private Core core;
@@ -30,8 +29,8 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 	private Selector selector;
 
 	public ServerSocketThread(Core core) {
-		this.core = core;
-		listenAddress = new InetSocketAddress(SERVER, PORT);
+		this.core = core;		
+		listenAddress = new InetSocketAddress(SERVER, core.getSystemEnv().getServerSocketPort());
 		dataMapper = new HashMap<SocketChannel, ArrayList>();
 	}
 
@@ -137,7 +136,7 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 	public boolean startClient() {
 		boolean status = false;
 		try {
-			InetSocketAddress hostAddress = new InetSocketAddress(SERVER, PORT);
+			InetSocketAddress hostAddress = new InetSocketAddress(SERVER, core.getSystemEnv().getServerSocketPort());
 			SocketChannel client = SocketChannel.open(hostAddress);
 
 			System.out.println("Client... started");

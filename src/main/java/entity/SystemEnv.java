@@ -34,10 +34,11 @@ public class SystemEnv {
 
 	private String ldapHost = "ite-ng.ru";
 	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";
-	private String[] ldapHosts = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
+	private String[] ldapHosts = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };	
 	private String ldapPort = "389";
 	private String ldapUser = "ldap@ite-ng.ru";
 	private String ldapPass = "ldap";
+	private int serverSocketPort = 8749;
 
 	public SystemEnv() {
 		if (null != System.getProperty("isForce")) {
@@ -76,6 +77,9 @@ public class SystemEnv {
 		if (null != System.getProperty("ldapPass")) {
 			this.setLdapPass(System.getProperty("ldapPass"));
 		}
+		if (null != System.getProperty("serverSocketPort")) {
+			this.setServerSocketPort(Integer.parseInt(System.getProperty("serverSocketPort")));
+		}
 	}
 
 	public void printHelp() {
@@ -93,6 +97,7 @@ public class SystemEnv {
 		System.out.println("ldapPort - ldap port value. Default value - ["+this.getLdapPort()+"]");
 		System.out.println("ldapUser - ldap user name. Default value - ["+this.getLdapUser()+"]");
 		System.out.println("ldapPass - ldap user pass. Default value - ["+this.getLdapPass()+"]");
+		System.out.println("serverSocketPort - ServerSocket port int value. Default value - ["+this.getServerSocketPort()+"]");
 	}
 
 	public boolean isForce() {
@@ -204,5 +209,13 @@ public class SystemEnv {
 
 	private void setLdapPass(String ldapPass) {
 		this.ldapPass = ldapPass;
+	}
+
+	public int getServerSocketPort() {
+		return serverSocketPort;
+	}
+
+	private void setServerSocketPort(int serverSocketPort) {
+		this.serverSocketPort = serverSocketPort;
 	}
 }
