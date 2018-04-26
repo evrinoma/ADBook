@@ -34,14 +34,6 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		}
 	}
 	
-	private void flush()
-	{
-		core = null;
-		filteredCompanys = null;
-		companys = null;
-		filterDto = null;
-	}
-	
 	// Can safely update the GUI from this method.
 	protected void done() {
 		resetLock();
@@ -60,9 +52,15 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
-		flush();
+		core.flushing(core.TREAD_LOCAL_SEARCH);
 	}
 
+	public void destory(){
+		filteredCompanys.destory();
+		filteredCompanys = null;
+		filterDto = null;
+	}
+	
 	@Override
 	// Can safely update the GUI from this method.
 	protected void process(List<String> chunks) {
@@ -230,6 +228,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 
 	public void setFilter(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
 			String department, String telephoneNumber, String pesonPosition, String room) {
+		
 		filterDto = new FilterDto(lastName, firstName, middleName, company, filial, department, telephoneNumber,
 				pesonPosition, room);
 	}
@@ -241,5 +240,4 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 	public void setCompanys(Companys companys) {
 		this.companys = companys;
 	}
-
 }

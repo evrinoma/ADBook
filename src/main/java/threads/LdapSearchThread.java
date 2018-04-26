@@ -36,7 +36,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 
 	public LdapSearchThread(Core core) {
 		this.core = core;
-		this.companys = this.core.getCompanys().clearCompanys();
+		this.companys = this.core.getCompanys().destory();
 	}
 	
 	@Override

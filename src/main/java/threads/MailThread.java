@@ -119,6 +119,14 @@ public class MailThread extends SwingWorker<Object, String> {
 		}
 	}
 
+	public void destory()
+	{
+		attachments.clear();
+		to.clear();
+		toError.clear();
+		signature.clear();
+	}
+	
 	public MailThread(Core core) {
 		this.core = core;
 		createAttachments();

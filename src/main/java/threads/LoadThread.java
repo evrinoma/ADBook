@@ -48,7 +48,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 	public LoadThread setDirection(boolean direction) {
 		this.direction = direction;
 		if (this.direction) {
-			companys.clearCompanys();
+			companys.destory();
 		}
 		return this;
 	}

@@ -240,6 +240,7 @@ public class Core {
 		garbageCollector();
 		switch (key) {
 		case TREAD_LOCAL_SEARCH:
+			localSearch.destory();
 			localSearch = null;
 			break;
 		case TREAD_LDAP_SEARCH:
@@ -252,6 +253,7 @@ public class Core {
 			saveSearch = null;
 			break;
 		case TREAD_MAIL:
+			mail.destory();
 			mail = null;
 			break;
 		}

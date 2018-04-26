@@ -100,4 +100,10 @@ public class FilterDto {
 	public boolean isFilterRoomSet() {
 		return (0 != filterRoom.length());
 	}
+	
+	public void destory()
+	{
+		filterCompany.destory();
+		filterFilial.destory();
+	}
 }

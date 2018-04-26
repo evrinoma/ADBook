@@ -49,10 +49,10 @@ public class Companys implements Serializable {
 		this.companys = companys;
 	}
 
-	public Companys clearCompanys() {
+	public Companys destory() {
 		if (companys.size() > 0) {
 			for (CompanyDto company : companys) {
-				company.clearCompany();
+				company.destory();
 			}
 			companys.clear();
 		}

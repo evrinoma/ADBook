@@ -38,10 +38,10 @@ public class CompanyDto implements Serializable {
 		createCompanyDto(company.getDescription(), company.getOu(), company.getDn());
 	}
 	
-	public CompanyDto clearCompany(){
+	public CompanyDto destory(){
 		for(CompanyDto filial: getFilials())
 		{
-			filial.clearCompany();
+			filial.destory();
 		}
 		filials.clear();
 		getUsers().clear();	
