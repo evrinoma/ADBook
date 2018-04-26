@@ -24,6 +24,7 @@ public class Ldap {
 	private String ldapPass = null;
 	public static final String LDAP_VERSION = "3";
 	public static final String LDAP_AUTH_METHOD = "simple";
+	public static final String LDAP_TIMEOUT = "20000";
 
 	private boolean connect = false;
 	public LdapContext ctx = null;
@@ -40,6 +41,7 @@ public class Ldap {
 	private Hashtable<String, String> getSettingsHashtable(String ldapHost) {
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+		env.put("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT);
 		env.put(Context.PROVIDER_URL, ldapHost + ":" + ldapPort);
 		env.put(Context.SECURITY_AUTHENTICATION, LDAP_AUTH_METHOD);
 		env.put(Context.SECURITY_PRINCIPAL, ldapUser);
@@ -75,6 +77,7 @@ public class Ldap {
 		} catch (NamingException e) {
 			e.printStackTrace();
 		}
+		this.connect = false;
 	}
 
 	public boolean isConnect() {

@@ -258,7 +258,11 @@ public class MainForm {
 				core.runServerSocket();
 				createForm();
 			} else {
-				System.exit(0);
+				if (core.getSystemEnv().isForce()) {
+					createForm();
+				} else {
+					System.exit(0);
+				}
 			}
 		} else {
 			createForm();

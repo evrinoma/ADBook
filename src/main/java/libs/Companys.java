@@ -13,6 +13,7 @@ public class Companys implements Serializable {
 	 * как часто обновлять
 	 */
 	private static final long OUT_DATE_DELAY = 1000 * 60 * 60 * 6;	
+	//private static final long OUT_DATE_DELAY = 1000 * 120;	
 	private static final long serialVersionUID = 1L;
 
 	private Date timeStamp = null;

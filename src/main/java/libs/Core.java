@@ -213,7 +213,7 @@ public class Core {
 		flush();
 	}
 
-	public void isLocalCacheFail() {
+	public void isLocalCacheReadFail() {		
 		ldapSearch();
 		flush();
 	}
@@ -225,7 +225,7 @@ public class Core {
 	/**
 	 * выгрузка данных из ldap
 	 */
-	public void ldapSearch() {
+	private void ldapSearch() {
 		garbageCollector();
 		if (null == ldapSearch || ldapSearch.isDone()) {
 			ldapSearch = new LdapSearchThread(this);

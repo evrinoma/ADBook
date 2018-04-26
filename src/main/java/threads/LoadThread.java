@@ -28,32 +28,32 @@ public class LoadThread extends SwingWorker<Object, String> {
 	private Companys writeStream = null;
 	private Companys readStream = null;
 	private boolean direction = READ;
-	private String currentPath = "/"+FILE_CAСHE;
-	
+	private String currentPath = "/" + FILE_CAСHE;
+
 	private LocalDateTime timeStamp = null;
-	
+
 	private FileLock fileLock;
 
-	public LoadThread(Core core) {	
-		try {		
+	public LoadThread(Core core) {
+		try {
 			timeStamp = LocalDateTime.now();
-			currentPath = ((core.getSystemEnv().hasPathToCache()) ? core.getSystemEnv().getPathToCache()+currentPath: new java.io.File( "." ).getCanonicalPath()+currentPath);			
+			currentPath = ((core.getSystemEnv().hasPathToCache()) ? core.getSystemEnv().getPathToCache() + currentPath
+					: new java.io.File(".").getCanonicalPath() + currentPath);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		this.core = core;
 	}
-	
-	private void flush()
-	{
+
+	private void flush() {
 		core = null;
 		currentPath = null;
 		writeStream = null;
 		readStream = null;
 		timeStamp = null;
 	}
-	
+
 	public LoadThread setDirection(boolean direction) {
 		this.direction = direction;
 		return this;
@@ -70,9 +70,9 @@ public class LoadThread extends SwingWorker<Object, String> {
 	}
 
 	private boolean isEmptyRead() {
-		return readStream.getCompanys().isEmpty(); 
+		return readStream.getCompanys().isEmpty();
 	}
-	
+
 	// Can safely update the GUI from this method.
 	protected void done() {
 		try {
@@ -80,17 +80,21 @@ public class LoadThread extends SwingWorker<Object, String> {
 			if ((boolean) get()) {
 				if (direction) {
 					if (!isEmptyRead()) {
-					core.isLocalCacheSuccessful(readStream);
-					core.setStatusString("successful read");
+						core.isLocalCacheSuccessful(readStream);
+						core.setStatusString("successful read");
 					} else {
-						core.isLocalCacheFail();
+						core.isLocalCacheReadFail();
 						core.setStatusString("read is empty");
 					}
 				} else {
-					core.setStatusString("successful save... version:"+readStream.getTimeStamp().getTime());
+					core.setStatusString("successful save... version:" + readStream.getTimeStamp().getTime());
 				}
 			} else {
-				core.isLocalCacheFail();
+				if (this.direction) {
+					core.isLocalCacheReadFail();
+				} else {
+					core.setStatusString("unsuccessful save...");
+				}
 			}
 		} catch (InterruptedException e) {
 			// This is thrown if the thread's interrupted.
@@ -120,7 +124,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileChannel channel = null;
 		FileLock lock = null;
 		readStream = new Companys();
-		
+
 		try {
 			fileOut = new RandomAccessFile(currentPath, "rw");
 			channel = fileOut.getChannel();
@@ -138,9 +142,9 @@ public class LoadThread extends SwingWorker<Object, String> {
 				lock.release();
 			if (fileOut != null)
 				fileOut.close();
-			
-			return status;	
-		}	
+
+			return status;
+		}
 	}
 
 	/**
@@ -155,7 +159,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileChannel channel = null;
 		FileLock lock = null;
 		readStream = new Companys();
-		
+
 		try {
 			fileIn = new RandomAccessFile(currentPath, "rw");
 			channel = fileIn.getChannel();
@@ -173,13 +177,14 @@ public class LoadThread extends SwingWorker<Object, String> {
 				lock.release();
 			if (fileIn != null)
 				fileIn.close();
-			
+
 			return status;
 		}
 	}
 
 	/**
 	 * пишим в файл cache
+	 * 
 	 * @param fileDescriptor
 	 * @throws IOException
 	 */
@@ -193,6 +198,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 
 	/**
 	 * читаем из файл cache
+	 * 
 	 * @param fileDescriptor
 	 * @throws IOException
 	 */

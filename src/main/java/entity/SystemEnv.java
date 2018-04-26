@@ -8,6 +8,10 @@ import java.util.List;
 
 public class SystemEnv {
 	/**
+	 * запуск принудильтельно
+	 */
+	private boolean isForce = false;
+	/**
 	 * сборка под под webSwing
 	 */
 	private boolean isWeb = false;
@@ -36,62 +40,69 @@ public class SystemEnv {
 	private String ldapPass = "ldap";
 
 	public SystemEnv() {
+		if (null != System.getProperty("isForce")) {
+			this.setForce(true);
+		}
 		if (null != System.getProperty("isWeb")) {
 			this.setWeb(true);
-		}
+		}		
 		if (null != System.getProperty("skin")) {
-			String property = System.getProperty("skin");
-			this.setSkinName(property);
+			this.setSkinName(System.getProperty("skin"));
 		}
-		if (null != System.getProperty("isUpdate")) {
-			this.setUpdate(true);
+		if (null != System.getProperty("isUpdate")) {	
+			this.setUpdate(("true" == System.getProperty("isUpdate")));
 			if (null != System.getProperty("updateTime")) {
-				int property = Integer.parseInt(System.getProperty("updateTime"));
-				this.setTimeUpdate(property);
+				this.setTimeUpdate(Integer.parseInt(System.getProperty("updateTime")));
 			}
 		}
 		if (null != System.getProperty("pathToCache")) {
-			String property = System.getProperty("pathToCache");
-			this.setPathToCache(property);
+			this.setPathToCache(System.getProperty("pathToCache"));
 		}
 		if (null != System.getProperty("ldapHost")) {
-			String property = System.getProperty("ldapHost");
-			this.setLdapHost(property);
+			this.setLdapHost(System.getProperty("ldapHost"));
 		}
 		if (null != System.getProperty("ldapBaseDN")) {
-			String property = System.getProperty("ldapBaseDN");
-			this.setLdapBaseDN(property);
+			this.setLdapBaseDN(System.getProperty("ldapBaseDN"));
 		}
 		if (null != System.getProperty("ldapHosts")) {
-			String property = System.getProperty("ldapHosts");
-			this.setLdapHosts(property.split(","));
+			this.setLdapHosts(System.getProperty("ldapHosts").split(","));
 		}
 		if (null != System.getProperty("ldapPort")) {
-			String property = System.getProperty("ldapPort");
-			this.setLdapPort(property);
+			this.setLdapPort(System.getProperty("ldapPort"));
 		}
 		if (null != System.getProperty("ldapUser")) {
-			String property = System.getProperty("ldapUser");
-			this.setLdapUser(property);
+			this.setLdapUser(System.getProperty("ldapUser"));
 		}
 		if (null != System.getProperty("ldapPass")) {
-			String property = System.getProperty("ldapPass");
-			this.setLdapPass(property);
+			this.setLdapPass(System.getProperty("ldapPass"));
 		}
 	}
 
 	public void printHelp() {
 		System.out.println("Console -D paramteres");
+		System.out.println("isForce - run without depends on starting another version");
+		System.out.println("isForce - is ["+this.isForce+"]");
 		System.out.println("isWeb - run in webswing");
+		System.out.println("isWeb - is ["+this.isWeb+"]");
 		System.out.println("skin - skin name 'nimbus','gtk'...etc");
+		System.out.println("skin - is ["+this.skinName+"]");
 		System.out.println("isUpdate updateTime - (int value ins seconds) auto update");
 		System.out.println("pathToCache - path to cache file");
+		System.out.println("pathToCache - is ["+this.pathToCache+"]");
 		System.out.println("ldapHost - ldap host name");
 		System.out.println("ldapBaseDN - ldap base DN");
 		System.out.println("ldapHosts - ldap://server0/ ,ldap://server1/");
 		System.out.println("ldapPort - ldap port value");
 		System.out.println("ldapUser - ldap user name");
 		System.out.println("ldapPass - ldap user pass");
+	}
+
+	public boolean isForce() {
+		return isForce;
+	}
+
+	private void setForce(boolean isForce) {
+		this.isForce = isForce;
 	}
 
 	public boolean isWeb() {
