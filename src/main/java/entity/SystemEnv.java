@@ -79,22 +79,20 @@ public class SystemEnv {
 	}
 
 	public void printHelp() {
-		System.out.println("Console -D paramteres");
-		System.out.println("isForce - run without depends on starting another version");
-		System.out.println("isForce - is ["+this.isForce+"]");
-		System.out.println("isWeb - run in webswing");
-		System.out.println("isWeb - is ["+this.isWeb+"]");
-		System.out.println("skin - skin name 'nimbus','gtk'...etc");
-		System.out.println("skin - is ["+this.skinName+"]");
-		System.out.println("isUpdate updateTime - (int value ins seconds) auto update");
-		System.out.println("pathToCache - path to cache file");
-		System.out.println("pathToCache - is ["+this.pathToCache+"]");
-		System.out.println("ldapHost - ldap host name");
-		System.out.println("ldapBaseDN - ldap base DN");
-		System.out.println("ldapHosts - ldap://server0/ ,ldap://server1/");
-		System.out.println("ldapPort - ldap port value");
-		System.out.println("ldapUser - ldap user name");
-		System.out.println("ldapPass - ldap user pass");
+		System.out.println("Run paramteres");
+		System.out.println("java -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");		
+		System.out.println("isForce - run ignore has started another version. Default value - ["+this.isForce()+"]");
+		System.out.println("isWeb - run application compatible with webswing. Default value - ["+this.isWeb()+"]");
+		System.out.println("skin - skin name 'nimbus','gtk'...etc. Default value - ["+this.getSkinName()+"]");
+		System.out.println("isUpdate  - run application in autoupdate mode. Default value - ["+this.isUpdate()+"]");
+		System.out.println("updateTime - autoupdate as int value in seconds. Default value - ["+this.timeUpdate+"]");
+		System.out.println("pathToCache - set to save local path to cache file. Default value - ["+this.getPathToCache()+"]");
+		System.out.println("ldapHost - ldap host name. Default value - ["+this.getLdapHost()+"]");
+		System.out.println("ldapBaseDN - ldap base DN. Default value - ["+this.getLdapBaseDN()+"]");
+		System.out.println("ldapHosts - ldap://server0/ ,ldap://server1/. Default value - ["+String.join(",", this.getLdapHosts())+"]");
+		System.out.println("ldapPort - ldap port value. Default value - ["+this.getLdapPort()+"]");
+		System.out.println("ldapUser - ldap user name. Default value - ["+this.getLdapUser()+"]");
+		System.out.println("ldapPass - ldap user pass. Default value - ["+this.getLdapPass()+"]");
 	}
 
 	public boolean isForce() {
@@ -147,7 +145,7 @@ public class SystemEnv {
 	public int getTimeUpdate() {
 		return timeUpdate * 1000;
 	}
-
+	
 	private void setTimeUpdate(int timeUpdate) {
 		this.timeUpdate = timeUpdate;
 	}
@@ -179,7 +177,7 @@ public class SystemEnv {
 	public String[] getLdapHosts() {
 		return ldapHosts;
 	}
-
+	
 	private void setLdapHosts(String[] ldapHosts) {
 		this.ldapHosts = ldapHosts;
 	}
