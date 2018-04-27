@@ -154,6 +154,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 			// Retrieve the return value of doInBackground.
 			status = (boolean) get();
 			if (status) {
+				companys.generateDate();
 				core.isLdapSearchSuccessful(companys);
 			}
 			// System.out.println("Completed with status: " + status);

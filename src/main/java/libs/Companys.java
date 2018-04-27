@@ -29,7 +29,7 @@ public class Companys implements Serializable {
 	}
 
 	public Companys() {
-		timeStamp = new Date();
+		generateDate();
 		companys = new ArrayList<CompanyDto>();
 	}
 
@@ -48,6 +48,11 @@ public class Companys implements Serializable {
 	private void setCompanys(ArrayList<CompanyDto> companys) {
 		this.companys = companys;
 	}
+	
+	public void generateDate()
+	{
+		timeStamp = new Date();
+	}
 
 	public Companys destory() {
 		if (companys.size() > 0) {
@@ -56,6 +61,9 @@ public class Companys implements Serializable {
 			}
 			companys.clear();
 		}
+		
+		timeStamp = null;
+		
 		return this;
 	}
 

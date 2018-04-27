@@ -175,7 +175,7 @@ public class Core {
 		loadData(true);
 	}
 
-	public void loadData(boolean fromCache) {		
+	public void loadData(boolean fromCache) {
 		if (fromCache) {
 			localReadCache();
 		} else {
@@ -237,10 +237,14 @@ public class Core {
 	}
 
 	public void flushing(int key) {
-		garbageCollector();
+		if (this.getSystemEnv().isDebug()) {
+			garbageCollector();
+		}
 		switch (key) {
 		case TREAD_LOCAL_SEARCH:
-			localSearch.destory();
+			if (localSearch instanceof LocalSearchThread) {
+				localSearch.destory();
+			}
 			localSearch = null;
 			break;
 		case TREAD_LDAP_SEARCH:
@@ -253,7 +257,9 @@ public class Core {
 			saveSearch = null;
 			break;
 		case TREAD_MAIL:
-			mail.destory();
+			if (mail instanceof MailThread) {
+				mail.destory();
+			}
 			mail = null;
 			break;
 		}
@@ -357,7 +363,9 @@ public class Core {
 	 */
 	public void isLocalSearchSuccessful(Companys filteredCompanys) {
 		form.getTopTree().removeAllChildren();
-		form.setTreeNode(filteredCompanys.all(), false);
+		if (null != filteredCompanys) {
+			form.setTreeNode(filteredCompanys.all(), false);
+		}
 	}
 
 	/**

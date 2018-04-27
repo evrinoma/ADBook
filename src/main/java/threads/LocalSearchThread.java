@@ -1,6 +1,5 @@
 package threads;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -30,10 +29,10 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 	@Override
 	protected Boolean doInBackground() throws Exception {
 		while (true) {
-			return doSearching();		
+			return doSearching();
 		}
 	}
-	
+
 	// Can safely update the GUI from this method.
 	protected void done() {
 		resetLock();
@@ -43,7 +42,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 			if ((boolean) get()) {
 				core.isLocalSearchSuccessful(filteredCompanys);
 				core.setStatusString("successful complite");
-				
+
 			}
 			// System.out.println("Completed with status: " + status);
 		} catch (InterruptedException e) {
@@ -55,12 +54,14 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 		core.flushing(core.TREAD_LOCAL_SEARCH);
 	}
 
-	public void destory(){
-		filteredCompanys.destory();
+	public void destory() {
+		if (null != filteredCompanys) {
+			filteredCompanys.destory();
+		}
 		filteredCompanys = null;
 		filterDto = null;
 	}
-	
+
 	@Override
 	// Can safely update the GUI from this method.
 	protected void process(List<String> chunks) {
@@ -130,7 +131,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 					isNotFound = false;
 				}
 			}
-			
+
 			if (isNotFound) {
 				filteredUsers.put(user.getDistinguishedName(), user);
 			}
@@ -228,7 +229,7 @@ public class LocalSearchThread extends SwingWorker<Object, String> {
 
 	public void setFilter(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
 			String department, String telephoneNumber, String pesonPosition, String room) {
-		
+
 		filterDto = new FilterDto(lastName, firstName, middleName, company, filial, department, telephoneNumber,
 				pesonPosition, room);
 	}

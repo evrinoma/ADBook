@@ -1,12 +1,19 @@
 package entity;
 
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 public class SystemEnv {
+	/**
+	 * версия
+	 */
+	private String version = "27.04.18v01";
+	/**
+	 * отладака
+	 */
+	private boolean isDebug = false;
 	/**
 	 * запуск принудильтельно
 	 */
@@ -41,6 +48,9 @@ public class SystemEnv {
 	private int serverSocketPort = 8749;
 
 	public SystemEnv() {
+		if (null != System.getProperty("isDebug")) {
+			this.setDebug(true);
+		}
 		if (null != System.getProperty("isForce")) {
 			this.setForce(true);
 		}
@@ -83,8 +93,10 @@ public class SystemEnv {
 	}
 
 	public void printHelp() {
+		System.out.println("version - ["+getVersion()+"]");
 		System.out.println("Run paramteres");
-		System.out.println("java -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");		
+		System.out.println("java -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=512k -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");
+		System.out.println("isDebug - addition information about memory. Default value - ["+this.isDebug()+"]");
 		System.out.println("isForce - run ignore has started another version. Default value - ["+this.isForce()+"]");
 		System.out.println("isWeb - run application compatible with webswing. Default value - ["+this.isWeb()+"]");
 		System.out.println("skin - skin name 'nimbus','gtk'...etc. Default value - ["+this.getSkinName()+"]");
@@ -98,6 +110,22 @@ public class SystemEnv {
 		System.out.println("ldapUser - ldap user name. Default value - ["+this.getLdapUser()+"]");
 		System.out.println("ldapPass - ldap user pass. Default value - ["+this.getLdapPass()+"]");
 		System.out.println("serverSocketPort - ServerSocket port int value. Default value - ["+this.getServerSocketPort()+"]");
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public boolean isDebug() {
+		return isDebug;
+	}
+
+	public void setDebug(boolean isDebug) {
+		this.isDebug = isDebug;
 	}
 
 	public boolean isForce() {

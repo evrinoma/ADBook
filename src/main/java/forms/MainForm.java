@@ -43,7 +43,6 @@ import com.mxgraph.view.mxGraph;
 
 import entity.CompanyDto;
 import entity.LevelNode;
-import entity.SystemEnv;
 import entity.UserDto;
 import entity.UserNode;
 import libs.Core;
@@ -78,7 +77,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,7 +98,6 @@ import javax.swing.JCheckBox;
 
 public class MainForm {
 
-	private static final String VERSION = "26.04.18v04";
 	private static final String NAME_FORM = "Адресная книга";
 	private static final Dimension DEMENSION_TREE = new Dimension(380, 50);
 	private static final Dimension DEMENSION_IMAGE = new Dimension(250, 250);
@@ -2064,12 +2061,12 @@ public class MainForm {
 		labelStatusBar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				labelStatusBar.setText(labelStatusBar.getText() + " " + VERSION);
+				labelStatusBar.setText(labelStatusBar.getText() + " " + core.getSystemEnv().getVersion());
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				labelStatusBar.setText(labelStatusBar.getText().replace(VERSION, ""));
+				labelStatusBar.setText(labelStatusBar.getText().replace(core.getSystemEnv().getVersion(), ""));
 			}
 		});
 
