@@ -1,5 +1,6 @@
 package entity;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,7 +11,15 @@ public class SystemEnv {
 	/**
 	 * версия
 	 */
-	private String version = "27.04.18v01";	
+	private String version = "28.04.18v01";	
+	/**
+	 * директория для кеша
+	 */
+	private static final String DIR_CAСHE = "tmp";
+	/**
+	 * директория для хранения картинок в кеш
+	 */	
+	private static final String DIR_IMAGES = "images";
 	/**
 	 * отладака
 	 */
@@ -89,14 +98,18 @@ public class SystemEnv {
 		if (null != System.getProperty("serverSocketPort")) {
 			this.setServerSocketPort(Integer.parseInt(System.getProperty("serverSocketPort")));
 		}
+		createAppDirs();
 	}
 	
+	private void createAppDirs(){
+		new File(getPathToApp()+DIR_CAСHE+"/"+DIR_IMAGES).mkdirs();
+	}		
 	
 	public void printHelp() {
 		System.out.println("version - [" + getVersion() + "]");
 		System.out.println("Run paramteres");
 		System.out.println(
-				"java -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=512k -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");
+				"java -Xms16m -Xmx512m -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=512k -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");
 		System.out.println("isDebug - addition information about memory. Default value - [" + this.isDebug() + "]");
 		System.out
 				.println("isForce - run ignore has started another version. Default value - [" + this.isForce() + "]");
@@ -169,6 +182,14 @@ public class SystemEnv {
 
 	public String getPathToApp() {
 		return pathToApp;
+	}
+	
+	public String getPathToAppCache() {
+		return getPathToApp()+DIR_CAСHE+"/";
+	}
+	
+	public String getPathToAppCacheImages() {
+		return getPathToAppCache()+DIR_IMAGES+"/";
 	}
 
 	private void setPathToApp(String pathToApp) {

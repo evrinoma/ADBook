@@ -22,15 +22,15 @@ import libs.Ldap;
  *
  */
 public class LdapSearchThread extends SwingWorker<Object, String> {
-	
+
 	private static final String HINT_LDAP_OPEN = "Connecting to LDAP Server";
 	private static final String HINT_LDAP_CLOSE = "Close connections";
 	private static final String HINT_LDAP_USERS = "Try to get all Users from LDAP Server";
 	private static final String HINT_LDAP_COMPANYS = "Try to get all Companys from LDAP Server";
-	
+
 	private Companys companys = null;
 
-	private Ldap ldap = null;	
+	private Ldap ldap = null;
 
 	private Core core = null;
 
@@ -38,7 +38,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 		this.core = core;
 		this.companys = this.core.getCompanys().destory();
 	}
-	
+
 	@Override
 	protected Boolean doInBackground() throws Exception {
 		publish(HINT_LDAP_OPEN);
@@ -83,8 +83,8 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 				try {
 					sr = (SearchResult) users.next();
 					attrs = sr.getAttributes();
-					UserDto user = new UserDto();
-					user.deployEntry(attrs, ldap.getDefaultSelectFields());
+					UserDto user = new UserDto(core.getSystemEnv().getPathToAppCacheImages());
+					user.deployEntry(attrs, ldap.getDefaultSelectFields(), company.getDn());
 					company.addNewUser(user);
 					/*
 					 * for (String manager : user.getManager()) {

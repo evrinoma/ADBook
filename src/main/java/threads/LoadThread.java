@@ -26,14 +26,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 	 * имя кеш файла
 	 */
 	private static final String FILE_CAСHE = "cache";
-	/**
-	 * директория для кеша
-	 */
-	private static final String DIR_CAСHE = "tmp";
-	/**
-	 * директория для хранения картинок в кеш
-	 */	
-	private static final String DIR_IMAGES = "images";
 	private Core core = null;
 	private Companys companys = null;
 	private boolean direction = READ;
@@ -46,7 +38,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 		timeStamp = LocalDateTime.now();
 		this.core = core;
 		this.companys = this.core.getCompanys();
-		createAppCacheDirs();
 	}
 
 	public LoadThread setDirection(boolean direction) {
@@ -57,17 +48,6 @@ public class LoadThread extends SwingWorker<Object, String> {
 		return this;
 	}
 
-	private void createAppCacheDirs(){
-		new File(getPathToApp()+DIR_CAСHE+"/"+DIR_IMAGES).mkdirs();
-	}	
-	
-	private String getPathToApp() {
-		return core.getSystemEnv().getPathToApp();
-	}
-	
-	private String getPathToAppCache() {
-		return getPathToApp()+DIR_CAСHE+"/";
-	}
 	
 	@Override
 	protected Object doInBackground() throws Exception {
@@ -130,7 +110,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileLock lock = null;
 
 		try {
-			fileOut = new RandomAccessFile(getPathToAppCache()+FILE_CAСHE, "rw");
+			fileOut = new RandomAccessFile(core.getSystemEnv().getPathToAppCache()+FILE_CAСHE, "rw");
 			channel = fileOut.getChannel();
 			lock = channel.lock();
 
@@ -164,7 +144,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileLock lock = null;
 
 		try {
-			fileIn = new RandomAccessFile(getPathToAppCache()+FILE_CAСHE, "rw");
+			fileIn = new RandomAccessFile(core.getSystemEnv().getPathToAppCache()+FILE_CAСHE, "rw");
 			channel = fileIn.getChannel();
 			lock = channel.lock();
 

@@ -3,19 +3,25 @@ package entity;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+
+import org.apache.commons.codec.binary.Hex;
 
 public class UserDto implements Serializable {
 	private String mobile = "";
@@ -57,24 +63,30 @@ public class UserDto implements Serializable {
 	private String firstName = "";
 
 	private String companyDn = "";
-
-	private void createUser(String displayName) {
+	private String pathCacheImage = "";
+	
+	private void createUser(String displayName, String pathCacheImages) {
 		this.displayName = displayName;
 		this.directReports = new ArrayList<String>();
 		this.manager = new ArrayList<String>();
+		this.setPathCacheImage(pathCacheImages);
 	}
 
-	public UserDto(String displayName) {
-		createUser(displayName);
+	public UserDto(String displayName, String pathCacheImages) {
+		createUser(displayName, pathCacheImages);
 	}
 
-	public UserDto() {
-		createUser(new String(""));
+	public UserDto(String pathCacheImages) {
+		createUser(new String(""), pathCacheImages);
 	}
 
 	@Override
 	public String toString() {
 		return displayName;
+	}
+
+	private void setPathCacheImage(String pathCacheImage) {
+		this.pathCacheImage = pathCacheImage;
 	}
 
 	private void setLastName(String lastName) {
@@ -233,7 +245,7 @@ public class UserDto implements Serializable {
 		this.info = paramToString(info);
 	}
 
-	protected void setJpegPhoto(byte[] stream) {
+	private void setJpegPhoto(byte[] stream) {
 		try {
 			this.jpegPhoto = ImageIO.read(new ByteArrayInputStream(stream));
 		} catch (IOException e) {
@@ -241,8 +253,56 @@ public class UserDto implements Serializable {
 		}
 	}
 
+	private void clearJpegPhoto() {
+		this.jpegPhoto = null;
+	}
+	
+	protected void saveJpegPhotoToCache() {
+		if (null != this.getJpegPhoto()) {
+			String filePath = getPathCacheImage()+getPathCompanyCacheImage()+"/";			
+			new File(filePath).mkdirs();
+			filePath += generateImageFileName();
+			File file = new File(filePath);
+			try {
+				ImageIO.write(this.jpegPhoto, "jpg", file);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.clearJpegPhoto();
+			this.setPathCacheImage(filePath);
+		} else {
+			this.setPathCacheImage("");
+		}
+	}
+
 	protected void setFname(String fname) {
 		this.fname = paramToString(fname);
+	}
+
+	public String getPathCacheImage() {
+		return pathCacheImage;
+	}
+	
+	public boolean hasPathCacheImage() {
+		return (pathCacheImage.length() != 0);
+	}
+	
+	private String getPathCompanyCacheImage() {
+		return generateCompanyPath();
+	}	 
+
+	private String generateCompanyPath() {
+		String companyPath = this.translit(this.getCompanyDn()).replaceAll(" ", "").replaceAll(",", "")
+				.replaceAll("=", "").replaceAll("OU", "").replaceAll("CN", "").replaceAll("DC", "");		
+		companyPath = Arrays.toString(companyPath.getBytes()).replaceAll(", ", "").replaceAll("^.|.$", "");
+		return new String(companyPath);
+	}
+	
+	private String generateImageFileName() {
+		String fileName = this.translit(this.getCn()).replaceAll(" ", "").replaceAll(",", "");
+		fileName = Arrays.toString(fileName.getBytes()).replaceAll(", ", "").replaceAll("^.|.$", "");
+		return new String(fileName + ".jpg");
 	}
 
 	public String getMobile() {
@@ -381,8 +441,12 @@ public class UserDto implements Serializable {
 		return info;
 	}
 
-	public BufferedImage getJpegPhoto() {
+	private BufferedImage getJpegPhoto() {
 		return jpegPhoto;
+	}
+	
+	public String getJpegPhotoFromCache() {
+		return getPathCacheImage() + generateImageFileName();
 	}
 
 	public String getFname() {
@@ -410,7 +474,7 @@ public class UserDto implements Serializable {
 		}
 	}
 
-	public UserDto deployEntry(Attributes entry, String[] fields) throws NamingException {
+	public UserDto deployEntry(Attributes entry, String[] fields, String companyDn) throws NamingException {		
 		for (NamingEnumeration ae = entry.getAll(); ae.hasMore();) {
 			Attribute attr = (Attribute) ae.next();
 			try {
@@ -419,6 +483,8 @@ public class UserDto implements Serializable {
 				e.printStackTrace();
 			}
 		}
+		this.setCompanyDn(companyDn);
+		saveJpegPhotoToCache();
 
 		return this;
 	}
@@ -691,22 +757,12 @@ public class UserDto implements Serializable {
 		directReports = (ArrayList<String>) aInputStream.readObject();
 		itnumber = aInputStream.readUTF();
 		info = aInputStream.readUTF();
-		// InputStream in = new ByteArrayInputStream(aInputStream);
-		/*
-		 * // convert byte array back to BufferedImage InputStream in = new
-		 * ByteArrayInputStream(aInputStream.); BufferedImage bImageFromConvert
-		 * = ImageIO.read(in);
-		 * 
-		 * if (null != jpegPhoto) { ByteArrayOutputStream buffer = new
-		 * ByteArrayOutputStream(); ImageIO.write(jpegPhoto, "jpg", buffer);
-		 * aOutputStream.writeInt(buffer.size()); buffer.writeTo(aOutputStream);
-		 * }
-		 */
 		fname = aInputStream.readUTF();
 		lastName = aInputStream.readUTF();
 		middleName = aInputStream.readUTF();
 		firstName = aInputStream.readUTF();
 		companyDn = aInputStream.readUTF();
+		pathCacheImage = aInputStream.readUTF();
 		int size = aInputStream.readInt();
 		if (0 != size) {
 			jpegPhoto = ImageIO.read(aInputStream);
@@ -748,8 +804,9 @@ public class UserDto implements Serializable {
 		aOutputStream.writeUTF(fname);
 		aOutputStream.writeUTF(lastName);
 		aOutputStream.writeUTF(middleName);
-		aOutputStream.writeUTF(firstName);
-		aOutputStream.writeUTF(companyDn);
+		aOutputStream.writeUTF(firstName);		
+		aOutputStream.writeUTF(companyDn);		
+		aOutputStream.writeUTF(pathCacheImage);
 		if (null != jpegPhoto) {
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			ImageIO.write(jpegPhoto, "jpg", buffer);

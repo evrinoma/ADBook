@@ -108,8 +108,7 @@ public class CompanyDto implements Serializable {
 		this.users.putAll(users);
 	}
 
-	public void addNewUser(UserDto user) {
-		user.setCompanyDn(dn);		
+	public void addNewUser(UserDto user) {	
 		users.put(user.getDistinguishedName(), user);
 	}
 

@@ -274,21 +274,6 @@ public class MainForm {
 		addWindowListener();
 		core.setMainForm(this);
 		core.loadData();
-		if (core.getSystemEnv().isUpdate()) {
-			addTimer(core.getSystemEnv().getTimeUpdate());
-		}
-	}
-
-	private void addTimer(int delay) {
-		ActionListener listener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				core.callByTimer();
-			}
-		};
-
-		Timer timer = new Timer(delay, listener);
-		timer.start();
 	}
 
 	private void addWindowListener() {
@@ -1596,8 +1581,8 @@ public class MainForm {
 
 			));
 
-			labelPersonPic.setIcon(resizeIcon((null != core.getUser().getJpegPhoto())
-					? new ImageIcon(core.getUser().getJpegPhoto()) : getResourceImage(USERS_IMAGE), labelPersonPic));
+			labelPersonPic.setIcon(resizeIcon(core.getUser().hasPathCacheImage()
+					? getImage(core.getUser().getPathCacheImage()) : getResourceImage(USERS_IMAGE), labelPersonPic));
 
 			setPersonPanelQrCode();
 		}
@@ -1613,21 +1598,26 @@ public class MainForm {
 				core.getUser().getVCard(isTransQrcode), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
 	}
 
-	private URL getResourceFile(String nameFile) {
+	private URL getResourceFile(String file) {
+		return (IS_LOADER_CLASS_PATH) ? this.getClass().getResource(file) : getUrlFile(FOLDER_IMAGE + file);
+	}
+
+	private URL getUrlFile(String filePath) {
 		URL url = null;
-		if (IS_LOADER_CLASS_PATH) {
-			url = this.getClass().getResource(nameFile);
-		} else {
-			try {
-				url = new File(FOLDER_IMAGE + nameFile).toURI().toURL();
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			url = new File(filePath).toURI().toURL();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return url;
 	}
 
+	private ImageIcon getImage(String nameFile) {
+		URL url = getUrlFile(nameFile);
+		return (null == url) ? new ImageIcon(getResourceFile(EMPTY_IMAGE)) : new ImageIcon(url);
+	}
+	
 	private ImageIcon getResourceImage(String nameFile) {
 		URL url = getResourceFile(nameFile);
 		return (null == url) ? new ImageIcon(getResourceFile(EMPTY_IMAGE)) : new ImageIcon(url);
@@ -1737,6 +1727,18 @@ public class MainForm {
 	}
 
 	private void addListners() {
+		if (core.getSystemEnv().isUpdate()) {
+			ActionListener listener = new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					core.callByTimer();
+				}
+			};
+
+			Timer timer = new Timer(core.getSystemEnv().getTimeUpdate(), listener);
+			timer.start();
+		}
+
 		// TODO Auto-generated method stub
 		tree.addTreeSelectionListener(new TreeSelectionListener() {
 			@Override
