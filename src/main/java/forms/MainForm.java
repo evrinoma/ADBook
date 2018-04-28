@@ -466,7 +466,7 @@ public class MainForm {
 		if (core.getSystemEnv().isWeb()) {
 			frmHandbook.setUndecorated(true);
 		}
-		ImageIcon icon = getResourceImage(LOGO_IMAGE);
+		ImageIcon icon = getImage(getUrlResourceFile(LOGO_IMAGE));
 		frmHandbook.setIconImage(icon.getImage());
 		frmHandbook.setTitle(NAME_FORM);
 		frmHandbook.setBounds(100, 100, 952, 940);
@@ -555,7 +555,7 @@ public class MainForm {
 
 		final SystemTray systemTray = SystemTray.getSystemTray();
 
-		ImageIcon icon = getResourceImage(LOGO_IMAGE);
+		ImageIcon icon = getImage(getUrlResourceFile(LOGO_IMAGE));
 		Image image = icon.getImage();
 
 		trayIcon = new TrayIcon(image, "Контакты", trayPopupMenu);
@@ -624,7 +624,7 @@ public class MainForm {
 		labelUpdate.setMinimumSize(DEMENSION_ICON_MENU);
 		labelUpdate.setSize(DEMENSION_ICON_MENU);
 		labelUpdate.setToolTipText("Обновить");
-		labelUpdate.setIcon(resizeIcon(this.getResourceImage(DOWNLOADS_IMAGE), labelUpdate));
+		labelUpdate.setIcon(resizeIcon(getImage(getUrlResourceFile(DOWNLOADS_IMAGE)), labelUpdate));
 		tools.add(labelUpdate);
 
 		labelCopyMails = new JLabel("");
@@ -634,7 +634,7 @@ public class MainForm {
 		labelCopyMails.setMinimumSize(DEMENSION_ICON_MENU);
 		labelCopyMails.setSize(DEMENSION_ICON_MENU);
 		labelCopyMails.setToolTipText("Копировать почтовые адреса");
-		labelCopyMails.setIcon(resizeIcon(this.getResourceImage(COPY_EMAILS_IMAGE), labelCopyMails));
+		labelCopyMails.setIcon(resizeIcon(getImage(getUrlResourceFile(COPY_EMAILS_IMAGE)), labelCopyMails));
 		tools.add(labelCopyMails);
 
 		labelSaveXls = new JLabel("");
@@ -644,7 +644,7 @@ public class MainForm {
 		labelSaveXls.setMinimumSize(DEMENSION_ICON_MENU);
 		labelSaveXls.setSize(DEMENSION_ICON_MENU);
 		labelSaveXls.setToolTipText("Сохранить в XLS");
-		labelSaveXls.setIcon(resizeIcon(this.getResourceImage(SAVE_XLS_IMAGE), labelSaveXls));
+		labelSaveXls.setIcon(resizeIcon(getImage(getUrlResourceFile(SAVE_XLS_IMAGE)), labelSaveXls));
 		tools.add(labelSaveXls);
 
 		labelCollapsTree = new JLabel("");
@@ -654,7 +654,7 @@ public class MainForm {
 		labelCollapsTree.setMinimumSize(DEMENSION_ICON_MENU);
 		labelCollapsTree.setSize(DEMENSION_ICON_MENU);
 		labelCollapsTree.setToolTipText("Свернуть список компаний");
-		labelCollapsTree.setIcon(resizeIcon(this.getResourceImage(PLUS_IMAGE), labelCollapsTree));
+		labelCollapsTree.setIcon(resizeIcon(getImage(getUrlResourceFile(PLUS_IMAGE)), labelCollapsTree));
 		tools.add(labelCollapsTree);
 	}
 
@@ -707,7 +707,7 @@ public class MainForm {
 	private void createPanelPreloader(JPanel panel, String nameComponent) {
 		JLabel labelPreload = new JLabel();
 		labelPreload.setHorizontalAlignment(SwingConstants.CENTER);
-		labelPreload.setIcon(getResourceImage(PRELOAD_IMAGE));
+		labelPreload.setIcon(getImage(getUrlResourceFile(PRELOAD_IMAGE)));
 		labelPreload.setName(nameComponent);
 		panel.add(labelPreload, 0);
 	}
@@ -1191,7 +1191,7 @@ public class MainForm {
 		label.setMinimumSize(DEMENSION_ICON_MENU);
 		label.setSize(DEMENSION_ICON_MENU);
 		label.setToolTipText("копировать");
-		label.setIcon(resizeIcon(this.getResourceImage(COPY_IMAGE), label));
+		label.setIcon(resizeIcon(getImage(getUrlResourceFile(COPY_IMAGE)), label));
 	}
 
 	private void createTabPerson(JPanel panel) {
@@ -1218,7 +1218,7 @@ public class MainForm {
 
 		labelPersonPic = new JLabel();
 		labelPersonPic.setSize(DEMENSION_IMAGE);
-		labelPersonPic.setIcon(resizeIcon(getResourceImage(USERS_IMAGE), labelPersonPic));
+		labelPersonPic.setIcon(resizeIcon(getImage(getUrlResourceFile(USERS_IMAGE)), labelPersonPic));
 		panelQrCode.add(labelPersonPic);
 
 		labelPersonQrCode = new JLabel();
@@ -1572,34 +1572,22 @@ public class MainForm {
 			labelContactWriMobilePhone.setText(core.getUser().getMobile());
 			labelContactWriMail.setText(mail);
 			labelContactWriMail.setToolTipText(core.getUser().getMail());
-
-			labelRoomPic.setIcon(resizeIcon(((null != core.getUser().getPhysicalDeliveryOfficeName())
+			
+			labelPersonPic.setIcon(null);			
+			labelRoomPic.setIcon(resizeIcon(getImage(((null != core.getUser().getPhysicalDeliveryOfficeName())
 					&& (0 != core.getUser().getPhysicalDeliveryOfficeName().length()))
-							? getResourceImage(PLANS_IMAGE + core.getUser().getPhysicalDeliveryOfficeName() + ".jpg")
-							: getResourceImage(EMPTY_IMAGE),
+							? getUrlResourceFile(PLANS_IMAGE + core.getUser().getPhysicalDeliveryOfficeName() + ".jpg")
+							: getUrlResourceFile(EMPTY_IMAGE)),
 					labelRoomPic
 
 			));
-
-			labelPersonPic.setIcon(resizeIcon(core.getUser().hasPathCacheImage()
-					? getImage(core.getUser().getPathCacheImage()) : getResourceImage(USERS_IMAGE), labelPersonPic));
+			
+			labelPersonPic.setIcon(resizeIcon(getImage(core.getUser().hasPathCacheImage()
+					? getUrlFile(core.getUser().getPathCacheImage()) : getUrlResourceFile(USERS_IMAGE)), labelPersonPic));
 
 			setPersonPanelQrCode();
+			core.flushing();
 		}
-	}
-
-	private void setPersonPanelQrCode() {
-		if (isTransQrcode) {
-			labelPersonQrCode.setToolTipText(IS_CONTACT_EN);
-		} else {
-			labelPersonQrCode.setToolTipText(IS_CONTACT_RU);
-		}
-		labelPersonQrCode.setIcon(core.createQrCodeWithLogo(getResourceFile(LOGO_IMAGE),
-				core.getUser().getVCard(isTransQrcode), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
-	}
-
-	private URL getResourceFile(String file) {
-		return (IS_LOADER_CLASS_PATH) ? this.getClass().getResource(file) : getUrlFile(FOLDER_IMAGE + file);
 	}
 
 	private URL getUrlFile(String filePath) {
@@ -1610,17 +1598,28 @@ public class MainForm {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if (null == url) {
+			getUrlResourceFile(EMPTY_IMAGE);
+		}
 		return url;
 	}
 
-	private ImageIcon getImage(String nameFile) {
-		URL url = getUrlFile(nameFile);
-		return (null == url) ? new ImageIcon(getResourceFile(EMPTY_IMAGE)) : new ImageIcon(url);
+	private URL getUrlResourceFile(String file) {
+		return (IS_LOADER_CLASS_PATH) ? this.getClass().getResource(file) : getUrlFile(FOLDER_IMAGE + file);
 	}
 	
-	private ImageIcon getResourceImage(String nameFile) {
-		URL url = getResourceFile(nameFile);
-		return (null == url) ? new ImageIcon(getResourceFile(EMPTY_IMAGE)) : new ImageIcon(url);
+	private ImageIcon getImage(URL url) {
+		return new ImageIcon(url);
+	}
+
+	private void setPersonPanelQrCode() {
+		if (isTransQrcode) {
+			labelPersonQrCode.setToolTipText(IS_CONTACT_EN);
+		} else {
+			labelPersonQrCode.setToolTipText(IS_CONTACT_RU);
+		}
+		labelPersonQrCode.setIcon(core.createQrCodeWithLogo(getUrlResourceFile(LOGO_IMAGE),
+				core.getUser().getVCard(isTransQrcode), labelPersonQrCode.getWidth(), labelPersonQrCode.getHeight()));
 	}
 
 	private void setSelectionTree(TreePath eTree, Object selectedValue) {

@@ -265,6 +265,10 @@ public class Core {
 		}
 		System.gc();
 	}
+	
+	public void flushing() {
+		flushing(-1);
+	}
 
 	/**
 	 * выгрузка данных из ldap
