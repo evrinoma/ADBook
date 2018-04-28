@@ -1,5 +1,7 @@
 package entity;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -10,6 +12,7 @@ public class SystemEnv {
 	 * версия
 	 */
 	private String version = "27.04.18v01";
+	private static final String DIR_CAСHE = "tmp";
 	/**
 	 * отладака
 	 */
@@ -29,7 +32,7 @@ public class SystemEnv {
 	/**
 	 * путь для файла cache
 	 */
-	private String pathToCache = null;
+	private String pathToApp = null;
 	/**
 	 * автообновление приложение включено
 	 */
@@ -41,7 +44,7 @@ public class SystemEnv {
 
 	private String ldapHost = "ite-ng.ru";
 	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";
-	private String[] ldapHosts = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };	
+	private String[] ldapHosts = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
 	private String ldapPort = "389";
 	private String ldapUser = "ldap@ite-ng.ru";
 	private String ldapPass = "ldap";
@@ -56,19 +59,17 @@ public class SystemEnv {
 		}
 		if (null != System.getProperty("isWeb")) {
 			this.setWeb(true);
-		}		
+		}
 		if (null != System.getProperty("skin")) {
 			this.setSkinName(System.getProperty("skin"));
 		}
-		if (null != System.getProperty("isUpdate")) {	
+		if (null != System.getProperty("isUpdate")) {
 			this.setUpdate(("true" == System.getProperty("isUpdate")));
 			if (null != System.getProperty("updateTime")) {
 				this.setTimeUpdate(Integer.parseInt(System.getProperty("updateTime")));
 			}
 		}
-		if (null != System.getProperty("pathToCache")) {
-			this.setPathToCache(System.getProperty("pathToCache"));
-		}
+		this.setPathToApp(System.getProperty("pathToCache"));
 		if (null != System.getProperty("ldapHost")) {
 			this.setLdapHost(System.getProperty("ldapHost"));
 		}
@@ -90,26 +91,42 @@ public class SystemEnv {
 		if (null != System.getProperty("serverSocketPort")) {
 			this.setServerSocketPort(Integer.parseInt(System.getProperty("serverSocketPort")));
 		}
+		
+		createAppCache();
 	}
 
+	private void createAppCache(){
+		new File(this.getPathToApp()+DIR_CAСHE).mkdirs();
+	}
+	
+	public String getPathToAppCache() {
+		return pathToApp+DIR_CAСHE+"/";
+	}
+	
 	public void printHelp() {
-		System.out.println("version - ["+getVersion()+"]");
+		System.out.println("version - [" + getVersion() + "]");
 		System.out.println("Run paramteres");
-		System.out.println("java -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=512k -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");
-		System.out.println("isDebug - addition information about memory. Default value - ["+this.isDebug()+"]");
-		System.out.println("isForce - run ignore has started another version. Default value - ["+this.isForce()+"]");
-		System.out.println("isWeb - run application compatible with webswing. Default value - ["+this.isWeb()+"]");
-		System.out.println("skin - skin name 'nimbus','gtk'...etc. Default value - ["+this.getSkinName()+"]");
-		System.out.println("isUpdate  - run application in autoupdate mode. Default value - ["+this.isUpdate()+"]");
-		System.out.println("updateTime - autoupdate as int value in seconds. Default value - ["+this.timeUpdate+"]");
-		System.out.println("pathToCache - set to save local path to cache file. Default value - ["+this.getPathToCache()+"]");
-		System.out.println("ldapHost - ldap host name. Default value - ["+this.getLdapHost()+"]");
-		System.out.println("ldapBaseDN - ldap base DN. Default value - ["+this.getLdapBaseDN()+"]");
-		System.out.println("ldapHosts - ldap://server0/ ,ldap://server1/. Default value - ["+String.join(",", this.getLdapHosts())+"]");
-		System.out.println("ldapPort - ldap port value. Default value - ["+this.getLdapPort()+"]");
-		System.out.println("ldapUser - ldap user name. Default value - ["+this.getLdapUser()+"]");
-		System.out.println("ldapPass - ldap user pass. Default value - ["+this.getLdapPass()+"]");
-		System.out.println("serverSocketPort - ServerSocket port int value. Default value - ["+this.getServerSocketPort()+"]");
+		System.out.println(
+				"java -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=512k -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");
+		System.out.println("isDebug - addition information about memory. Default value - [" + this.isDebug() + "]");
+		System.out
+				.println("isForce - run ignore has started another version. Default value - [" + this.isForce() + "]");
+		System.out.println("isWeb - run application compatible with webswing. Default value - [" + this.isWeb() + "]");
+		System.out.println("skin - skin name 'nimbus','gtk'...etc. Default value - [" + this.getSkinName() + "]");
+		System.out.println("isUpdate  - run application in autoupdate mode. Default value - [" + this.isUpdate() + "]");
+		System.out
+				.println("updateTime - autoupdate as int value in seconds. Default value - [" + this.timeUpdate + "]");
+		System.out.println("pathToCache - set to save local path to cache file. Default value - ["
+				+ this.getPathToApp() + "]");
+		System.out.println("ldapHost - ldap host name. Default value - [" + this.getLdapHost() + "]");
+		System.out.println("ldapBaseDN - ldap base DN. Default value - [" + this.getLdapBaseDN() + "]");
+		System.out.println("ldapHosts - ldap://server0/ ,ldap://server1/. Default value - ["
+				+ String.join(",", this.getLdapHosts()) + "]");
+		System.out.println("ldapPort - ldap port value. Default value - [" + this.getLdapPort() + "]");
+		System.out.println("ldapUser - ldap user name. Default value - [" + this.getLdapUser() + "]");
+		System.out.println("ldapPass - ldap user pass. Default value - [" + this.getLdapPass() + "]");
+		System.out.println(
+				"serverSocketPort - ServerSocket port int value. Default value - [" + this.getServerSocketPort() + "]");
 	}
 
 	public String getVersion() {
@@ -161,24 +178,27 @@ public class SystemEnv {
 		}
 	}
 
-	public boolean hasPathToCache() {
-		return (pathToCache != null);
+	public String getPathToApp() {
+		return pathToApp;
 	}
 
-	public String getPathToCache() {
-		return pathToCache;
-	}
-
-	private void setPathToCache(String pathToCache) {
-		if (Files.isDirectory(Paths.get(pathToCache))) {
-			this.pathToCache = pathToCache;
+	private void setPathToApp(String pathToApp) {
+		if (null != pathToApp && Files.isDirectory(Paths.get(pathToApp))) {
+			this.pathToApp = pathToApp+"/";
+		} else {
+			try {
+				this.setPathToApp(new java.io.File(".").getCanonicalPath());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
 	public int getTimeUpdate() {
 		return timeUpdate * 1000;
 	}
-	
+
 	private void setTimeUpdate(int timeUpdate) {
 		this.timeUpdate = timeUpdate;
 	}
@@ -210,7 +230,7 @@ public class SystemEnv {
 	public String[] getLdapHosts() {
 		return ldapHosts;
 	}
-	
+
 	private void setLdapHosts(String[] ldapHosts) {
 		this.ldapHosts = ldapHosts;
 	}

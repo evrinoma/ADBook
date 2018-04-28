@@ -26,21 +26,13 @@ public class LoadThread extends SwingWorker<Object, String> {
 	private Core core = null;
 	private Companys companys = null;
 	private boolean direction = READ;
-	private String currentPath = "/" + FILE_CAСHE;
 
 	private LocalDateTime timeStamp = null;
 
 	private FileLock fileLock;
 
 	public LoadThread(Core core) {
-		try {
-			timeStamp = LocalDateTime.now();
-			currentPath = ((core.getSystemEnv().hasPathToCache()) ? core.getSystemEnv().getPathToCache() + currentPath
-					: new java.io.File(".").getCanonicalPath() + currentPath);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		timeStamp = LocalDateTime.now();
 		this.core = core;
 		this.companys = this.core.getCompanys();
 	}
@@ -114,7 +106,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileLock lock = null;
 
 		try {
-			fileOut = new RandomAccessFile(currentPath, "rw");
+			fileOut = new RandomAccessFile(core.getSystemEnv().getPathToAppCache()+FILE_CAСHE, "rw");
 			channel = fileOut.getChannel();
 			lock = channel.lock();
 
@@ -148,7 +140,7 @@ public class LoadThread extends SwingWorker<Object, String> {
 		FileLock lock = null;
 
 		try {
-			fileIn = new RandomAccessFile(currentPath, "rw");
+			fileIn = new RandomAccessFile(core.getSystemEnv().getPathToAppCache()+FILE_CAСHE, "rw");
 			channel = fileIn.getChannel();
 			lock = channel.lock();
 
