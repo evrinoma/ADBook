@@ -1,6 +1,5 @@
 package entity;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,15 +10,7 @@ public class SystemEnv {
 	/**
 	 * версия
 	 */
-	private String version = "27.04.18v01";
-	/**
-	 * директория для кеша
-	 */
-	private static final String DIR_CAСHE = "tmp";
-	/**
-	 * директория для хранения картинок в кеш
-	 */	
-	private static final String DIR_IMAGES = "images";
+	private String version = "27.04.18v01";	
 	/**
 	 * отладака
 	 */
@@ -98,17 +89,8 @@ public class SystemEnv {
 		if (null != System.getProperty("serverSocketPort")) {
 			this.setServerSocketPort(Integer.parseInt(System.getProperty("serverSocketPort")));
 		}
-		
-		createAppDirs();
 	}
-
-	private void createAppDirs(){
-		new File(this.getPathToApp()+DIR_CAСHE+"/"+DIR_IMAGES).mkdirs();
-	}	
 	
-	public String getPathToAppCache() {
-		return pathToApp+DIR_CAСHE+"/";
-	}
 	
 	public void printHelp() {
 		System.out.println("version - [" + getVersion() + "]");
