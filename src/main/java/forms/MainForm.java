@@ -1584,7 +1584,7 @@ public class MainForm {
 			
 			labelPersonPic.setIcon(resizeIcon(getImage(core.getUser().hasPathCacheImage()
 					? getUrlFile(core.getUser().getPathCacheImage()) : getUrlResourceFile(USERS_IMAGE)), labelPersonPic));
-
+			
 			setPersonPanelQrCode();
 			core.flushing();
 		}
