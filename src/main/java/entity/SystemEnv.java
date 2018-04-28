@@ -12,7 +12,14 @@ public class SystemEnv {
 	 * версия
 	 */
 	private String version = "27.04.18v01";
+	/**
+	 * директория для кеша
+	 */
 	private static final String DIR_CAСHE = "tmp";
+	/**
+	 * директория для хранения картинок в кеш
+	 */	
+	private static final String DIR_IMAGES = "images";
 	/**
 	 * отладака
 	 */
@@ -92,12 +99,12 @@ public class SystemEnv {
 			this.setServerSocketPort(Integer.parseInt(System.getProperty("serverSocketPort")));
 		}
 		
-		createAppCache();
+		createAppDirs();
 	}
 
-	private void createAppCache(){
-		new File(this.getPathToApp()+DIR_CAСHE).mkdirs();
-	}
+	private void createAppDirs(){
+		new File(this.getPathToApp()+DIR_CAСHE+"/"+DIR_IMAGES).mkdirs();
+	}	
 	
 	public String getPathToAppCache() {
 		return pathToApp+DIR_CAСHE+"/";
