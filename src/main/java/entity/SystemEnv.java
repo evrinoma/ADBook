@@ -11,7 +11,7 @@ public class SystemEnv {
 	/**
 	 * версия
 	 */
-	private String version = "28.04.18v01";	
+	private String version = "19.10.18v01";	
 	/**
 	 * директория для кеша
 	 */

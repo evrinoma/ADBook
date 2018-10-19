@@ -1538,7 +1538,6 @@ public class MainForm {
 	private void updatePanelView() {
 		if (core.getUser() instanceof UserDto) {
 			String mail = core.getUser().getHtmlFormatMail();
-			String phone = core.getUser().getFullTelephone();
 
 			labelPersonWriDescription.setText(core.getUser().getDescription());
 			labelPersonWriFio.setText(core.getUser().getCn());
@@ -1556,7 +1555,7 @@ public class MainForm {
 			showGraph(core.getUserDependency(core.getUser()));
 			labelPersonWriPhoneSmall.setText(core.getUser().getTelephoneNumber());
 			labelPersonWriRoom.setText(core.getUser().getPhysicalDeliveryOfficeName());
-			labelPersonWriPhoneInside.setText(phone);
+			labelPersonWriPhoneInside.setText(core.getUser().getFullTelephone());
 			labelPersonWriMail.setText(mail);
 			labelPersonWriMail.setToolTipText(core.getUser().getMail());
 
@@ -1567,7 +1566,7 @@ public class MainForm {
 			labelContactWriStreet.setText(core.getUser().getStreetAddress());
 			labelContactWriBirth.setText(core.getUser().getInfo());
 			labelContactWriRoom.setText(core.getUser().getPhysicalDeliveryOfficeName());
-			labelContactWriPhone.setText(phone);
+			labelContactWriPhone.setText(core.getUser().getOtherTelephone());
 			labelContactWriPhoneInside.setText(core.getUser().getTelephoneNumber());
 			labelContactWriMobilePhone.setText(core.getUser().getMobile());
 			labelContactWriMail.setText(mail);

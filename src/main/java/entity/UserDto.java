@@ -555,8 +555,10 @@ public class UserDto implements Serializable {
 
 	public String getFullTelephone(boolean maker) {
 		return new String(
-				this.getOtherTelephone() + ((0 == this.getOtherTelephone().length()) ? "" : ((maker) ? "p*" : "доб."))
-						+ this.getTelephoneNumber());
+				this.getOtherTelephone() 
+				+ ((0 == this.getOtherTelephone().length()) ? this.getMobile() 
+				: ((0 != this.getTelephoneNumber().length()) ?((maker) ? "p*" : "доб."):""))
+				+ ((0 != this.getOtherTelephone().length()) ? this.getTelephoneNumber():""));
 	}
 
 	public String getVCard(boolean isTranslit) {
