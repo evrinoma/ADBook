@@ -11,7 +11,7 @@ public class SystemEnv {
 	/**
 	 * версия
 	 */
-	private String version = "19.10.18v01";	
+	private String version = "21.12.18v01";	
 	/**
 	 * директория для кеша
 	 */
@@ -51,7 +51,7 @@ public class SystemEnv {
 
 	private String ldapHost = "ite-ng.ru";
 	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";
-	private String[] ldapHosts = { "ldap://iteng13.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
+	private String[] ldapHosts = { "ldap://iteng6.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
 	private String ldapPort = "389";
 	private String ldapUser = "ldap@ite-ng.ru";
 	private String ldapPass = "ldap";
