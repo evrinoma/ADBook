@@ -51,7 +51,7 @@ public class SystemEnv {
 
 	private String ldapHost = "ite-ng.ru";
 	private String ldapBaseDN = "OU=MSK,DC=ite-ng,DC=ru";
-	private String[] ldapHosts = { "ldap://iteng6.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
+	private String[] ldapHosts = { "ldap://iteng06.ite-ng.ru", "ldap://iteng20.ite-ng.ru" };
 	private String ldapPort = "389";
 	private String ldapUser = "ldap@ite-ng.ru";
 	private String ldapPass = "ldap";
