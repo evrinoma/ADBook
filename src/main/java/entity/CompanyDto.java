@@ -133,7 +133,7 @@ public class CompanyDto implements Serializable {
 		return parentDn;
 	}
 
-	public void setParentDn(String parentDn) {
+	private void setParentDn(String parentDn) {
 		this.parentDn = parentDn;
 	}	
 }

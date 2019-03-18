@@ -66,7 +66,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 	}
 
 	private void getLdapUsers() {
-		getLdapUsers(new String("cn"));
+		getLdapUsers("cn");
 	}
 
 	private void closeLdapConnection() {
@@ -164,7 +164,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 			// This is thrown if we throw an exception
 			// from doInBackground.
 		}
-		core.flushing(core.TREAD_LDAP_SEARCH);
+		core.flushing(Core.TREAD_LDAP_SEARCH);
 	}
 
 	@Override

@@ -22,12 +22,12 @@ public class Ldap {
 	private String ldapPort = null;
 	private String ldapUser = null;
 	private String ldapPass = null;
-	public static final String LDAP_VERSION = "3";
-	public static final String LDAP_AUTH_METHOD = "simple";
-	public static final String LDAP_TIMEOUT = "20000";
+	private static final String LDAP_VERSION = "3";
+	private static final String LDAP_AUTH_METHOD = "simple";
+	private static final String LDAP_TIMEOUT = "20000";
 
 	private boolean connect = false;
-	public LdapContext ctx = null;
+	private LdapContext ctx = null;
 	private String sort = "cn";
 
 	public String getSort() {
@@ -87,13 +87,13 @@ public class Ldap {
 	/**
      * Please refer to the method for more details.
      *
-     * @param String ldapHost
-     * @param String ldapBaseDN 
-     * @param String[] ldapHosts
-     * @param String ldapPort
-     * @param String ldapUser
-     * @param String ldapPass    
-     */
+	 * @param ldapHost
+	 * @param ldapBaseDN
+	 * @param ldapHosts
+	 * @param ldapPort
+	 * @param ldapUser
+	 * @param ldapPass
+	 */
 	public Ldap(String ldapHost, String ldapBaseDN, String[] ldapHosts, String ldapPort, String ldapUser,
 			String ldapPass) {
 		this.ldapHost = ldapHost;

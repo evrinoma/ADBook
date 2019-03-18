@@ -44,7 +44,7 @@ public class UserNode {
 	
 	public boolean isOnly()
 	{
-		return (1 == this.count) ? true : false;
+		return 1 == this.count;
 	}
 	
 	public TreePath getPath()

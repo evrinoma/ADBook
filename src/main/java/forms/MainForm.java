@@ -133,7 +133,7 @@ public class MainForm {
 	private JLabel labelPersonWriMail;
 	private JLabel labelPersonWriPhoneSmall;
 
-	private JLabel labelContactWriСountry;
+	private JLabel labelContactWriCountry;
 	private JLabel labelContactWriRegion;
 	private JLabel labelContactWriTown;
 	private JLabel labelContactWritPostIndex;
@@ -338,7 +338,7 @@ public class MainForm {
 		expandTree(isInit);
 	}
 
-	public void setSelectionUser(TreePath eTree) {
+	private void setSelectionUser(TreePath eTree) {
 		this.isLockRenderTree = true;
 		TreeSelectionModel model = tree.getSelectionModel();
 		model.addSelectionPath(eTree);
@@ -658,20 +658,23 @@ public class MainForm {
 		tools.add(labelCollapsTree);
 	}
 
+	/**
+	 * @param lock
+	 */
 	private void lockPanelFSM(boolean lock) {
 		for (Component entity : panelFSM.getComponents()) {
 			if (lock) {
-				entity.disable();
+				entity.setEnabled(false);
 			} else {
 				if (null != entity.getName() && entity.getName().equals("comboBoxFilial")) {
 					CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
 					if (!company.isAllSelected()) {
-						entity.enable();
+						entity.setEnabled(true);
 					} else {
-						entity.disable();
+						entity.setEnabled(false);
 					}
 				} else {
-					entity.enable();
+					entity.setEnabled(true);
 				}
 			}
 		}
@@ -688,12 +691,12 @@ public class MainForm {
 		isLockRenderComboBox = true;
 		CompanyDto company = (CompanyDto) comboBoxCompany.getSelectedItem();
 		if (!company.isAllSelected() & (company.getFilials().size() > 0)) {
-			comboBoxFilial.enable();
+			comboBoxFilial.setEnabled(true);
 			comboBoxFilial.removeAllItems();
 			comboBoxFilial.addItem(new CompanyDto());
 			setFilialSelector(company);
 		} else {
-			comboBoxFilial.disable();
+			comboBoxFilial.setEnabled(false);
 			comboBoxFilial.removeAllItems();
 			comboBoxFilial.addItem(new CompanyDto());
 		}
@@ -732,10 +735,10 @@ public class MainForm {
 
 	private void addMessagePreloader() {
 		if (null != panelAuth) {
-			panelAuth.hide();
+			panelAuth.setVisible(false);
 		}
 		if (null != panelMessagesEditor) {
-			panelMessagesEditor.hide();
+			panelMessagesEditor.setVisible(false);
 		}
 		createPanelPreloader(panelMessages);
 
@@ -752,14 +755,14 @@ public class MainForm {
 
 	public void showMessageEditorPanel(String authUser) {
 		this.labelMessagesEditorWriFrom.setText(authUser);
-		panelAuth.hide();
-		panelMessagesEditor.show();
+		panelAuth.setVisible(false);
+		panelMessagesEditor.setVisible(true);
 		panelMessagesEditor.repaint();
 	}
 
 	public void addTreePreloader() {
 		if (null != treeView) {
-			treeView.hide();
+			treeView.setVisible(false);
 		}
 		lockPanelFSM();
 		createPanelPreloader(panelTree);
@@ -883,13 +886,13 @@ public class MainForm {
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactMail, 0, SpringLayout.WEST, labelContactСountry);
 		panel.add(labelContactMail);
 
-		labelContactWriСountry = new JLabel();
-		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriСountry, 5, SpringLayout.EAST,
+		labelContactWriCountry = new JLabel();
+		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriCountry, 5, SpringLayout.EAST,
 				labelContactMobilePhone);
-		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriСountry, 0, SpringLayout.SOUTH,
+		sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriCountry, 0, SpringLayout.SOUTH,
 				labelContactСountry);
-		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriСountry, 0, SpringLayout.EAST, panel);
-		panel.add(labelContactWriСountry);
+		sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriCountry, 0, SpringLayout.EAST, panel);
+		panel.add(labelContactWriCountry);
 
 		labelContactWriRegion = new JLabel();
 		sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriRegion, 5, SpringLayout.EAST,
@@ -1559,7 +1562,7 @@ public class MainForm {
 			labelPersonWriMail.setText(mail);
 			labelPersonWriMail.setToolTipText(core.getUser().getMail());
 
-			labelContactWriСountry.setText(core.getUser().getCo());
+			labelContactWriCountry.setText(core.getUser().getCo());
 			labelContactWriRegion.setText(core.getUser().getSt());
 			labelContactWriTown.setText(core.getUser().getL());
 			labelContactWritPostIndex.setText(core.getUser().getPostalCode());
@@ -2310,7 +2313,7 @@ public class MainForm {
 	/**
 	 * метод проверяет заполенены ли все поля сообщения
 	 * 
-	 * @return
+	 * @return bool
 	 */
 	private boolean checkFieldMessage() {
 		boolean status = true;
@@ -2327,52 +2330,40 @@ public class MainForm {
 	 * фильтрация только цифр
 	 * 
 	 * @param e
-	 * @return
+	 * @return bool
 	 */
 	private boolean filterOnlyDigit(KeyEvent e) {
-		if (Character.isDigit(e.getKeyChar())) {
-			return false;
-		}
-		return true;
+		return !Character.isDigit(e.getKeyChar());
 	}
 
 	/**
 	 * фильтрация только букв
 	 * 
 	 * @param e
-	 * @return
+	 * @return bool
 	 */
 	private boolean filterOnlyAlphabetic(KeyEvent e) {
-		if (Character.isAlphabetic(e.getKeyChar())) {
-			return false;
-		}
-		return true;
+		return !Character.isAlphabetic(e.getKeyChar());
 	}
 
 	/**
 	 * фильтрация только space
 	 * 
 	 * @param e
-	 * @return
+	 * @return bool
 	 */
 	private boolean filterOnlySpace(KeyEvent e) {
-		if (Character.isSpaceChar(e.getKeyChar())) {
-			return false;
-		}
-		return true;
+		return !Character.isSpaceChar(e.getKeyChar());
 	}
 
 	/**
 	 * фильтрация только удаление
-	 * 
+	 *
 	 * @param e
-	 * @return
+	 * @return bool
 	 */
 	private boolean filterOnlyErase(KeyEvent e) {
-		if (127 == e.getKeyCode() || 8 == e.getKeyCode()) {
-			return false;
-		}
-		return true;
+		return 127 != e.getKeyCode() && 8 != e.getKeyCode();
 	}
 
 	private boolean filterCtrlV(KeyEvent e) {

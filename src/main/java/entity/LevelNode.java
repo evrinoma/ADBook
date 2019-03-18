@@ -14,9 +14,6 @@ public class LevelNode {
 	private UserDto user;
 	private LevelNode parent = null;
 
-	private int startY = 50;
-	private int startX = 50;
-
 	private int x = 0;
 	private int y = 0;
 
@@ -72,7 +69,7 @@ public class LevelNode {
 		return level;
 	}
 
-	public void setLevel(int level) {
+	private void setLevel(int level) {
 		this.level = level;
 	}
 
@@ -80,7 +77,7 @@ public class LevelNode {
 		return childs;
 	}
 
-	public void setParent(LevelNode parent) {
+	private void setParent(LevelNode parent) {
 		this.parent = parent;
 	}
 
@@ -124,15 +121,15 @@ public class LevelNode {
 		setX(size * (this.stepX + width));
 	}
 
-	public void calcY(int level) {
+	private void calcY(int level) {
 		setY(level * this.stepY);
 	}
 
-	public void setX(int x) {
+	private void setX(int x) {
 		this.x = x;
 	}
 
-	public void setY(int y) {
+	private void setY(int y) {
 		this.y = y;
 	}
 
@@ -151,7 +148,7 @@ public class LevelNode {
 	}
 
 	private boolean isVertex() {
-		return (null == graph || null == vertex) ? true : false;
+		return null == graph || null == vertex;
 	}
 
 	public Object getVertex() {
@@ -160,6 +157,8 @@ public class LevelNode {
 	}
 
 	private Object createVertex() {
+		int startY = 50;
+		int startX = 50;
 		userVertex = graph.insertVertex(vertex, null,
 				user.getLastName() + "\n" + user.getFirstName() + "\n" + user.getMiddleName() + "\n", x + startX,
 				y + startY + (level * stepY), width, height);
