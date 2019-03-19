@@ -1,5 +1,7 @@
 package libs;
 
+import entity.SettingsRecord;
+
 import java.io.IOException;
 import java.util.Hashtable;
 
@@ -16,15 +18,12 @@ import javax.naming.ldap.Control;
  * @author nikolns
  */
 public class Ldap {
-	private String ldapHost = null;
-	private String ldapBaseDN = null;
-	private String[] ldapHosts = null;
-	private String ldapPort = null;
-	private String ldapUser = null;
-	private String ldapPass = null;
+
 	private static final String LDAP_VERSION = "3";
 	private static final String LDAP_AUTH_METHOD = "simple";
 	private static final String LDAP_TIMEOUT = "20000";
+
+	private SettingsRecord settings = null;
 
 	private boolean connect = false;
 	private LdapContext ctx = null;
@@ -42,10 +41,10 @@ public class Ldap {
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT);
-		env.put(Context.PROVIDER_URL, ldapHost + ":" + ldapPort);
+		env.put(Context.PROVIDER_URL, ldapHost + ":" + this.settings.getPort());
 		env.put(Context.SECURITY_AUTHENTICATION, LDAP_AUTH_METHOD);
-		env.put(Context.SECURITY_PRINCIPAL, ldapUser);
-		env.put(Context.SECURITY_CREDENTIALS, ldapPass);
+		env.put(Context.SECURITY_PRINCIPAL, this.settings.getUser());
+		env.put(Context.SECURITY_CREDENTIALS, this.settings.getPass());
 		env.put("java.naming.ldap.version", LDAP_VERSION);
 
 		return env;
@@ -63,7 +62,7 @@ public class Ldap {
 
 	private void getConnect() {
 		if (!isConnect()) {
-			for (String ldapHost : ldapHosts) {
+			for (String ldapHost : this.settings.getHosts()) {
 				this.connectToLdap(ldapHost);
 				if (isConnect())
 					break;
@@ -85,25 +84,14 @@ public class Ldap {
 	}
 
 	/**
-     * Please refer to the method for more details.
-     *
-	 * @param ldapHost
-	 * @param ldapBaseDN
-	 * @param ldapHosts
-	 * @param ldapPort
-	 * @param ldapUser
-	 * @param ldapPass
+	 * @param settings
 	 */
-	public Ldap(String ldapHost, String ldapBaseDN, String[] ldapHosts, String ldapPort, String ldapUser,
-			String ldapPass) {
-		this.ldapHost = ldapHost;
-		this.ldapBaseDN = ldapBaseDN;
-		this.ldapHosts = ldapHosts;
-		this.ldapPort = ldapPort;
-		this.ldapUser = ldapUser;
-		this.ldapPass = ldapPass;
+	public Ldap(SettingsRecord settings) {
+
+		this.settings = settings;
 		getConnect();
 	}
+
 
 	private NamingEnumeration<?> getSearch(SearchControls ctls, String dn, String filter, String[] selector) {
 		NamingEnumeration<?> answer = null;
@@ -136,7 +124,7 @@ public class Ldap {
 	}
 
 	private NamingEnumeration<?> getLdapList(String filter, String[] selector) {
-		return getLdapList(ldapBaseDN, filter, selector);
+		return getLdapList(this.settings.getBaseDN(), filter, selector);
 	}
 
 	private NamingEnumeration<?> getLdapSearch(String dn, String filter, String[] selector) {
@@ -149,7 +137,7 @@ public class Ldap {
 	}
 
 	private NamingEnumeration<?> getLdapSearch(String filter, String[] selector) {
-		return getLdapSearch(ldapBaseDN, filter, selector);
+		return getLdapSearch(this.settings.getBaseDN(), filter, selector);
 	}
 
 	public NamingEnumeration<?> getLdapCompanys() {

@@ -11,6 +11,7 @@ import javax.naming.directory.SearchResult;
 import javax.swing.SwingWorker;
 
 import entity.CompanyDto;
+import entity.SettingsRecord;
 import entity.UserDto;
 import libs.Companys;
 import libs.Core;
@@ -34,9 +35,12 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 
 	private Core core = null;
 
-	public LdapSearchThread(Core core) {
+	private SettingsRecord settings = null;
+
+	public LdapSearchThread(Core core, SettingsRecord settings) {
 		this.core = core;
 		this.companys = this.core.getCompanys().destory();
+		this.settings = settings;
 	}
 
 	@Override
@@ -54,9 +58,8 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 	}
 
 	private void openLdapConnection() {
-		ldap = new Ldap(core.getSystemEnv().getLdapHost(), core.getSystemEnv().getLdapBaseDN(),
-				core.getSystemEnv().getLdapHosts(), core.getSystemEnv().getLdapPort(),
-				core.getSystemEnv().getLdapUser(), core.getSystemEnv().getLdapPass());
+
+		ldap = new Ldap(settings);
 	}
 
 	private void getLdapCompanys() {
@@ -126,7 +129,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 						if (null != description) {
 							Attribute ou = attrs.get("ou");
 							CompanyDto companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
-									(String) sr.getName() + "," + core.getSystemEnv().getLdapBaseDN());
+									(String) sr.getName() + "," + settings.getBaseDN());
 							if (!isFilial) {
 								this.companys.addNewCompany(companyDto);
 								addCompany(ldap.getLdapFilials(companyDto.getDn()), true);

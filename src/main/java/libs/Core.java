@@ -28,10 +28,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import entity.CompanyDto;
-import entity.UserDto;
-import entity.LevelNode;
-import entity.SystemEnv;
+import entity.*;
 import threads.LdapSearchThread;
 import threads.LoadThread;
 import threads.LocalSearchThread;
@@ -275,9 +272,11 @@ public class Core {
 	 */
 	private void ldapSearch() {
 		if (null == ldapSearch || ldapSearch.isDone()) {
-			ldapSearch = null;
-			ldapSearch = new LdapSearchThread(this);
-			ldapSearch.execute();
+			while (getSystemEnv().hasNext()) {
+				ldapSearch = null;
+				ldapSearch = new LdapSearchThread(this, getSystemEnv().getNext());
+				ldapSearch.execute();
+			}
 		} else {
 			ldapSearch.execute();
 		}
@@ -286,7 +285,7 @@ public class Core {
 	/**
 	 * выгрузка из ldap успешна
 	 * 
-	 * @param loadedCompanys
+	 * @param companys
 	 */
 	private void dataLoad(Companys companys) {
 		this.companys = companys;
@@ -300,7 +299,7 @@ public class Core {
 	/**
 	 * выгрузка из ldap успешна
 	 * 
-	 * @param loadedCompanys
+	 * @param ldapCompanys
 	 */
 	public void isLdapSearchSuccessful(Companys ldapCompanys) {
 		dataLoad(ldapCompanys);
@@ -323,7 +322,7 @@ public class Core {
 	/**
 	 * печать в строку состояния из потоков
 	 * 
-	 * @param massage
+	 * @param message
 	 */
 	public void setStatusString(String message) {
 		form.setStatusBar(message);
@@ -331,14 +330,16 @@ public class Core {
 
 	/**
 	 * фильтр по параметрам заданным в фильтре
-	 * 
+	 *
 	 * @param lastName
 	 * @param firstName
 	 * @param middleName
 	 * @param company
 	 * @param filial
+	 * @param department
 	 * @param phone
-	 * @param description
+	 * @param pesonPosition
+	 * @param room
 	 */
 	public void localSearch(String lastName, String firstName, String middleName, CompanyDto company, CompanyDto filial,
 			String department, String phone, String pesonPosition, String room) {
