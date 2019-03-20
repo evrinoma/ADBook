@@ -1,11 +1,11 @@
 package interfaces;
 
-import entity.SettingsRecord;
+import libs.AbstractConnectDescriber;
 
 public interface SettingsRecordIterator {
     boolean hasNext();
 
-    SettingsRecord getNext();
+    AbstractConnectDescriber getNext();
 
     void reset();
 }

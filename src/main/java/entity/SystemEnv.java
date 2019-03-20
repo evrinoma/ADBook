@@ -1,6 +1,8 @@
 package entity;
 
 import interfaces.SettingsRecordIterator;
+import presets.IteConnectDescriber;
+import libs.AbstractConnectDescriber;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +62,7 @@ public class SystemEnv implements SettingsRecordIterator {
      */
     private boolean error = false;
 
-    private ArrayList<SettingsRecord> servers = new ArrayList<SettingsRecord>();
+    private ArrayList<AbstractConnectDescriber> connectionDescriber = new ArrayList<AbstractConnectDescriber>();
 
     private int serverSocketPort = 8749;
 
@@ -90,26 +92,26 @@ public class SystemEnv implements SettingsRecordIterator {
 
         initDefautServers();
 
-        if (null != System.getProperty("ldap")) {
-            if (null != System.getProperty("ldapHost")
-                    || null != System.getProperty("ldapBaseDN")
-                    || null != System.getProperty("ldapHosts")
-                    || null != System.getProperty("ldapPort")
-                    || null != System.getProperty("ldapUser")
-                    || null != System.getProperty("ldapPass")
-            ) {
-                this.servers.add(new SettingsRecord(
-                        System.getProperty("ldapHost"),
-                        System.getProperty("ldapBaseDN"),
-                        System.getProperty("ldapHosts").split(","),
-                        System.getProperty("ldapPort"),
-                        System.getProperty("ldapUser"),
-                        System.getProperty("ldapPass")
-                ));
-            } else {
-                this.setError(true);
-            }
-        }
+//        if (null != System.getProperty("ldap")) {
+//            if (null != System.getProperty("ldapHost")
+//                    || null != System.getProperty("ldapBaseDN")
+//                    || null != System.getProperty("ldapHosts")
+//                    || null != System.getProperty("ldapPort")
+//                    || null != System.getProperty("ldapUser")
+//                    || null != System.getProperty("ldapPass")
+//            ) {
+//                this.connectionDescriber.add(new SettingsRecord(
+//                        System.getProperty("ldapHost"),
+//                        System.getProperty("ldapBaseDN"),
+//                        System.getProperty("ldapHosts").split(","),
+//                        System.getProperty("ldapPort"),
+//                        System.getProperty("ldapUser"),
+//                        System.getProperty("ldapPass")
+//                ));
+//            } else {
+//                this.setError(true);
+//            }
+//        }
 
         createAppDirs();
     }
@@ -123,15 +125,7 @@ public class SystemEnv implements SettingsRecordIterator {
     }
 
     private void initDefautServers() {
-        this.servers.add(
-                new SettingsRecord(
-                        "ite-ng.ru",
-                        "OU=MSK,DC=ite-ng,DC=ru",
-                        new String[]{"ldap://iteng06.ite-ng.ru", "ldap://iteng20.ite-ng.ru"},
-                        "389",
-                        "ldap@ite-ng.ru",
-                        "ldap")
-        );
+        this.connectionDescriber.add(new IteConnectDescriber());
     }
 
     private void createAppDirs() {
@@ -264,12 +258,12 @@ public class SystemEnv implements SettingsRecordIterator {
 
     @Override
     public boolean hasNext() {
-        return point != servers.size();
+        return point != connectionDescriber.size();
     }
 
     @Override
-    public SettingsRecord getNext() {
-        return servers.get(point++);
+    public AbstractConnectDescriber getNext() {
+        return connectionDescriber.get(point++);
     }
 
     @Override
