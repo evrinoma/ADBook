@@ -7,5 +7,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 
 public interface DataAnalise {
-    CompanyDto getCompanys(SearchResult companys, Attributes attrs) throws NamingException;
+    CompanyDto getCompany(SearchResult searchResult, Attributes attrs) throws NamingException;
+    String[] getSelectorCompanys();
+    String[] getSelectorFilials();
 }

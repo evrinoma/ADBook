@@ -57,7 +57,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 
     private void openLdapConnection() {
 
-        ldap = new Ldap(connectDescriber.getSettings());
+        ldap = new Ldap(connectDescriber.getSettings(), connectDescriber.getSelectorCompanys(), connectDescriber.getSelectorFilials());
     }
 
     private void getLdapCompanys() {
@@ -123,7 +123,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
                     sr = (SearchResult) companys.next();
                     attrs = sr.getAttributes();
                     if (null != attrs) {
-                        CompanyDto companyDto = connectDescriber.getCompanys(sr, attrs);
+                        CompanyDto companyDto = connectDescriber.getCompany(sr, attrs);
                         if (null!=companyDto) {
                             if (!isFilial) {
                                 this.companys.addNewCompany(companyDto);

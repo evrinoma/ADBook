@@ -3,6 +3,7 @@ package entity;
 import interfaces.SettingsRecordIterator;
 import presets.IteConnectDescriber;
 import libs.AbstractConnectDescriber;
+import presets.UrConnectDescriber;
 
 import java.io.File;
 import java.io.IOException;
@@ -126,6 +127,7 @@ public class SystemEnv implements SettingsRecordIterator {
 
     private void initDefautServers() {
         this.connectionDescriber.add(new IteConnectDescriber());
+        //this.connectionDescriber.add(new UrConnectDescriber());
     }
 
     private void createAppDirs() {
@@ -148,13 +150,13 @@ public class SystemEnv implements SettingsRecordIterator {
         System.out.println("pathToCache - set to save local path to cache file. Default value - ["
                 + this.getPathToApp() + "]");
         System.out.println("serverSocketPort - ServerSocket port int value. Default value - [" + this.getServerSocketPort() + "]");
-        System.out.println("ldap - create new Ldap depends on:");
-        System.out.println("	ldapHost - ldap host name.");
-        System.out.println("	ldapBaseDN - ldap base DN.");
-        System.out.println("	ldapHosts - ldap://server0/ ,ldap://server1/.");
-        System.out.println("	ldapPort - ldap port value.");
-        System.out.println("	ldapUser - ldap user name.");
-        System.out.println("	ldapPass - ldap user pass.");
+//        System.out.println("ldap - create new Ldap depends on:");
+//        System.out.println("	ldapHost - ldap host name.");
+//        System.out.println("	ldapBaseDN - ldap base DN.");
+//        System.out.println("	ldapHosts - ldap://server0/ ,ldap://server1/.");
+//        System.out.println("	ldapPort - ldap port value.");
+//        System.out.println("	ldapUser - ldap user name.");
+//        System.out.println("	ldapPass - ldap user pass.");
 
     }
 

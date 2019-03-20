@@ -19,145 +19,156 @@ import javax.naming.ldap.Control;
  */
 public class Ldap {
 
-	private static final String LDAP_VERSION = "3";
-	private static final String LDAP_AUTH_METHOD = "simple";
-	private static final String LDAP_TIMEOUT = "20000";
+    private static final String LDAP_VERSION = "3";
+    private static final String LDAP_AUTH_METHOD = "simple";
+    private static final String LDAP_TIMEOUT = "20000";
 
-	private SettingsRecord settings = null;
+    private SettingsRecord settings = null;
 
-	private boolean connect = false;
-	private LdapContext ctx = null;
-	private String sort = "cn";
+    private boolean connect = false;
+    private LdapContext ctx = null;
+    private String sort = "cn";
 
-	public String getSort() {
-		return sort;
-	}
+    private String[] filialSelector = null;
+    private String[] companySelector = null;
 
-	public void setSort(String sort) {
-		this.sort = sort;
-	}
+    public String getSort() {
+        return sort;
+    }
 
-	private Hashtable<String, String> getSettingsHashtable(String ldapHost) {
-		Hashtable<String, String> env = new Hashtable<String, String>();
-		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		env.put("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT);
-		env.put(Context.PROVIDER_URL, ldapHost + ":" + this.settings.getPort());
-		env.put(Context.SECURITY_AUTHENTICATION, LDAP_AUTH_METHOD);
-		env.put(Context.SECURITY_PRINCIPAL, this.settings.getUser());
-		env.put(Context.SECURITY_CREDENTIALS, this.settings.getPass());
-		env.put("java.naming.ldap.version", LDAP_VERSION);
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
 
-		return env;
-	}
+    private Hashtable<String, String> getSettingsHashtable(String ldapHost) {
+        Hashtable<String, String> env = new Hashtable<String, String>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT);
+        env.put(Context.PROVIDER_URL, ldapHost + ":" + this.settings.getPort());
+        env.put(Context.SECURITY_AUTHENTICATION, LDAP_AUTH_METHOD);
+        env.put(Context.SECURITY_PRINCIPAL, this.settings.getUser());
+        env.put(Context.SECURITY_CREDENTIALS, this.settings.getPass());
+        env.put("java.naming.ldap.version", LDAP_VERSION);
 
-	private void connectToLdap(String ldapHost) {
-		try {
-			ctx = new InitialLdapContext(this.getSettingsHashtable(ldapHost), null);
+        return env;
+    }
 
-			this.connect = true;
-		} catch (NamingException e) {
-			e.printStackTrace();
-		}
-	}
+    private void connectToLdap(String ldapHost) {
+        try {
+            ctx = new InitialLdapContext(this.getSettingsHashtable(ldapHost), null);
 
-	private void getConnect() {
-		if (!isConnect()) {
-			for (String ldapHost : this.settings.getHosts()) {
-				this.connectToLdap(ldapHost);
-				if (isConnect())
-					break;
-			}
-		}
-	}
+            this.connect = true;
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void closeConnect() {
-		try {
-			ctx.close();
-		} catch (NamingException e) {
-			e.printStackTrace();
-		}
-		this.connect = false;
-	}
+    private void getConnect() {
+        if (!isConnect()) {
+            for (String ldapHost : this.settings.getHosts()) {
+                this.connectToLdap(ldapHost);
+                if (isConnect())
+                    break;
+            }
+        }
+    }
 
-	public boolean isConnect() {
-		return this.connect;
-	}
+    public void closeConnect() {
+        try {
+            ctx.close();
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+        this.connect = false;
+    }
 
-	/**
-	 * @param settings
-	 */
-	public Ldap(SettingsRecord settings) {
+    public boolean isConnect() {
+        return this.connect;
+    }
 
-		this.settings = settings;
-		getConnect();
-	}
+    /**
+     * @param settings
+     */
+    public Ldap(SettingsRecord settings, String[] companySelector, String[] filialSelector) {
+        this.settings = settings;
+        this.companySelector = companySelector;
+        this.filialSelector = filialSelector;
+        getConnect();
+    }
 
 
-	private NamingEnumeration<?> getSearch(SearchControls ctls, String dn, String filter, String[] selector) {
-		NamingEnumeration<?> answer = null;
-		try {
-			ctx.setRequestControls(new Control[] { new SortControl(sort, Control.CRITICAL) });
-			answer = ctx.search(dn, filter, ctls);
-		} catch (NamingException | IOException e) {
-			e.printStackTrace();
-		}
+    private NamingEnumeration<?> getSearch(SearchControls ctls, String dn, String filter) {
+        NamingEnumeration<?> answer = null;
+        try {
+            ctx.setRequestControls(new Control[]{new SortControl(sort, Control.CRITICAL)});
+            answer = ctx.search(dn, filter, ctls);
+        } catch (NamingException | IOException e) {
+            e.printStackTrace();
+        }
 
-		return answer;
-	}
+        return answer;
+    }
 
-	public String[] getDefaultSelectFields() {
-		String[] selectFields = { "mobile", "homePhone", "userPassword", "postOfficeBox", "cn", "sn", "c", "l", "st",
-				"title", "description", "postalcode", "physicaldeliveryofficename", "telephonenumber", "givenname",
-				"distinguishedname", "displayname", "othertelephone", "co", "department", "company", "streetaddress",
-				"wwwhomepage", "useraccountcontrol", "mail", "userprincipalname", "samaccountname", "manager",
-				"directreports", "itnumber", "info", "jpegphoto", "fname", };
+    public String[] getDefaultSelectFields() {
+        String[] selectFields = {"mobile", "homePhone", "userPassword", "postOfficeBox", "cn", "sn", "c", "l", "st",
+                "title", "description", "postalcode", "physicaldeliveryofficename", "telephonenumber", "givenname",
+                "distinguishedname", "displayname", "othertelephone", "co", "department", "company", "streetaddress",
+                "wwwhomepage", "useraccountcontrol", "mail", "userprincipalname", "samaccountname", "manager",
+                "directreports", "itnumber", "info", "jpegphoto", "fname",};
 
-		return selectFields;
-	}
+        return selectFields;
+    }
 
-	private NamingEnumeration<?> getLdapList(String dn, String filter, String[] selector) {
-		SearchControls ctls = new SearchControls();
-		ctls.setReturningAttributes(selector);
-		ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+    private NamingEnumeration<?> getLdapList(String dn, String filter, String[] selector) {
+        NamingEnumeration<?> answer = null;
+        if (null != selector) {
+            SearchControls ctls = new SearchControls();
+            ctls.setReturningAttributes(selector);
+            ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
 
-		return getSearch(ctls, dn, filter, selector);
-	}
+            answer = getSearch(ctls, dn, filter);
+        }
 
-	private NamingEnumeration<?> getLdapList(String filter, String[] selector) {
-		return getLdapList(this.settings.getBaseDN(), filter, selector);
-	}
+        return answer;
+    }
 
-	private NamingEnumeration<?> getLdapSearch(String dn, String filter, String[] selector) {
+    private NamingEnumeration<?> getLdapList(String filter, String[] selector) {
+        return getLdapList(this.settings.getBaseDN(), filter, selector);
+    }
 
-		SearchControls ctls = new SearchControls();
-		ctls.setReturningAttributes(selector);
-		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    private NamingEnumeration<?> getLdapSearch(String dn, String filter, String[] selector) {
+        NamingEnumeration<?> answer = null;
+        if (null != selector) {
+            SearchControls ctls = new SearchControls();
+            ctls.setReturningAttributes(selector);
+            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-		return getSearch(ctls, dn, filter, selector);
-	}
+            answer = getSearch(ctls, dn, filter);
+        }
 
-	private NamingEnumeration<?> getLdapSearch(String filter, String[] selector) {
-		return getLdapSearch(this.settings.getBaseDN(), filter, selector);
-	}
+        return answer;
+    }
 
-	public NamingEnumeration<?> getLdapCompanys() {
-		String companyFilter = "(&(objectclass=organizationalUnit))";
-		String[] companySelector = { "ou", "description", "dn" };
+    private NamingEnumeration<?> getLdapSearch(String filter, String[] selector) {
+        return getLdapSearch(this.settings.getBaseDN(), filter, selector);
+    }
 
-		return getLdapList(companyFilter, companySelector);
-	}
+    public NamingEnumeration<?> getLdapCompanys() {
+        String companyFilter = "(&(objectclass=organizationalUnit))";
 
-	public NamingEnumeration<?> getLdapFilials(String dn) {
-		String filialFilter = "(&(objectclass=organizationalUnit))";
-		String[] filialSelector = { "ou", "description", "dn" };
+        return getLdapList(companyFilter, companySelector);
+    }
 
-		return getLdapList(dn, filialFilter, filialSelector);
-	}
+    public NamingEnumeration<?> getLdapFilials(String dn) {
+        String filialFilter = "(&(objectclass=organizationalUnit))";
 
-	public NamingEnumeration<?> getLdapUsers(String companyDn) {
-		String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null)))";
+        return getLdapList(dn, filialFilter, filialSelector);
+    }
 
-		return getLdapSearch(companyDn, userFilter, getDefaultSelectFields());
-	}
+    public NamingEnumeration<?> getLdapUsers(String companyDn) {
+        String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null)))";
+
+        return getLdapSearch(companyDn, userFilter, getDefaultSelectFields());
+    }
 
 }

@@ -19,17 +19,21 @@ public class IteConnectDescriber extends AbstractConnectDescriber {
                 "389",
                 "ldap@ite-ng.ru",
                 "ldap");
+
+        selectorCompanys = new String[]{"ou", "description", "dn"};
+        selectorFilials  = selectorCompanys;
     }
 
     @Override
-    public CompanyDto getCompanys(SearchResult companys, Attributes attrs) throws NamingException {
-        CompanyDto companyDto = null;
+    public CompanyDto getCompany(SearchResult searchResult, Attributes attrs) throws NamingException {
         Attribute description = attrs.get("description");
+        companyDto = null;
         if (null != description) {
             Attribute ou = attrs.get("ou");
             companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
-                    (String) companys.getName() + "," + settingsRecord.getBaseDN());
+                    (String) searchResult.getName() + "," + settingsRecord.getBaseDN());
         }
         return companyDto;
     }
+
 }
