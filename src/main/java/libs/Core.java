@@ -77,7 +77,7 @@ public class Core {
     }
 
 	public Core() {
-		companys = new Companys();
+        this.setCompanys(new Companys());
 		this.environment = new SystemEnv();
 		this.environment.printHelp();
 		clearMailAttachmet();
@@ -271,21 +271,6 @@ public class Core {
         flushing(-1);
     }
 
-//	/**
-//	 * выгрузка данных из ldap
-//	 */
-//	private LdapSearchThread ldapSearch(AbstractConnectDescriber connectDescriber, LdapSearchThread ldapSearch) {
-//		if (null == ldapSearch || ldapSearch.isDone()) {
-//				ldapSearch = new LdapSearchThread(this, connectDescriber);
-//				ldapSearch.execute();
-//		} else {
-//			ldapSearch.execute();
-//		}
-//
-//		return ldapSearch;
-//	}
-
-
     /**
      * выгрузка данных из ldap
      */
@@ -300,6 +285,7 @@ public class Core {
         if (null == ldapSearchStack) {
             this.getCompanys().destory();
             ldapSearchStack = new HashMap<String, LdapSearchThread>();
+            getSystemEnv().reset();
             while (getSystemEnv().hasNext()) {
                 AbstractConnectDescriber connectDescriber = getSystemEnv().getNext();
                 String key = connectDescriber.getConnectionName();
@@ -335,6 +321,8 @@ public class Core {
      * @return
      */
     private Core setCompanys(Companys companys) {
+        this.companys = companys;
+
         return this;
     }
 
@@ -398,7 +386,7 @@ public class Core {
             }
             ldapSearchStack = null;
             ldapSaveCompanys = null;
-            dataLoad();
+            dataLoad().localWriteCache();
         }
 
         return this;
