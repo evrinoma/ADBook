@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 import javax.swing.SwingWorker;
@@ -37,7 +36,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 
     public LdapSearchThread(Core core, AbstractConnectDescriber connectDescriber) {
         this.core = core;
-        this.companys = this.core.getCompanys().destory();
+        this.companys = new Companys();
         this.connectDescriber = connectDescriber;
     }
 
@@ -155,7 +154,13 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
             status = (boolean) get();
             if (status) {
                 companys.generateDate();
-                core.isLdapSearchSuccessful(companys);
+                String connectionName = connectDescriber.getConnectionName();
+                if (connectDescriber.isRemouteFilials()) {
+                    core.addLdapSearchSuccessful(companys, connectionName);
+                } else {
+                    core.addLdapSearchSuccessful(companys);
+                }
+                core.removeLdapSearchStack(connectionName).linkCompanys();
             }
             // System.out.println("Completed with status: " + status);
         } catch (InterruptedException e) {

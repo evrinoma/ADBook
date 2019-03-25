@@ -25,4 +25,24 @@ public abstract class AbstractConnectDescriber implements DataAnalise {
     public String[] getSelectorFilials() {
         return selectorFilials;
     }
+
+    public boolean isRemouteFilials() {
+        return false;
+    }
+
+    protected String getCompanyDN() {
+        return null;
+    }
+
+    protected String getFilialDN() {
+        return null;
+    }
+
+    public String getConnectionName() {
+        return this.getClass().getName();
+    }
+
+    protected String getRemoteFilialDN() {
+        return null;
+    }
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import entity.CompanyDto;
 import entity.UserDto;
@@ -67,6 +68,25 @@ public class Companys implements Serializable {
 		return this;
 	}
 
+	public void setCompany(HashMap<String, UserDto> users, String companyDN, String filialDN) {
+		for (CompanyDto company : companys) {
+			if (company.getDn().contains(companyDN)){
+				for (CompanyDto filial : company.getFilials()) {
+					if (filial.getDn().contains(filialDN)){
+						filial.setUsers(users);
+					}
+				}
+			}
+		}
+	}
+
+	public void mergeCompanys(Companys source) {
+		for (CompanyDto company : source.getCompanys()) {
+			this.addNewCompany(company);
+		}
+		this.timeStamp = source.getTimeStamp();
+	}
+
 	public ArrayList<String> toArrayDescriptionCompanys() {
 		ArrayList<String> companysName = new ArrayList<String>();
 		for (CompanyDto company : companys) {
@@ -104,6 +124,24 @@ public class Companys implements Serializable {
 	public UserDto findUserByDistinguishedName(String DistinguishedName) {
 		UserDto search = null;
 		return findDistinguishedName(companys, search, DistinguishedName);
+	}
+
+	public CompanyDto findCompanyByDN(String companyDN) {
+		CompanyDto search = null;
+		for (CompanyDto company : companys) {
+			if (company.getDn().contains(companyDN)) {
+				search = company;
+				break;
+			} else {
+				for (CompanyDto filial : company.getFilials()) {
+					if (filial.getDn().contains(companyDN)) {
+						search = company;
+						break;
+					}
+				}
+			}
+		}
+		return search;
 	}
 
 	private UserDto findEmail(ArrayList<CompanyDto> companys, UserDto search, String email) {
