@@ -10,8 +10,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,14 +19,13 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
-import org.apache.commons.codec.binary.Hex;
-
 public class UserDto implements Serializable {
     private String mobile = "";
     private String homePhone = "";
     private String userPassword = "";
     private String postOfficeBox = "";
     private String cn = "";
+    private String ou = "";
     private String sn = "";
     private String c = "";
     private String l = "";
@@ -143,6 +140,10 @@ public class UserDto implements Serializable {
 
     protected void setSn(String sn) {
         this.sn = paramToString(sn);
+    }
+
+    protected void setCompanyOu(String ou) {
+        this.ou = paramToString(ou);
     }
 
     protected void setC(String c) {
@@ -325,6 +326,10 @@ public class UserDto implements Serializable {
         return cn;
     }
 
+    public String getCompanyOu() {
+        return ou;
+    }
+
     private String getCn(boolean isTranslit) {
         return (isTranslit) ? this.translit(getCn()) : getCn();
     }
@@ -474,7 +479,7 @@ public class UserDto implements Serializable {
         }
     }
 
-    public UserDto deployEntry(Attributes entry, String[] fields, String companyDn) throws NamingException {
+    public UserDto deployEntry(Attributes entry, String[] fields, String companyDn,String companyOu) throws NamingException {
         for (NamingEnumeration ae = entry.getAll(); ae.hasMore(); ) {
             Attribute attr = (Attribute) ae.next();
             try {
@@ -484,6 +489,7 @@ public class UserDto implements Serializable {
             }
         }
         this.setCompanyDn(companyDn);
+        this.setCompanyOu(companyOu);
         saveJpegPhotoToCache();
 
         return this;
@@ -733,6 +739,7 @@ public class UserDto implements Serializable {
         userPassword = aInputStream.readUTF();
         postOfficeBox = aInputStream.readUTF();
         cn = aInputStream.readUTF();
+        ou = aInputStream.readUTF();
         sn = aInputStream.readUTF();
         c = aInputStream.readUTF();
         l = aInputStream.readUTF();
@@ -777,6 +784,7 @@ public class UserDto implements Serializable {
         aOutputStream.writeUTF(userPassword);
         aOutputStream.writeUTF(postOfficeBox);
         aOutputStream.writeUTF(cn);
+        aOutputStream.writeUTF(ou);
         aOutputStream.writeUTF(sn);
         aOutputStream.writeUTF(c);
         aOutputStream.writeUTF(l);

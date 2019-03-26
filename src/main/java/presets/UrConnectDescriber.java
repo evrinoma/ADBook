@@ -15,7 +15,7 @@ public class UrConnectDescriber extends AbstractConnectDescriber {
     private static final String COMPANY_DN = "OU=IPCNG,OU=MSK,DC=ite-ng,DC=ru";
     private static final String FILIAL_DN = "OU=Ekaterinburg,OU=MSK,DC=ite-ng,DC=ru";
     private static final String FILIAL_REMOTE_DN = "OU=Ekaterinburg,DC=ur,DC=ite-ng,DC=ru";
-    private static final String FILIAL_REMOTE_OU = "Ekaterinburg";
+    public static final String FILIAL_REMOTE_OU = "Ekaterinburg";
 
     public UrConnectDescriber() {
         settingsRecord =  new SettingsRecord(
