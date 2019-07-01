@@ -42,8 +42,14 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
 
     @Override
     protected Boolean doInBackground() throws Exception {
-        publish(HINT_LDAP_OPEN);
-        openLdapConnection();
+
+        try {
+            publish(HINT_LDAP_OPEN);
+            openLdapConnection();
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+
         publish(HINT_LDAP_COMPANYS);
         getLdapCompanys();
         publish(HINT_LDAP_USERS);
@@ -54,15 +60,15 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
         return true;
     }
 
-    private void openLdapConnection() {
-
+    private void openLdapConnection() throws Exception {
         ldap = new Ldap(connectDescriber.getSettings(), connectDescriber.getSelectorCompanys(), connectDescriber.getSelectorFilials());
+        if (!ldap.isConnect()) {
+            throw new Exception();
+        }
     }
 
     private void getLdapCompanys() {
-        if (ldap.isConnect()) {
-            addCompany(ldap.getLdapCompanys());
-        }
+        addCompany(ldap.getLdapCompanys());
     }
 
     private void getLdapUsers() {
@@ -100,15 +106,13 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
     }
 
     private void getLdapUsers(String $sort) {
-        if (ldap.isConnect()) {
-            for (CompanyDto company : companys.all()) {
-                if (company.getFilials().size() > 0) {
-                    for (CompanyDto filial : company.getFilials()) {
-                        addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));
-                    }
-                } else {
-                    addUser(company, ldap.getLdapUsers(company.getDn()));
+        for (CompanyDto company : companys.all()) {
+            if (company.getFilials().size() > 0) {
+                for (CompanyDto filial : company.getFilials()) {
+                    addUser(filial, ldap.getLdapUsers("ou=" + filial.getOu() + "," + company.getDn()));
                 }
+            } else {
+                addUser(company, ldap.getLdapUsers(company.getDn()));
             }
         }
     }
@@ -123,7 +127,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
                     attrs = sr.getAttributes();
                     if (null != attrs) {
                         CompanyDto companyDto = connectDescriber.getCompany(sr, attrs);
-                        if (null!=companyDto) {
+                        if (null != companyDto) {
                             if (!isFilial) {
                                 this.companys.addNewCompany(companyDto);
                                 addCompany(ldap.getLdapFilials(companyDto.getDn()), true);
@@ -147,6 +151,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
     }
 
     // Can safely update the GUI from this method.
+    @Override
     protected void done() {
         boolean status;
         try {
@@ -168,6 +173,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
         } catch (ExecutionException e) {
             // This is thrown if we throw an exception
             // from doInBackground.
+          core.localCache(LoadThread.READ);
         }
         core.flushing(Core.TREAD_LDAP_SEARCH);
     }

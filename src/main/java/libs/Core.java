@@ -76,12 +76,12 @@ public class Core {
         this.form = form;
     }
 
-	public Core() {
+    public Core() {
         this.setCompanys(new Companys());
-		this.environment = new SystemEnv();
-		this.environment.printHelp();
-		clearMailAttachmet();
-	}
+        this.environment = new SystemEnv();
+        this.environment.printHelp();
+        clearMailAttachmet();
+    }
 
     public Companys getCompanys() {
         return companys;
