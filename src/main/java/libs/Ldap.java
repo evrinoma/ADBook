@@ -21,7 +21,7 @@ public class Ldap {
 
     private static final String LDAP_VERSION = "3";
     private static final String LDAP_AUTH_METHOD = "simple";
-    private static final String LDAP_TIMEOUT = "20000";
+    private static final String LDAP_TIMEOUT = "2000";
 
     private SettingsRecord settings = null;
 

@@ -47,7 +47,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
             publish(HINT_LDAP_OPEN);
             openLdapConnection();
         } catch (Exception e) {
-            throw new RuntimeException();
+            throw new Exception();
         }
 
         publish(HINT_LDAP_COMPANYS);
@@ -170,6 +170,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
             // System.out.println("Completed with status: " + status);
         } catch (InterruptedException e) {
             // This is thrown if the thread's interrupted.
+            core.localCache(LoadThread.READ);
         } catch (ExecutionException e) {
             // This is thrown if we throw an exception
             // from doInBackground.
