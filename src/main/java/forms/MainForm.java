@@ -1,19 +1,11 @@
 package forms;
 
-import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
+import java.awt.*;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-
-import java.awt.AWTException;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -50,13 +42,7 @@ import netscape.javascript.JSObject;
 import presets.UrConnectDescriber;
 import threads.SaveThread;
 
-import java.awt.CardLayout;
-import java.awt.TrayIcon;
-
 import javax.swing.border.EtchedBorder;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
 
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -88,13 +74,11 @@ import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.LineBorder;
-import java.awt.Color;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
-import java.awt.Font;
 import javax.swing.JCheckBox;
 
 public class MainForm {
@@ -810,12 +794,12 @@ public class MainForm {
 
     private void createTabRoom(JPanel panel) {
         labelRoomPic = new JLabel();
-        GroupLayout gl_panelRoom = new GroupLayout(panel);
-        gl_panelRoom.setHorizontalGroup(gl_panelRoom.createParallelGroup(Alignment.LEADING).addComponent(labelRoomPic,
-                GroupLayout.PREFERRED_SIZE, 546, GroupLayout.PREFERRED_SIZE));
-        gl_panelRoom.setVerticalGroup(gl_panelRoom.createParallelGroup(Alignment.LEADING).addComponent(labelRoomPic,
-                GroupLayout.PREFERRED_SIZE, 631, GroupLayout.PREFERRED_SIZE));
+        panel.setPreferredSize(new Dimension(546,631));
+        JScrollPane scroller = new JScrollPane(labelRoomPic, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setPreferredSize(new Dimension(1920,1240));
+        GridLayout gl_panelRoom = new GridLayout(1,0);
         panel.setLayout(gl_panelRoom);
+        panel.add(scroller);
     }
 
     private void createTabContact(JPanel panel) {
@@ -1578,7 +1562,8 @@ public class MainForm {
             labelContactWriMail.setToolTipText(user.getMail());
 
             labelPersonPic.setIcon(null);
-            labelRoomPic.setIcon(resizeIcon(getImage(getUserPlaneImageFolder(user)), labelRoomPic));
+            //labelRoomPic.setIcon(resizeIcon(getImage(getUserPlaneImageFolder(user)), labelRoomPic));
+            labelRoomPic.setIcon(getImage(getUserPlaneImageFolder(user)));
 
             labelPersonPic.setIcon(resizeIcon(getImage(user.hasPathCacheImage()
                     ? getUrlFile(user.getPathCacheImage()) : getUrlResourceFile(USERS_IMAGE)), labelPersonPic));
