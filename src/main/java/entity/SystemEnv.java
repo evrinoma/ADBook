@@ -128,8 +128,8 @@ public class SystemEnv implements SettingsRecordIterator {
 
     private void initDefautServers() {
         this.connectionDescriber.add(new IteConnectDescriber());
-        this.connectionDescriber.add(new KpszConnectDescriber());
         this.connectionDescriber.add(new UrConnectDescriber());
+        this.connectionDescriber.add(new KpszConnectDescriber());
     }
 
     private void createAppDirs() {
