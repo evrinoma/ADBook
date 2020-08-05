@@ -13,9 +13,9 @@ import java.util.Objects;
 public class UrConnectDescriber extends AbstractConnectDescriber {
 
     private static final String COMPANY_DN = "OU=IPCNG,OU=MSK,DC=ite-ng,DC=ru";
-    private static final String FILIAL_DN = "OU=Ekaterinburg,OU=MSK,DC=ite-ng,DC=ru";
-    private static final String FILIAL_REMOTE_DN = "OU=Ekaterinburg,DC=ur,DC=ite-ng,DC=ru";
-    public static final String FILIAL_REMOTE_OU = "Ekaterinburg";
+    private static final String BRANCH_DN = "OU=Ekaterinburg,OU=MSK,DC=ite-ng,DC=ru";
+    private static final String REMOTE_BRANCH_DN = "OU=Ekaterinburg,DC=ur,DC=ite-ng,DC=ru";
+    public static final String BRANCH_REMOTE_OU = "Ekaterinburg";
 
     public UrConnectDescriber() {
         settingsRecord =  new SettingsRecord(
@@ -34,8 +34,8 @@ public class UrConnectDescriber extends AbstractConnectDescriber {
         Attribute ou = attrs.get("ou");
         companyDto = null;
         if (null != ou) {
-            if (Objects.equals(FILIAL_REMOTE_OU, (String) ou.get())) {
-                companyDto = new CompanyDto(FILIAL_REMOTE_DN, FILIAL_REMOTE_OU, //(String) ou.get(),
+            if (Objects.equals(BRANCH_REMOTE_OU, (String) ou.get())) {
+                companyDto = new CompanyDto(REMOTE_BRANCH_DN, BRANCH_REMOTE_OU, //(String) ou.get(),
                         (String) searchResult.getName() + "," + settingsRecord.getBaseDN());
             }
         }
@@ -48,9 +48,10 @@ public class UrConnectDescriber extends AbstractConnectDescriber {
     }
 
     @Override
-    public boolean isRemouteFilials() {
-        return true;
-    }
+    public boolean isRemote() { return true; }
+
+    @Override
+    public boolean isBranch() { return true; }
 
     @Override
     protected String getCompanyDN() {
@@ -58,12 +59,12 @@ public class UrConnectDescriber extends AbstractConnectDescriber {
     }
 
     @Override
-    protected String getFilialDN() {
-        return FILIAL_DN;
+    protected String getBranchDN() {
+        return BRANCH_DN;
     }
 
     @Override
-    protected String getRemoteFilialDN() {
-        return FILIAL_REMOTE_DN;
+    protected String getRemoteBranchDN() {
+        return REMOTE_BRANCH_DN;
     }
 }

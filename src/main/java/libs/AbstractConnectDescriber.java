@@ -30,11 +30,23 @@ public abstract class AbstractConnectDescriber implements DataAnalise {
         return false;
     }
 
+    public boolean isRemoteBranch() {
+        return this.isRemote() && this.isBranch();
+    }
+
+    public boolean isRemote() {
+        return false;
+    }
+
+    public boolean isBranch() {
+        return false;
+    }
+
     protected String getCompanyDN() {
         return null;
     }
 
-    protected String getFilialDN() {
+    protected String getBranchDN() {
         return null;
     }
 
@@ -42,7 +54,7 @@ public abstract class AbstractConnectDescriber implements DataAnalise {
         return this.getClass().getName();
     }
 
-    protected String getRemoteFilialDN() {
+    protected String getRemoteBranchDN() {
         return null;
     }
 }

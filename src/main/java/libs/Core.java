@@ -375,13 +375,15 @@ public class Core {
             getSystemEnv().reset();
             while (getSystemEnv().hasNext()) {
                 AbstractConnectDescriber connectDescriber = getSystemEnv().getNext();
-                Companys companysFilial = ldapSaveCompanys.get((Object) connectDescriber.getConnectionName());
-                if (connectDescriber.isRemouteFilials()) {
-                    this.companys.setCompany(
-                            companysFilial.findCompanyByDN(connectDescriber.getRemoteFilialDN()).getUsers(),
-                            connectDescriber.getCompanyDN(),
-                            connectDescriber.getFilialDN()
-                    );
+                    if (connectDescriber.isRemote()) {
+                        if (connectDescriber.isRemoteBranch()){
+                            Companys companysBranch = ldapSaveCompanys.get((Object) connectDescriber.getConnectionName());
+                            this.companys.setCompany(
+                                    companysBranch.findCompanyByDN(connectDescriber.getRemoteBranchDN()).getUsers(),
+                                    connectDescriber.getCompanyDN(),
+                                    connectDescriber.getBranchDN()
+                            );
+                        }
                 }
             }
             ldapSearchStack = null;

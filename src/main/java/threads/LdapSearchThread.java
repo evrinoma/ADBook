@@ -160,7 +160,7 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
             if (status) {
                 companys.generateDate();
                 String connectionName = connectDescriber.getConnectionName();
-                if (connectDescriber.isRemouteFilials()) {
+                if (connectDescriber.isRemoteBranch()) {
                     core.addLdapSearchSuccessful(companys, connectionName);
                 } else {
                     core.addLdapSearchSuccessful(companys);

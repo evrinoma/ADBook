@@ -71,8 +71,6 @@ import java.awt.event.ItemEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListModel;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.LineBorder;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
@@ -1576,7 +1574,7 @@ public class MainForm {
     private URL getUserPlaneImageFolder(UserDto user) {
         String PlaneImagePath = EMPTY_IMAGE;
 
-        if ((user.getCompanyOu().indexOf(UrConnectDescriber.FILIAL_REMOTE_OU) == -1)
+        if ((user.getCompanyOu().indexOf(UrConnectDescriber.BRANCH_REMOTE_OU) == -1)
                 && (null != user.getPhysicalDeliveryOfficeName())
                 && (0 != user.getPhysicalDeliveryOfficeName().length())) {
             PlaneImagePath = PLANS_IMAGE + "ite/" + user.getPhysicalDeliveryOfficeName() + ".jpg";
