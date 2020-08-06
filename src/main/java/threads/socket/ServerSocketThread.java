@@ -1,10 +1,8 @@
-package threads;
+package threads.socket;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,27 +13,17 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import javax.swing.SwingWorker;
 import libs.Core;
 
-public class ServerSocketThread extends SwingWorker<Object, String> {
+public class ServerSocketThread extends AbstractSocketThread {
 
-	public static final String SERVER = "localhost";
-
-	private static final String TYPE_USR = "usr";
-	private static final String TYPE_CMD = "cmd";
-	private static final int BUFFER_SIZE = 1023;
-
-	private Core core;
-	private InetSocketAddress listenAddress;
-	private HashMap<SocketChannel, ArrayList> dataMapper = null;
+	private HashMap<SocketChannel, String> dataMapper = null;
 	private Selector selector;
 	private ArrayList<String> clients = null;
 
 	public ServerSocketThread(Core core) {
-		this.core = core;		
-		listenAddress = new InetSocketAddress(SERVER, core.getSystemEnv().getServerSocketPort());
-		dataMapper = new HashMap<SocketChannel, ArrayList>();
+		super(core);
+		dataMapper = new HashMap<SocketChannel, String>();
 		clients = new ArrayList();
 	}
 
@@ -57,7 +45,13 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 				if (key.isAcceptable()) {
 					this.accept(key);
 				} else if (key.isReadable()) {
-					this.read(key);
+					String reading = this.read(key);
+					if (reading != null) {
+						String action = this.action(reading);
+						this.write(key, action);
+					}
+				}else if (key.isWritable()) {
+					System.out.println("isWritable...");
 				}
 			}
 		}
@@ -94,26 +88,37 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 		this.selector = Selector.open();
 		ServerSocketChannel serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
-		serverChannel.socket().bind(listenAddress);
+		serverChannel.socket().bind(this.listenAddress);
 		serverChannel.register(this.selector, SelectionKey.OP_ACCEPT);
 		System.out.println("Server started...");
 		this.clients.add(System.getProperty("user.name"));
 	}
 
-	private void accept(SelectionKey key) throws IOException {
+	protected void accept(SelectionKey key) throws IOException {
 		ServerSocketChannel serverChannel = (ServerSocketChannel) key.channel();
 		SocketChannel channel = serverChannel.accept();
 		channel.configureBlocking(false);
 		Socket socket = channel.socket();
 		SocketAddress remoteAddr = socket.getRemoteSocketAddress();
 		System.out.println("Connected to: " + remoteAddr);
-		dataMapper.put(channel, new ArrayList());
 		channel.register(this.selector, SelectionKey.OP_READ);
+		this.write(channel,formatToMessage(TYPE_USER, TYPE_CMD));
+		String response = this.action(this.read(channel));
+		System.out.println(response);
+		dataMapper.put(channel, response);
 	}
 
-	// read from the socket channel
-	private void read(SelectionKey key) throws IOException {
+	// read from the threads.socket channel
+	protected String read(SelectionKey key) throws IOException {
 		SocketChannel channel = (SocketChannel) key.channel();
+		String query = this.read(channel);
+		if (query == null) {
+			key.cancel();
+		}
+		return query;
+	}
+
+	protected String read(SocketChannel channel) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 		int numRead = -1;
 		numRead = channel.read(buffer);
@@ -123,80 +128,48 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 			SocketAddress remoteAddr = socket.getRemoteSocketAddress();
 			System.out.println("Connection closed by client: " + remoteAddr);
 			channel.close();
-			key.cancel();
-			return;
+			return null;
 		}
 
-		byte[] data = new byte[numRead];
-		System.arraycopy(buffer.array(), 0, data, 0, numRead);
-		String stream = new String(data);
-		messageParser(stream);
-		System.out.println("Data received: " + stream);
+		return this.byteBufferToString(buffer,numRead);
 	}
-	
-	private boolean messageParser(String receive)
+
+	protected String action(String message) {
+		String query = getTypeMessage(message);
+		if (query.equals(TYPE_USER)) {
+			query = getMessage(TYPE_USER,message);
+		}
+
+		return query;
+	}
+
+	// read from the threads.socket channel
+	protected void write(SelectionKey key, String message) throws IOException {
+		SocketChannel channel = (SocketChannel) key.channel();
+		this.write(channel,message);
+	}
+
+	protected void write(SocketChannel channel, String message) throws IOException {
+		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+		buffer.clear();
+		buffer.put(message.getBytes());
+		buffer.flip();
+		channel.write(buffer);
+	}
+
+	protected String getTypeMessage(String receive)
 	{
-			if (receive.startsWith(TYPE_USR+"[") && receive.endsWith("]")) {
-				String usr = receive.subSequence((TYPE_USR+"[").length(), receive.length()-1).toString();
-				if (!this.clients.contains(usr)){
-					this.clients.add(usr.toString());
-				}
-				return true;
+		if (receive.startsWith(TYPE_USER +"[") && receive.contains("]")) {
+			String usr = receive.subSequence((TYPE_USER +"[").length(), receive.indexOf("]")).toString();
+			if (!this.clients.contains(usr)){
+				this.clients.add(usr.toString());
+				return TYPE_USER;
+			} else {
+				return TYPE_EXIT;
 			}
-			if (receive.startsWith(TYPE_CMD+"[")  && receive.endsWith("]")) {
-				String cmd = receive.subSequence((TYPE_CMD+"[").length(), receive.length()-1).toString();
-				if (cmd.equals("expandWindow")) {
-					core.expandWindow();
-				}
-				return true;
-			}
-
-		return false;
-	}
-
-	private String formatToMessage(String message, String type)
-	{
-		switch (type) {
-			case TYPE_USR :
-				message =  TYPE_USR+"["+ message +"]";
-				break;
-			case TYPE_CMD :
-				message =  TYPE_CMD+"["+ message +"]";
-				break;
-			default:
-				message = "";
 		}
 
-		return message;
-	}
-
-	public boolean startClient() {
-		boolean status = false;
-		try {
-			InetSocketAddress hostAddress = new InetSocketAddress(SERVER, core.getSystemEnv().getServerSocketPort());
-			SocketChannel client = SocketChannel.open(hostAddress);
-
-			System.out.println("Client... started");
-			// Send messages to server
-			String[] messages = new String[] {
-					formatToMessage(System.getProperty("user.name"), TYPE_USR),
-					formatToMessage("expandWindow", TYPE_CMD)
-			};
-
-			for (int i = 0; i < messages.length; i++) {
-				byte[] message = new String(messages[i]).getBytes();
-				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-				System.arraycopy(message, 0, buffer.array(), 0, message.length);
-				client.write(buffer);
-				buffer.clear();
-			}
-			client.close();
-			status = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return status;
+		return super.getTypeMessage(receive);
 	}
 
 }

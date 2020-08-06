@@ -35,7 +35,8 @@ import threads.LocalSearchThread;
 import threads.MailThread;
 import forms.MainForm;
 import threads.SaveThread;
-import threads.ServerSocketThread;
+import threads.socket.ClientSocketThread;
+import threads.socket.ServerSocketThread;
 
 public class Core {
 
@@ -65,6 +66,7 @@ public class Core {
     private boolean close = false;
 
     private ServerSocketThread serverSocket;
+    private ClientSocketThread clientSocket;
 
     private SystemEnv environment = null;
 
@@ -630,10 +632,10 @@ public class Core {
         }
     }
 
-    public boolean sendServerSocket() {
-        serverSocket = new ServerSocketThread(this);
-        boolean status = serverSocket.startClient();
-        serverSocket = null;
+    public boolean runClientSocket() {
+        clientSocket = new ClientSocketThread(this);
+        boolean status = clientSocket.startClient();
+        clientSocket = null;
 
         return status;
     }

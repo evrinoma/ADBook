@@ -235,7 +235,7 @@ public class MainForm {
     public MainForm() {
         String user = System.getProperty("user.name");
         if (!core.getSystemEnv().isWeb()) {
-            if (!core.sendServerSocket()) {
+            if (!core.runClientSocket()) {
                 core.runServerSocket();
                 createForm();
             } else {
