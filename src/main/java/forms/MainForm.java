@@ -233,6 +233,7 @@ public class MainForm {
      * Create the application.
      */
     public MainForm() {
+        String user = System.getProperty("user.name");
         if (!core.getSystemEnv().isWeb()) {
             if (!core.sendServerSocket()) {
                 core.runServerSocket();
@@ -247,6 +248,7 @@ public class MainForm {
         } else {
             createForm();
         }
+        user = null;
     }
 
     /**
@@ -724,7 +726,6 @@ public class MainForm {
             panelMessagesEditor.setVisible(false);
         }
         createPanelPreloader(panelMessages);
-
     }
 
     public void authorizeMessage() {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,24 +15,28 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-
 import javax.swing.SwingWorker;
-
 import libs.Core;
 
 public class ServerSocketThread extends SwingWorker<Object, String> {
 
 	public static final String SERVER = "localhost";
 
+	private static final String TYPE_USR = "usr";
+	private static final String TYPE_CMD = "cmd";
+	private static final int BUFFER_SIZE = 1023;
+
 	private Core core;
 	private InetSocketAddress listenAddress;
 	private HashMap<SocketChannel, ArrayList> dataMapper = null;
 	private Selector selector;
+	private ArrayList<String> clients = null;
 
 	public ServerSocketThread(Core core) {
 		this.core = core;		
 		listenAddress = new InetSocketAddress(SERVER, core.getSystemEnv().getServerSocketPort());
 		dataMapper = new HashMap<SocketChannel, ArrayList>();
+		clients = new ArrayList();
 	}
 
 	@Override
@@ -92,6 +97,7 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 		serverChannel.socket().bind(listenAddress);
 		serverChannel.register(this.selector, SelectionKey.OP_ACCEPT);
 		System.out.println("Server started...");
+		this.clients.add(System.getProperty("user.name"));
 	}
 
 	private void accept(SelectionKey key) throws IOException {
@@ -108,7 +114,7 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 	// read from the socket channel
 	private void read(SelectionKey key) throws IOException {
 		SocketChannel channel = (SocketChannel) key.channel();
-		ByteBuffer buffer = ByteBuffer.allocate(1024);
+		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 		int numRead = -1;
 		numRead = channel.read(buffer);
 		if (numRead == -1) {
@@ -123,14 +129,45 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 
 		byte[] data = new byte[numRead];
 		System.arraycopy(buffer.array(), 0, data, 0, numRead);
-		messageParser(new String(data));		
+		String stream = new String(data);
+		messageParser(stream);
+		System.out.println("Data received: " + stream);
 	}
 	
-	private void messageParser(String receive)
+	private boolean messageParser(String receive)
 	{
-		if (receive.equals("expandWindow")) {
-			core.expandWindow();
+			if (receive.startsWith(TYPE_USR+"[") && receive.endsWith("]")) {
+				String usr = receive.subSequence((TYPE_USR+"[").length(), receive.length()-1).toString();
+				if (!this.clients.contains(usr)){
+					this.clients.add(usr.toString());
+				}
+				return true;
+			}
+			if (receive.startsWith(TYPE_CMD+"[")  && receive.endsWith("]")) {
+				String cmd = receive.subSequence((TYPE_CMD+"[").length(), receive.length()-1).toString();
+				if (cmd.equals("expandWindow")) {
+					core.expandWindow();
+				}
+				return true;
+			}
+
+		return false;
+	}
+
+	private String formatToMessage(String message, String type)
+	{
+		switch (type) {
+			case TYPE_USR :
+				message =  TYPE_USR+"["+ message +"]";
+				break;
+			case TYPE_CMD :
+				message =  TYPE_CMD+"["+ message +"]";
+				break;
+			default:
+				message = "";
 		}
+
+		return message;
 	}
 
 	public boolean startClient() {
@@ -141,12 +178,16 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 
 			System.out.println("Client... started");
 			// Send messages to server
-			String[] messages = new String[] { "expandWindow" };
+			String[] messages = new String[] {
+					formatToMessage(System.getProperty("user.name"), TYPE_USR),
+					formatToMessage("expandWindow", TYPE_CMD)
+			};
 
 			for (int i = 0; i < messages.length; i++) {
 				byte[] message = new String(messages[i]).getBytes();
-				ByteBuffer buffer = ByteBuffer.wrap(message);
-				client.write(buffer);				
+				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+				System.arraycopy(message, 0, buffer.array(), 0, message.length);
+				client.write(buffer);
 				buffer.clear();
 			}
 			client.close();
@@ -154,7 +195,7 @@ public class ServerSocketThread extends SwingWorker<Object, String> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return status;
 	}
 
