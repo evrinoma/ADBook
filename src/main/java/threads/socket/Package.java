@@ -59,6 +59,10 @@ public class Package {
         return this.query == null;
     }
 
+    public boolean isExit()
+    {
+        return this.type == TYPE_EXIT;
+    }
 
     protected void toQuery()
     {
@@ -69,8 +73,11 @@ public class Package {
             case TYPE_CMD :
                 this.setQuery(TYPE_CMD+"["+ message +"]");
                 break;
+            case TYPE_EXPAND:
+                this.setQuery(TYPE_EXPAND+"["+ message +"]");
+                break;
             default:
-                this.setQuery(TYPE_EMPTY+"[]");
+                this.setQuery(TYPE_EMPTY+"["+ TYPE_EMPTY +"]");
         }
     }
 

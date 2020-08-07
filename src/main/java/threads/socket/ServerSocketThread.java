@@ -47,14 +47,17 @@ public class ServerSocketThread extends AbstractSocketThread {
 					this.accept(key);
 				} else if (key.isReadable()) {
 					System.out.println("isReadable...");
+
 					Package packet = this.read(key);
 					if (!packet.isEmpty()) {
 						packet = this.action(packet);
+						if (packet.isExit()) {
+							key.cancel();
+						}
 						this.write(key, packet.getQuery());
-					} else {
-						System.out.println("isEmpty...");
 					}
-				}else if (key.isWritable()) {
+				}
+				else if (key.isWritable()) {
 					System.out.println("isWritable...");
 				}
 			}
@@ -106,13 +109,6 @@ public class ServerSocketThread extends AbstractSocketThread {
 		SocketAddress remoteAddr = socket.getRemoteSocketAddress();
 		System.out.println("Connected to: " + remoteAddr);
 		channel.register(this.selector, SelectionKey.OP_READ);
-//		//запоминаем адрес удаленного сервера
-//		channel.getRemoteAddress();
-//		//отправляем команду дать имя пользователя
-//		this.write(channel,formatToMessage(TYPE_USER, TYPE_CMD));
-//		//получаем имя пользователя
-//		String response = this.read(channel);
-//		//this.write(channel,formatToMessage(checkUser(response), TYPE_CMD));
 		dataMapper.put(channel, new ArrayList());
 	}
 
@@ -151,12 +147,12 @@ public class ServerSocketThread extends AbstractSocketThread {
 				{
 					return new Package(Package.TYPE_CONNECT, Package.TYPE_CMD);
 				}
-				return new Package(Package.TYPE_EXIT, Package.TYPE_CMD);
+				return new Package(Package.TYPE_EXPAND, Package.TYPE_CMD);
 			case Package.TYPE_EXPAND :
 				core.expandWindow();
-				return new Package(Package.TYPE_EXIT, Package.TYPE_CMD);
+				return new Package(Package.TYPE_EXIT, Package.TYPE_EXIT);
 			default:
-				return new Package(Package.TYPE_EXIT, Package.TYPE_CMD);
+				return new Package(Package.TYPE_EXIT, Package.TYPE_EXIT);
 		}
 	}
 
