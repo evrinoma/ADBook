@@ -17,7 +17,7 @@ import libs.Core;
 
 public class ServerSocketThread extends AbstractSocketThread {
 
-	private HashMap<SocketChannel, ArrayList> dataMapper = null;
+	private HashMap<SocketChannel, HashMap> dataMapper = null;
 	private Selector selector;
 	private ArrayList clients = null;
 	private String uid = null;
@@ -51,7 +51,7 @@ public class ServerSocketThread extends AbstractSocketThread {
 					Package packet = this.read(key);
 					if (!packet.isEmpty()) {
 						packet = this.action(packet);
-						if (packet.isExit()) {
+						if (packet.isFlush()) {
 							key.cancel();
 						}
 						this.write(key, packet.getQuery());
@@ -109,7 +109,9 @@ public class ServerSocketThread extends AbstractSocketThread {
 		SocketAddress remoteAddr = socket.getRemoteSocketAddress();
 		System.out.println("Connected to: " + remoteAddr);
 		channel.register(this.selector, SelectionKey.OP_READ);
-		dataMapper.put(channel, new ArrayList());
+		HashMap map = new HashMap<String,ArrayList>();
+		map.put(socket.getRemoteSocketAddress().toString(),new ArrayList());
+		dataMapper.put(channel, map);
 	}
 
 	// read from the threads.socket channel
@@ -148,11 +150,13 @@ public class ServerSocketThread extends AbstractSocketThread {
 					return new Package(Package.TYPE_CONNECT, Package.TYPE_CMD);
 				}
 				return new Package(Package.TYPE_EXPAND, Package.TYPE_CMD);
+//			case Package.TYPE_CONNECT :
+//				return new Package(Package.TYPE_FLUSH, Package.TYPE_FLUSH);
 			case Package.TYPE_EXPAND :
 				core.expandWindow();
-				return new Package(Package.TYPE_EXIT, Package.TYPE_EXIT);
+				return new Package(Package.TYPE_FLUSH, Package.TYPE_FLUSH);
 			default:
-				return new Package(Package.TYPE_EXIT, Package.TYPE_EXIT);
+				return new Package(Package.TYPE_FLUSH, Package.TYPE_FLUSH);
 		}
 	}
 

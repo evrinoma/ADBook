@@ -8,6 +8,7 @@ public class Package {
     public static final String TYPE_EXIT = "exit";
     public static final String TYPE_EXPAND = "expand";
     public static final String TYPE_CONNECT = "connect";
+    public static final String TYPE_FLUSH = "flush";
 
     protected String query;
     protected String message = TYPE_EMPTY;
@@ -59,9 +60,9 @@ public class Package {
         return this.query == null;
     }
 
-    public boolean isExit()
+    public boolean isFlush()
     {
-        return this.type == TYPE_EXIT;
+        return this.type == TYPE_FLUSH;
     }
 
     protected void toQuery()
@@ -75,6 +76,9 @@ public class Package {
                 break;
             case TYPE_EXPAND:
                 this.setQuery(TYPE_EXPAND+"["+ message +"]");
+                break;
+            case TYPE_FLUSH:
+                this.setQuery(TYPE_FLUSH+"["+ TYPE_FLUSH +"]");
                 break;
             default:
                 this.setQuery(TYPE_EMPTY+"["+ TYPE_EMPTY +"]");
@@ -96,6 +100,11 @@ public class Package {
         if (this.query.startsWith(TYPE_CONNECT+"[")  && this.query.contains("]")) {
             this.setMessage( this.query.subSequence((TYPE_CONNECT+"[").length(), this.query.lastIndexOf("]")).toString());
             this.setType( TYPE_CONNECT);
+        }
+
+        if (this.query.startsWith(TYPE_FLUSH+"[")  && this.query.contains("]")) {
+            this.setMessage( this.query.subSequence((TYPE_FLUSH+"[").length(), this.query.lastIndexOf("]")).toString());
+            this.setType( TYPE_FLUSH);
         }
 
         if (this.query.startsWith(TYPE_USER+"[")  && this.query.contains("]")) {

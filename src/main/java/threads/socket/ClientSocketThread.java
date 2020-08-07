@@ -72,6 +72,8 @@ public class ClientSocketThread extends AbstractSocketThread {
 				case Package.TYPE_CONNECT :
 					status = false;
 					System.out.println("Client save connection");
+					packet = new Package(Package.TYPE_FLUSH, Package.TYPE_FLUSH);
+					write(channel, packet.getQuery());
 					break;
 				//если придет TYPE_EXIT, то отправляем уведомление о всплытии окна
 				case Package.TYPE_EXPAND :
