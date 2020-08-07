@@ -17,13 +17,14 @@ import libs.Core;
 
 public class ServerSocketThread extends AbstractSocketThread {
 
-	private HashMap<SocketChannel, String> dataMapper = null;
+	private HashMap<SocketChannel, ArrayList> dataMapper = null;
 	private Selector selector;
-	private ArrayList<String> clients = null;
+	private ArrayList clients = null;
+	private String uid = null;
 
 	public ServerSocketThread(Core core) {
 		super(core);
-		dataMapper = new HashMap<SocketChannel, String>();
+		dataMapper = new HashMap<>();
 		clients = new ArrayList();
 	}
 
@@ -35,7 +36,7 @@ public class ServerSocketThread extends AbstractSocketThread {
 				return true;
 			}
 			this.selector.select();
-			Iterator keys = this.selector.selectedKeys().iterator();
+			Iterator<SelectionKey> keys = this.selector.selectedKeys().iterator();
 			while (keys.hasNext()) {
 				SelectionKey key = (SelectionKey) keys.next();
 				keys.remove();
@@ -45,10 +46,13 @@ public class ServerSocketThread extends AbstractSocketThread {
 				if (key.isAcceptable()) {
 					this.accept(key);
 				} else if (key.isReadable()) {
-					String reading = this.read(key);
-					if (reading != null) {
-						String action = this.action(reading);
-						this.write(key, action);
+					System.out.println("isReadable...");
+					Package packet = this.read(key);
+					if (!packet.isEmpty()) {
+						packet = this.action(packet);
+						this.write(key, packet.getQuery());
+					} else {
+						System.out.println("isEmpty...");
 					}
 				}else if (key.isWritable()) {
 					System.out.println("isWritable...");
@@ -91,7 +95,7 @@ public class ServerSocketThread extends AbstractSocketThread {
 		serverChannel.socket().bind(this.listenAddress);
 		serverChannel.register(this.selector, SelectionKey.OP_ACCEPT);
 		System.out.println("Server started...");
-		this.clients.add(System.getProperty("user.name"));
+		this.uid = System.getProperty("user.name");
 	}
 
 	protected void accept(SelectionKey key) throws IOException {
@@ -102,23 +106,28 @@ public class ServerSocketThread extends AbstractSocketThread {
 		SocketAddress remoteAddr = socket.getRemoteSocketAddress();
 		System.out.println("Connected to: " + remoteAddr);
 		channel.register(this.selector, SelectionKey.OP_READ);
-		this.write(channel,formatToMessage(TYPE_USER, TYPE_CMD));
-		String response = this.action(this.read(channel));
-		System.out.println(response);
-		dataMapper.put(channel, response);
+//		//запоминаем адрес удаленного сервера
+//		channel.getRemoteAddress();
+//		//отправляем команду дать имя пользователя
+//		this.write(channel,formatToMessage(TYPE_USER, TYPE_CMD));
+//		//получаем имя пользователя
+//		String response = this.read(channel);
+//		//this.write(channel,formatToMessage(checkUser(response), TYPE_CMD));
+		dataMapper.put(channel, new ArrayList());
 	}
 
 	// read from the threads.socket channel
-	protected String read(SelectionKey key) throws IOException {
+	protected Package read(SelectionKey key) throws IOException {
 		SocketChannel channel = (SocketChannel) key.channel();
-		String query = this.read(channel);
-		if (query == null) {
+		Package packet = new Package(this.pureRead(channel));
+		if (packet.isEmpty()) {
 			key.cancel();
 		}
-		return query;
+
+		return packet;
 	}
 
-	protected String read(SocketChannel channel) throws IOException {
+	protected String pureRead(SocketChannel channel) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 		int numRead = -1;
 		numRead = channel.read(buffer);
@@ -134,13 +143,21 @@ public class ServerSocketThread extends AbstractSocketThread {
 		return this.byteBufferToString(buffer,numRead);
 	}
 
-	protected String action(String message) {
-		String query = getTypeMessage(message);
-		if (query.equals(TYPE_USER)) {
-			query = getMessage(TYPE_USER,message);
+	protected Package action(Package packet)
+	{
+		switch (packet.getType()) {
+			case Package.TYPE_USER :
+				if (!this.uid.equals(packet.getMessage()) && !this.clients.contains(packet.getMessage()))
+				{
+					return new Package(Package.TYPE_CONNECT, Package.TYPE_CMD);
+				}
+				return new Package(Package.TYPE_EXIT, Package.TYPE_CMD);
+			case Package.TYPE_EXPAND :
+				core.expandWindow();
+				return new Package(Package.TYPE_EXIT, Package.TYPE_CMD);
+			default:
+				return new Package(Package.TYPE_EXIT, Package.TYPE_CMD);
 		}
-
-		return query;
 	}
 
 	// read from the threads.socket channel
@@ -156,20 +173,4 @@ public class ServerSocketThread extends AbstractSocketThread {
 		buffer.flip();
 		channel.write(buffer);
 	}
-
-	protected String getTypeMessage(String receive)
-	{
-		if (receive.startsWith(TYPE_USER +"[") && receive.contains("]")) {
-			String usr = receive.subSequence((TYPE_USER +"[").length(), receive.indexOf("]")).toString();
-			if (!this.clients.contains(usr)){
-				this.clients.add(usr.toString());
-				return TYPE_USER;
-			} else {
-				return TYPE_EXIT;
-			}
-		}
-
-		return super.getTypeMessage(receive);
-	}
-
 }

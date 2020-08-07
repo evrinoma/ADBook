@@ -58,22 +58,32 @@ public class ClientSocketThread extends AbstractSocketThread {
 			SocketChannel channel = SocketChannel.open(hostAddress);
 
 			System.out.println("Client... started");
-			String response = getTypeMessage(read(channel));
-			System.out.println(response);
-			if (response.contains(TYPE_USER)) {
-				write(channel, formatToMessage(System.getProperty("user.name"), TYPE_USER));
-				String query  = read(channel);
-				response = getTypeMessage(query);
-				if (query.contains(TYPE_EXIT))
-				{
-					write(channel, formatToMessage(TYPE_EXPAND, TYPE_CMD));
-					query  = read(channel);
-					response = getTypeMessage(query);
-				}
-			}
-
-			channel.close();
 			status = true;
+			////отравляем сообщение с имя пользователя и адресом клиента, для сохрания
+			////write(channel, formatToMessage("["+System.getProperty("user.name")+"]["+channel.getLocalAddress().toString()+"]", TYPE_USER));
+			Package packet = new Package(System.getProperty("user.name"), Package.TYPE_USER);
+			//отравляем сообщение с имя пользователя, для сохрания
+			write(channel, packet.getQuery());
+			//ожидаем ответ о возможности подлючения пользователя
+			System.out.println("Read...["+ packet.getQuery()+"]");
+			packet = new Package(read(channel));
+			switch (packet.getMessage()) {
+				//если придет TYPE_CONNECT, то запускаем приложение и сохраняем соединение
+				case Package.TYPE_CONNECT :
+					status = false;
+					System.out.println("Client save connection");
+					break;
+				//если придет TYPE_EXIT, то отправляем уведомление о всплытии окна
+				case Package.TYPE_EXIT :
+					packet = new Package(Package.TYPE_EXPAND, Package.TYPE_EXPAND);
+					write(channel, packet.getQuery());
+					System.out.println("Read...["+ packet.getQuery()+"]");
+					packet = new Package(read(channel));
+					System.out.println("Client already connected");
+					break;
+			}
+			channel.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -91,7 +101,7 @@ public class ClientSocketThread extends AbstractSocketThread {
 
 	protected String read(SocketChannel channel) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-		int k = channel.read(buffer);
-		return this.byteBufferToString(buffer,k);
+		int numRead = channel.read(buffer);
+		return this.byteBufferToString(buffer,numRead);
 	}
 }
