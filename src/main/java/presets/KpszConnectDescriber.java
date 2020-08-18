@@ -12,7 +12,7 @@ import java.util.Objects;
 
 public class KpszConnectDescriber extends AbstractConnectDescriber {
 
-    public static final String FILIAL_REMOTE_OU = "_KurganUsers";
+    public static final String FILIAL_REMOTE_OU = "_КПЗ";
 
     public KpszConnectDescriber() {
         settingsRecord = new SettingsRecord(
