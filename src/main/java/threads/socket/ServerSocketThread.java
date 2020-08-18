@@ -19,13 +19,13 @@ public class ServerSocketThread extends AbstractSocketThread {
 
 	private HashMap<SocketChannel, HashMap> dataMapper = null;
 	private Selector selector;
-	private ArrayList clients = null;
+	private HashMap<String, SelectionKey> clients = null;
 	private String uid = null;
 
 	public ServerSocketThread(Core core) {
 		super(core);
 		dataMapper = new HashMap<>();
-		clients = new ArrayList();
+		clients = new HashMap();
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class ServerSocketThread extends AbstractSocketThread {
 
 					Package packet = this.read(key);
 					if (!packet.isEmpty()) {
-						packet = this.action(packet);
+						packet = this.action(key,packet);
 						if (packet.isFlush()) {
 							key.cancel();
 						}
@@ -141,17 +141,30 @@ public class ServerSocketThread extends AbstractSocketThread {
 		return this.byteBufferToString(buffer,numRead);
 	}
 
-	protected Package action(Package packet)
-	{
+	protected Package action(SelectionKey key, Package packet) throws IOException {
 		switch (packet.getType()) {
 			case Package.TYPE_USER :
-				if (!this.uid.equals(packet.getMessage()) && !this.clients.contains(packet.getMessage()))
-				{
+				if (!this.uid.equals(packet.getMessage()) && !this.clients.containsKey(packet.getMessage())) {
+					if (!this.uid.equals(packet.getMessage()))
+					{
+						this.clients.put(packet.getMessage(), key);
+					}
+
 					return new Package(Package.TYPE_CONNECT, Package.TYPE_CMD);
+				} else {
+					if (this.clients.containsKey(packet.getMessage())) {
+						SelectionKey savedKey =this.clients.get(packet.getMessage());
+//						if (savedKey.channel().isOpen())
+//						{
+//							System.out.println("isOpen");
+//							savedKey.channel().close();
+//						}
+						savedKey.channel().close();
+						this.clients.remove(packet.getMessage());
+						return new Package(Package.TYPE_CONNECT, Package.TYPE_CMD);
+					}
 				}
 				return new Package(Package.TYPE_EXPAND, Package.TYPE_CMD);
-//			case Package.TYPE_CONNECT :
-//				return new Package(Package.TYPE_FLUSH, Package.TYPE_FLUSH);
 			case Package.TYPE_EXPAND :
 				core.expandWindow();
 				return new Package(Package.TYPE_FLUSH, Package.TYPE_FLUSH);
