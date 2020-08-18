@@ -1,6 +1,7 @@
 package entity;
 
 import interfaces.SettingsRecordIterator;
+import presets.ITEEGConnectDescriber;
 import presets.IteConnectDescriber;
 import libs.AbstractConnectDescriber;
 import presets.KpszConnectDescriber;
@@ -130,6 +131,7 @@ public class SystemEnv implements SettingsRecordIterator {
         this.connectionDescriber.add(new IteConnectDescriber());
         this.connectionDescriber.add(new UrConnectDescriber());
         this.connectionDescriber.add(new KpszConnectDescriber());
+        this.connectionDescriber.add(new ITEEGConnectDescriber());
     }
 
     private void createAppDirs() {
