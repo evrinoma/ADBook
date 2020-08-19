@@ -94,29 +94,8 @@ public class SystemEnv implements SettingsRecordIterator {
         }
 
         initDefautServers();
-
-//        if (null != System.getProperty("ldap")) {
-//            if (null != System.getProperty("ldapHost")
-//                    || null != System.getProperty("ldapBaseDN")
-//                    || null != System.getProperty("ldapHosts")
-//                    || null != System.getProperty("ldapPort")
-//                    || null != System.getProperty("ldapUser")
-//                    || null != System.getProperty("ldapPass")
-//            ) {
-//                this.connectionDescriber.add(new SettingsRecord(
-//                        System.getProperty("ldapHost"),
-//                        System.getProperty("ldapBaseDN"),
-//                        System.getProperty("ldapHosts").split(","),
-//                        System.getProperty("ldapPort"),
-//                        System.getProperty("ldapUser"),
-//                        System.getProperty("ldapPass")
-//                ));
-//            } else {
-//                this.setError(true);
-//            }
-//        }
-
         createAppDirs();
+        printHelp();
     }
 
     private void setError(boolean isError) {
@@ -143,6 +122,8 @@ public class SystemEnv implements SettingsRecordIterator {
         System.out.println("Run paramteres");
         System.out.println(
                 "java -Xms16m -Xmx512m -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=512k -Dparamter0 -DparamterK=value0 -DparamterN=value0,value1 -jar ADBook.jar");
+        System.out.println(
+                "java -DisForce -jar ADBook.jar");
         System.out.println("isDebug - addition information about memory. Default value - [" + this.isDebug() + "]");
         System.out
                 .println("isForce - run ignore has started another version. Default value - [" + this.isForce() + "]");
@@ -154,14 +135,6 @@ public class SystemEnv implements SettingsRecordIterator {
         System.out.println("pathToCache - set to save local path to cache file. Default value - ["
                 + this.getPathToApp() + "]");
         System.out.println("serverSocketPort - ServerSocket port int value. Default value - [" + this.getServerSocketPort() + "]");
-//        System.out.println("ldap - create new Ldap depends on:");
-//        System.out.println("	ldapHost - ldap host name.");
-//        System.out.println("	ldapBaseDN - ldap base DN.");
-//        System.out.println("	ldapHosts - ldap://server0/ ,ldap://server1/.");
-//        System.out.println("	ldapPort - ldap port value.");
-//        System.out.println("	ldapUser - ldap user name.");
-//        System.out.println("	ldapPass - ldap user pass.");
-
     }
 
     public String getVersion() {

@@ -198,6 +198,7 @@ public class MainForm {
      * Launch the application.
      */
     public static void main(String[] args) {
+
         core = new Core();
 
         if (core.getSystemEnv().isSkin("nimbus")) {
