@@ -377,7 +377,7 @@ public class Core {
             while (getSystemEnv().hasNext()) {
                 AbstractConnectDescriber connectDescriber = getSystemEnv().getNext();
                     if (connectDescriber.isRemote()) {
-                        if (connectDescriber.isRemoteBranch()){
+                        if (connectDescriber.isRemoteBranch() & ldapSaveCompanys!=null){
                             Companys companysBranch = ldapSaveCompanys.get((Object) connectDescriber.getConnectionName());
                             this.companys.setCompany(
                                     companysBranch.findCompanyByDN(connectDescriber.getRemoteBranchDN()).getUsers(),

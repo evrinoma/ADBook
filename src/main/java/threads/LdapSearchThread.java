@@ -154,12 +154,12 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
     @Override
     protected void done() {
         boolean status;
+        String connectionName = connectDescriber.getConnectionName();
         try {
             // Retrieve the return value of doInBackground.
             status = (boolean) get();
             if (status) {
                 companys.generateDate();
-                String connectionName = connectDescriber.getConnectionName();
                 if (connectDescriber.isRemoteBranch()) {
                     core.addLdapSearchSuccessful(companys, connectionName);
                 } else {
@@ -170,11 +170,11 @@ public class LdapSearchThread extends SwingWorker<Object, String> {
             // System.out.println("Completed with status: " + status);
         } catch (InterruptedException e) {
             // This is thrown if the thread's interrupted.
-            core.localCache(LoadThread.READ);
+            core.removeLdapSearchStack(connectionName).localCache(LoadThread.READ);
         } catch (ExecutionException e) {
             // This is thrown if we throw an exception
             // from doInBackground.
-          core.localCache(LoadThread.READ);
+          core.removeLdapSearchStack(connectionName).localCache(LoadThread.READ);
         }
         core.flushing(Core.TREAD_LDAP_SEARCH);
     }

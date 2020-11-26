@@ -58,7 +58,7 @@ public class Ldap {
             ctx = new InitialLdapContext(this.getSettingsHashtable(ldapHost), null);
 
             this.connect = true;
-        } catch (NamingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -76,7 +76,7 @@ public class Ldap {
     public void closeConnect() {
         try {
             ctx.close();
-        } catch (NamingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         this.connect = false;

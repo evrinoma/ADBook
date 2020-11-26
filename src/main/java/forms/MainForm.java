@@ -806,76 +806,76 @@ public class MainForm {
         SpringLayout sl_panelContact = new SpringLayout();
         panel.setLayout(sl_panelContact);
 
-        JLabel labelContactСountry = new JLabel("Страна:");
-        sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactСountry, 10, SpringLayout.NORTH, panel);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactСountry, 10, SpringLayout.WEST, panel);
-        panel.add(labelContactСountry);
+        JLabel labelContactCountry = new JLabel("Страна:");
+        sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactCountry, 10, SpringLayout.NORTH, panel);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactCountry, 10, SpringLayout.WEST, panel);
+        panel.add(labelContactCountry);
 
         JLabel labelContactRegion = new JLabel("Область, край:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactRegion, 6, SpringLayout.SOUTH,
-                labelContactСountry);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactRegion, 0, SpringLayout.WEST, labelContactСountry);
+                labelContactCountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactRegion, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactRegion);
 
         JLabel labelContactTown = new JLabel("Город:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactTown, 6, SpringLayout.SOUTH, labelContactRegion);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactTown, 0, SpringLayout.WEST, labelContactСountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactTown, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactTown);
 
         JLabel labelContactPostIndex = new JLabel("Почтовый индекс:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactPostIndex, 6, SpringLayout.SOUTH,
                 labelContactTown);
         sl_panelContact.putConstraint(SpringLayout.WEST, labelContactPostIndex, 0, SpringLayout.WEST,
-                labelContactСountry);
+                labelContactCountry);
         panel.add(labelContactPostIndex);
 
         JLabel labelContactStreet = new JLabel("Улица:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactStreet, 6, SpringLayout.SOUTH,
                 labelContactPostIndex);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactStreet, 0, SpringLayout.WEST, labelContactСountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactStreet, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactStreet);
 
         JLabel labelContactBirth = new JLabel("Дата рождения:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactBirth, 6, SpringLayout.SOUTH, labelContactStreet);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactBirth, 0, SpringLayout.WEST, labelContactСountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactBirth, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactBirth);
 
         JLabel labelContactRoom = new JLabel("Комната:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactRoom, 6, SpringLayout.SOUTH, labelContactBirth);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactRoom, 0, SpringLayout.WEST, labelContactСountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactRoom, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactRoom);
 
         JLabel labelContactPhoneInside = new JLabel("Телефон:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactPhoneInside, 6, SpringLayout.SOUTH,
                 labelContactRoom);
         sl_panelContact.putConstraint(SpringLayout.WEST, labelContactPhoneInside, 0, SpringLayout.WEST,
-                labelContactСountry);
+                labelContactCountry);
         panel.add(labelContactPhoneInside);
 
         JLabel labelContactPhone = new JLabel("Телефон (внутр.):");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactPhone, 6, SpringLayout.SOUTH,
                 labelContactPhoneInside);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactPhone, 0, SpringLayout.WEST, labelContactСountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactPhone, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactPhone);
 
         JLabel labelContactMobilePhone = new JLabel("Телефон мобильный:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactMobilePhone, 6, SpringLayout.SOUTH,
                 labelContactPhone);
         sl_panelContact.putConstraint(SpringLayout.WEST, labelContactMobilePhone, 0, SpringLayout.WEST,
-                labelContactСountry);
+                labelContactCountry);
         panel.add(labelContactMobilePhone);
 
         JLabel labelContactMail = new JLabel("Электронная почта:");
         sl_panelContact.putConstraint(SpringLayout.NORTH, labelContactMail, 6, SpringLayout.SOUTH,
                 labelContactMobilePhone);
-        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactMail, 0, SpringLayout.WEST, labelContactСountry);
+        sl_panelContact.putConstraint(SpringLayout.WEST, labelContactMail, 0, SpringLayout.WEST, labelContactCountry);
         panel.add(labelContactMail);
 
         labelContactWriCountry = new JLabel();
         sl_panelContact.putConstraint(SpringLayout.WEST, labelContactWriCountry, 5, SpringLayout.EAST,
                 labelContactMobilePhone);
         sl_panelContact.putConstraint(SpringLayout.SOUTH, labelContactWriCountry, 0, SpringLayout.SOUTH,
-                labelContactСountry);
+                labelContactCountry);
         sl_panelContact.putConstraint(SpringLayout.EAST, labelContactWriCountry, 0, SpringLayout.EAST, panel);
         panel.add(labelContactWriCountry);
 
