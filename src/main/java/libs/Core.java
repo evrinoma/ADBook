@@ -597,19 +597,15 @@ public class Core {
         ArrayList<String> signature = new ArrayList<String>();
 
         if (null != user) {
+            signature.add("<b>"+MailThread.HINT_AUTH_ANSWER+"</b>");
             signature.add("--------------------------------------");
             signature.add("С уважением, " + user.getCn());
-            signature.add("<br><br>");
+            signature.add("<br>");
             signature.add(user.getDescription());
-            signature.add("<br>");
             signature.add(user.getDepartment());
-            signature.add("<br>");
             signature.add(user.getCompany());
-            signature.add("<br>");
             signature.add("телефон:" + user.getFullTelephone(false));
-            signature.add("<br>");
             signature.add("моб.:" + user.getMobile());
-            signature.add("<br>");
             signature.add("<i>email:" + user.getMail() + "</i>");
         }
 

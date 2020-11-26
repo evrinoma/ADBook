@@ -36,6 +36,7 @@ import libs.Core;
 public class MailThread extends SwingWorker<Object, String> {
 
 	public static final boolean ACTION_AUTHORIZE = true;
+	public static final String HINT_AUTH_ANSWER= "Это письмо сформировано автоматически службой рассылки. Пожалуйста, не отвечайте на него.";
 	private static final String MAIL_SERVER = "mail.ite-ng.ru";
 	private static final String MAIL_PORT = "465";
 	private static final String HINT_TRY_AUTH = "Пытаемся авторизоваться на сервере:" + MAIL_SERVER;
@@ -303,7 +304,6 @@ public class MailThread extends SwingWorker<Object, String> {
 				transport.close();
 				this.valid = true;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -338,7 +338,6 @@ public class MailThread extends SwingWorker<Object, String> {
 				}
 			}
 		} catch (MessagingException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
