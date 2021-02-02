@@ -19,7 +19,7 @@ public class SystemEnv implements SettingsRecordIterator {
     /**
      * версия
      */
-    private String version = "26.11.20v01";
+    private String version = "02.02.21v01";
     /**
      * директория для кеша
      */
@@ -109,8 +109,8 @@ public class SystemEnv implements SettingsRecordIterator {
     private void initDefautServers() {
         this.connectionDescriber.add(new IteConnectDescriber());
         this.connectionDescriber.add(new UrConnectDescriber());
-//        this.connectionDescriber.add(new KpszConnectDescriber());
-//        this.connectionDescriber.add(new ITEEGConnectDescriber());
+        this.connectionDescriber.add(new KpszConnectDescriber());
+        this.connectionDescriber.add(new ITEEGConnectDescriber());
     }
 
     private void createAppDirs() {

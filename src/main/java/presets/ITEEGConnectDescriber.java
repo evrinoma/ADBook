@@ -12,8 +12,6 @@ import java.util.Objects;
 
 public class ITEEGConnectDescriber extends AbstractConnectDescriber {
 
-    public static final String FILIAL_REMOTE_OU = "_ИТЭ-ЭГ";
-
     public ITEEGConnectDescriber() {
         settingsRecord = new SettingsRecord(
                 "pdc.corp.ite-eg.ru",
@@ -32,14 +30,12 @@ public class ITEEGConnectDescriber extends AbstractConnectDescriber {
         Attribute ou = attrs.get("ou");
         companyDto = null;
         if (null != ou) {
-            if (Objects.equals(FILIAL_REMOTE_OU, (String) ou.get())) {
-                Attribute description = attrs.get("description");
-                if (description!=null) {
-                    companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
-                            (String) searchResult.getName() + "," + settingsRecord.getBaseDN());
-                } else {
-                    throw new NamingException("Connection Describer Attribute ["+FILIAL_REMOTE_OU+"] not set");
-                }
+            Attribute description = attrs.get("description");
+            if (description!=null) {
+                companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
+                        (String) searchResult.getName() + "," + settingsRecord.getBaseDN());
+            } else {
+                throw new NamingException("Connection Describer Attribute not set");
             }
         }
         return companyDto;
