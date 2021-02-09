@@ -12,7 +12,7 @@ import java.util.Objects;
 
 public class C2MConnectDescriber extends AbstractConnectDescriber {
 
-    public static final String FILIAL_REMOTE_OU = "C2M staff";
+    public static final String FILIAL_REMOTE_OU = "C2M_staff";
 
     public C2MConnectDescriber() {
         settingsRecord = new SettingsRecord(
