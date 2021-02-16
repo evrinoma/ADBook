@@ -166,7 +166,7 @@ public class Ldap {
     }
 
     public NamingEnumeration<?> getLdapUsers(String companyDn) {
-        String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null)))";
+        String userFilter = "(&(objectclass=organizationalperson)(!(!(mail=*)))(!(telephonenumber=null))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
 
         return getLdapSearch(companyDn, userFilter, getDefaultSelectFields());
     }
