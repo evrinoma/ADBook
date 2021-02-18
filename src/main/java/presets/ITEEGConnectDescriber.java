@@ -34,8 +34,6 @@ public class ITEEGConnectDescriber extends AbstractConnectDescriber {
             if (description!=null) {
                 companyDto = new CompanyDto((String) description.get(), (String) ou.get(),
                         (String) searchResult.getName() + "," + settingsRecord.getBaseDN());
-            } else {
-                throw new NamingException("Connection Describer Attribute not set");
             }
         }
         return companyDto;

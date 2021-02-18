@@ -16,7 +16,7 @@ public class SystemEnv implements SettingsRecordIterator {
     /**
      * версия
      */
-    private String version = "09.02.21v01";
+    private String version = "18.02.21v01";
     /**
      * директория для кеша
      */
